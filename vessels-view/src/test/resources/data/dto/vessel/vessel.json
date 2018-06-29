@@ -1,0 +1,15 @@
+{
+	"id": "d5673b99-f3d1-444d-aa47-d821aaebc11e",
+	"mmsi": 247039300,
+	"imo": 9227912,
+	"type": {
+		"id": "a5673b99-f3d1-444d-aa47-d821aaebc11e",
+		"code": "70",
+		"name": "Cargo, all ships of this type",
+		"name_en": "Cargo, all ships of this type"
+	},
+	"name": "GRANDE ITALIA",
+	"callSign": "IBTF",
+	"beam": 33.5,
+	"length": 300.3
+}

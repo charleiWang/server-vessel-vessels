@@ -1,0 +1,175 @@
+= Vessels management | REDMIC
+:doctype: book
+:toc: left
+:sectanchors:
+:sectlinks:
+:toclevels: 4
+:source-highlighter: highlightjs
+
+[[introduction]]
+= Introduction
+
+Vessels management provide...
+ 
+[[overview]]
+= Overview
+ 
+[[overview-http-verbs]]
+== HTTP verbs
+ 
+RESTful SpringRestDocs tries to adhere as closely as possible to standard HTTP and REST conventions in its
+use of HTTP verbs.
+ 
+|===
+| Verb | Usage
+ 
+| `GET`
+| Used to retrieve a resource like item/s, suggests or filter schema
+ 
+| `POST`
+| Used to create (add or update) a new resource, search with complex queries or get by multiple ids.
+ 
+| `DELETE`
+| Used to delete an existing resource
+|===
+ 
+[[overview-http-status-codes]]
+== HTTP status codes
+ 
+RESTful SpringRestDocs tries to adhere as closely as possible to standard HTTP and REST conventions in its
+use of HTTP status codes.
+ 
+|===
+| Status code | Usage
+ 
+| `200 OK`
+| The request completed successfully
+ 
+| `201 Created`
+| A new resource has been saved (created or updated) successfully.
+// The resource's URI is available from the response's `Location` header
+ 
+| `302 Found`
+| The searched resource was successfully found
+ 
+| `400 Bad Request`
+| The request was malformed. The response body will include an error providing further information
+ 
+| `404 Not Found`
+| The requested resource did not exist
+|===
+ 
+[[overview-errors]]
+== Errors
+ 
+Whenever an error response (status code >= 400) is returned, the body will contain a JSON object
+that describes the problem. The error object has the following structure:
+ 
+For example, a request that attempts to save a malformed superhero will produce a
+`400 Bad Request` response:
+ 
+[[resources]]
+= Resources
+
+[[resources-add-vessel]]
+== Add vessel
+ 
+=== Example
+include::{snippets}/create-vessel-from-rest-test/create-vessel_-send-create-vessel-event_-if-command-was-success/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-from-rest-test/create-vessel_-send-create-vessel-event_-if-command-was-success/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-from-rest-test/create-vessel_-send-create-vessel-event_-if-command-was-success/http-response.adoc[]
+
+
+[[resources-update-vessel]]
+== Update vessel
+ 
+=== Example
+include::{snippets}/create-vessel-from-rest-test/update-vessel_-send-update-vessel-event_-if-command-was-success/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-from-rest-test/update-vessel_-send-update-vessel-event_-if-command-was-success/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-from-rest-test/update-vessel_-send-update-vessel-event_-if-command-was-success/http-response.adoc[]
+
+
+[[resources-delete-vessel]]
+== Delete vessel
+ 
+=== Example
+include::{snippets}/create-vessel-from-rest-test/delete-vessel_-send-delete-vessel-event_-if-command-was-success/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-from-rest-test/delete-vessel_-send-delete-vessel-event_-if-command-was-success/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-from-rest-test/delete-vessel_-send-delete-vessel-event_-if-command-was-success/http-response.adoc[]
+
+
+[[resources-editschema-vessels]]
+== Get vessel edit schema
+ 
+=== Example
+include::{snippets}/create-vessel-from-rest-test/get-edit-schema_-return200_-when-schema-is-available/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-from-rest-test/get-edit-schema_-return200_-when-schema-is-available/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-from-rest-test/get-edit-schema_-return200_-when-schema-is-available/http-response.adoc[]
+
+//-----------------------------------------------------------------------------
+
+[[resources-add-vessel-type]]
+== Add vessel type
+ 
+=== Example
+include::{snippets}/create-vessel-type-from-rest-test/create-vessel-type_-send-create-vessel-type-event_-if-command-was-success/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-type-from-rest-test/create-vessel-type_-send-create-vessel-type-event_-if-command-was-success/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-type-from-rest-test/create-vessel-type_-send-create-vessel-type-event_-if-command-was-success/http-response.adoc[]
+
+
+[[resources-update-vessel-type]]
+== Update vessel type
+ 
+=== Example
+include::{snippets}/create-vessel-type-from-rest-test/update-vessel-type_-send-update-vessel-type-event_-if-command-was-success/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-type-from-rest-test/update-vessel-type_-send-update-vessel-type-event_-if-command-was-success/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-type-from-rest-test/update-vessel-type_-send-update-vessel-type-event_-if-command-was-success/http-response.adoc[]
+
+
+[[resources-delete-vessel-type]]
+== Delete vessel type
+ 
+=== Example
+include::{snippets}/create-vessel-type-from-rest-test/delete-vessel-type_-send-delete-vessel-type-event_-if-command-was-success/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-type-from-rest-test/delete-vessel-type_-send-delete-vessel-type-event_-if-command-was-success/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-type-from-rest-test/delete-vessel-type_-send-delete-vessel-type-event_-if-command-was-success/http-response.adoc[]
+
+[[resources-editschema-vessel-type]]
+== Get vessel type edit schema
+ 
+=== Example
+include::{snippets}/create-vessel-type-from-rest-test/get-edit-schema_-return200_-when-schema-is-available/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-type-from-rest-test/get-edit-schema_-return200_-when-schema-is-available/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-type-from-rest-test/get-edit-schema_-return200_-when-schema-is-available/http-response.adoc[]

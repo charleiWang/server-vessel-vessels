@@ -1,0 +1,13 @@
+*
+
+!/*-commands/
+/*-commands/*
+!/*-commands/dist/
+/*-commands/dist/*
+!/*-commands/dist/*.jar
+
+!/*-view/
+/*-view/*
+!/*-view/dist/
+/*-view/dist/*
+!/*-view/dist/*.jar

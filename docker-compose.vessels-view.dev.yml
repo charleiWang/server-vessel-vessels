@@ -1,0 +1,8 @@
+version: '3.5'
+
+services:
+  vessels-view:
+    container_name: ${UNIT_NAME}-view
+    restart: on-failure:3
+    ports:
+      - ${VIEW_PORT}:${VIEW_PORT}

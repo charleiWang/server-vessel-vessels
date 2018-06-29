@@ -1,0 +1,284 @@
+= Vessels query endpoint | REDMIC
+:doctype: book
+:toc: left
+:sectanchors:
+:sectlinks:
+:toclevels: 4
+:source-highlighter: highlightjs
+
+[[introduction]]
+= Introduction
+
+Vessels query endpoint provide...
+ 
+[[overview]]
+= Overview
+ 
+[[overview-http-verbs]]
+== HTTP verbs
+ 
+RESTful SpringRestDocs tries to adhere as closely as possible to standard HTTP and REST conventions in its
+use of HTTP verbs.
+ 
+|===
+| Verb | Usage
+ 
+| `GET`
+| Used to retrieve a resource like item/s, suggests or filter schema
+ 
+| `POST`
+| Used to create (add or update) a new resource, search with complex queries or get by multiple ids.
+ 
+| `DELETE`
+| Used to delete an existing resource
+|===
+ 
+[[overview-http-status-codes]]
+== HTTP status codes
+ 
+RESTful SpringRestDocs tries to adhere as closely as possible to standard HTTP and REST conventions in its
+use of HTTP status codes.
+ 
+|===
+| Status code | Usage
+ 
+| `200 OK`
+| The request completed successfully
+ 
+| `201 Created`
+| A new resource has been saved (created or updated) successfully.
+// The resource's URI is available from the response's `Location` header
+ 
+| `302 Found`
+| The searched resource was successfully found
+ 
+| `400 Bad Request`
+| The request was malformed. The response body will include an error providing further information
+ 
+| `404 Not Found`
+| The requested resource did not exist
+|===
+ 
+[[overview-errors]]
+== Errors
+ 
+Whenever an error response (status code >= 400) is returned, the body will contain a JSON object
+that describes the problem. The error object has the following structure:
+ 
+For example, a request that attempts to save a malformed superhero will produce a
+`400 Bad Request` response:
+ 
+[[resources]]
+= Resources
+
+[[resources-get-vessel]]
+== Get vessel
+ 
+=== Example
+include::{snippets}/vessel-controller-test/get-vessel_-return200_-when-item-exist/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-controller-test/get-vessel_-return200_-when-item-exist/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-controller-test/get-vessel_-return200_-when-item-exist/http-response.adoc[]
+
+
+[[resources-search-vessels]]
+== Search vessels
+ 
+=== Example
+include::{snippets}/vessel-controller-test/search-vessels-post_-return200_-when-search-is-correct/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-controller-test/search-vessels-post_-return200_-when-search-is-correct/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-controller-test/search-vessels-post_-return200_-when-search-is-correct/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-controller-test/search-vessels-post_-return200_-when-search-is-correct/request-fields.adoc[]
+
+[[resources-search-vessels-querystring]]
+== Search vessels by query string
+ 
+=== Example
+include::{snippets}/vessel-controller-test/search-vessels-query-string_-return200_-when-search-is-correct/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-controller-test/search-vessels-query-string_-return200_-when-search-is-correct/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-controller-test/search-vessels-query-string_-return200_-when-search-is-correct/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-controller-test/search-vessels-query-string_-return200_-when-search-is-correct/request-parameters.adoc[]
+
+
+[[resources-mget-vessels]]
+== Multi get vessels by id
+ 
+=== Example
+include::{snippets}/vessel-controller-test/mget-vessels_-return200_-when-vessels-exists/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-controller-test/mget-vessels_-return200_-when-vessels-exists/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-controller-test/mget-vessels_-return200_-when-vessels-exists/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-controller-test/mget-vessels_-return200_-when-vessels-exists/request-fields.adoc[]
+
+
+[[resources-suggest-vessels]]
+== Suggest vessels
+ 
+=== Example
+include::{snippets}/vessel-controller-test/suggest-vessels-post_-return200_-when-suggest-is-correct/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-controller-test/suggest-vessels-post_-return200_-when-suggest-is-correct/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-controller-test/suggest-vessels-post_-return200_-when-suggest-is-correct/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-controller-test/suggest-vessels-post_-return200_-when-suggest-is-correct/request-fields.adoc[]
+
+
+[[resources-suggest-vessels-querystring]]
+== Suggest vessels by query string
+ 
+=== Example
+include::{snippets}/vessel-controller-test/suggest-vessels-query-string_-return200_-when-suggest-is-correct/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-controller-test/suggest-vessels-query-string_-return200_-when-suggest-is-correct/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-controller-test/suggest-vessels-query-string_-return200_-when-suggest-is-correct/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-controller-test/suggest-vessels-query-string_-return200_-when-suggest-is-correct/request-parameters.adoc[]
+
+
+[[resources-filterschema-vessels]]
+== Get vessel filter schema
+ 
+=== Example
+include::{snippets}/vessel-controller-test/get-filter-schema_-return200_-when-schema-is-available/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-controller-test/get-filter-schema_-return200_-when-schema-is-available/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-controller-test/get-filter-schema_-return200_-when-schema-is-available/http-response.adoc[]
+
+
+//-----------------------------------------------------------------------------
+
+[[resources-get-vessel-type]]
+== Get vessel type
+ 
+=== Example
+include::{snippets}/vessel-type-controller-test/get-vessel-type_-return200_-when-item-exist/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-type-controller-test/get-vessel-type_-return200_-when-item-exist/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-type-controller-test/get-vessel-type_-return200_-when-item-exist/http-response.adoc[]
+
+
+[[resources-search-vessels-type]]
+== Search vessel types
+ 
+=== Example
+include::{snippets}/vessel-type-controller-test/search-vessel-types-post_-return200_-when-search-is-correct/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-type-controller-test/search-vessel-types-post_-return200_-when-search-is-correct/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-type-controller-test/search-vessel-types-post_-return200_-when-search-is-correct/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-type-controller-test/search-vessel-types-post_-return200_-when-search-is-correct/request-fields.adoc[]
+
+[[resources-search-vessels-type-querystring]]
+== Search vessel types by query string
+ 
+=== Example
+include::{snippets}/vessel-type-controller-test/search-vessel-types-query-string_-return200_-when-search-is-correct/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-type-controller-test/search-vessel-types-query-string_-return200_-when-search-is-correct/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-type-controller-test/search-vessel-types-query-string_-return200_-when-search-is-correct/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-type-controller-test/search-vessel-types-query-string_-return200_-when-search-is-correct/request-parameters.adoc[]
+
+
+[[resources-mget-vessels-type]]
+== Multi get vessel types by id
+ 
+=== Example
+include::{snippets}/vessel-type-controller-test/mget-vessel-types_-return200_-when-vessel-types-exists/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-type-controller-test/mget-vessel-types_-return200_-when-vessel-types-exists/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-type-controller-test/mget-vessel-types_-return200_-when-vessel-types-exists/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-type-controller-test/mget-vessel-types_-return200_-when-vessel-types-exists/request-fields.adoc[]
+
+
+[[resources-suggest-vessels-type]]
+== Suggest vessel types
+ 
+=== Example
+include::{snippets}/vessel-type-controller-test/suggest-vessel-types-post_-return200_-when-suggest-is-correct/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-type-controller-test/suggest-vessel-types-post_-return200_-when-suggest-is-correct/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-type-controller-test/suggest-vessel-types-post_-return200_-when-suggest-is-correct/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-type-controller-test/suggest-vessel-types-post_-return200_-when-suggest-is-correct/request-fields.adoc[]
+
+
+[[resources-suggest-vessels-type-querystring]]
+== Suggest vessel types by query string
+ 
+=== Example
+include::{snippets}/vessel-type-controller-test/suggest-vessel-types-query-string_-return200_-when-suggest-is-correct/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-type-controller-test/suggest-vessel-types-query-string_-return200_-when-suggest-is-correct/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-type-controller-test/suggest-vessel-types-query-string_-return200_-when-suggest-is-correct/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-type-controller-test/suggest-vessel-types-query-string_-return200_-when-suggest-is-correct/request-parameters.adoc[]
+
+
+[[resources-filterschema-vessels-type]]
+== Get vessel type filter schema
+ 
+=== Example
+include::{snippets}/vessel-type-controller-test/get-filter-schema_-return200_-when-schema-is-available/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-type-controller-test/get-filter-schema_-return200_-when-schema-is-available/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-type-controller-test/get-filter-schema_-return200_-when-schema-is-available/http-response.adoc[]
+
