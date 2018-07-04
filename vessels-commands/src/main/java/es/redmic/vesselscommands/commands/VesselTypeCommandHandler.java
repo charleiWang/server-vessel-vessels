@@ -222,7 +222,7 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(CreateVesselTypeFailedEvent event) {
 
-		logger.info("Enviando evento CreateVesselTypeCancelEvent para: " + event.getAggregateId());
+		logger.info("Enviando evento CreateVesselTypeCancelledEvent para: " + event.getAggregateId());
 
 		CreateVesselTypeCancelledEvent evt = new CreateVesselTypeCancelledEvent().buildFrom(event);
 		evt.setExceptionType(event.getExceptionType());
