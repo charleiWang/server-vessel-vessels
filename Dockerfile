@@ -4,9 +4,8 @@ ENV SERVICE=undefined-service
 
 COPY /*/dist/*.jar ./
 
-EXPOSE 8091 8092
+EXPOSE ${COMMANDS_PORT} ${VIEW_PORT}
 
 ENTRYPOINT java $JAVA_OPTS \
 	-Djava.security.egd=file:/dev/./urandom \
-	-Dlogging.level.org.springframework=${LOG_LEVEL} \
-	-jar /opt/redmic/${SERVICE}.jar
+	-jar ${DIRPATH}/${SERVICE}.jar
