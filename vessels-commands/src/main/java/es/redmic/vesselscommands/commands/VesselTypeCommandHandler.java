@@ -53,6 +53,9 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	@Value("${broker.stream.events.vesseltypes.id}")
 	private String vesseltypes_events_stream_id;
 
+	@Value("${stream.windows.time.ms}")
+	private Long streamWindowsTime;
+
 	private VesselTypeStateStore vesselTypeStateStore;
 
 	@Autowired
@@ -85,6 +88,7 @@ public class VesselTypeCommandHandler extends CommandHandler {
 				.serviceId(vesseltypes_events_stream_id)
 				.stateStoreDir(state_store_vesseltypes_dir)
 				.topic(vessel_type_topic)
+				.windowsTime(streamWindowsTime)
 				.build(), alertService);
 		
 		// @formatter:on

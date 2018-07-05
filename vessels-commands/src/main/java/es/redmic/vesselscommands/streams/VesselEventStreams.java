@@ -1,7 +1,6 @@
 package es.redmic.vesselscommands.streams;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.JoinWindows;
@@ -56,7 +55,7 @@ public class VesselEventStreams extends EventStreams {
 		// Join por id, mandando a kafka el evento de éxito
 		createConfirmedEvents.join(createRequestEvents,
 				(confirmedEvent, requestEvent) -> getCreatedEvent(confirmedEvent, requestEvent),
-				JoinWindows.of(TimeUnit.SECONDS.toMillis(60))).to(topic);
+				JoinWindows.of(windowsTime)).to(topic);
 	}
 
 	private Event getCreatedEvent(Event confirmedEvent, Event requestEvent) {
@@ -105,7 +104,7 @@ public class VesselEventStreams extends EventStreams {
 		// Join por id, mandando a kafka el evento de éxito
 		updateConfirmedEvents.join(updateRequestEvents,
 				(confirmedEvent, requestEvent) -> getUpdatedEvent(confirmedEvent, requestEvent),
-				JoinWindows.of(TimeUnit.SECONDS.toMillis(60))).to(topic);
+				JoinWindows.of(windowsTime)).to(topic);
 	}
 
 	private Event getUpdatedEvent(Event confirmedEvent, Event requestEvent) {
