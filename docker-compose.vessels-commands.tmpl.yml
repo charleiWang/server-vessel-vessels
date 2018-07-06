@@ -4,8 +4,7 @@ services:
   vessels-commands:
     image: ${IMAGE_NAME}:${IMAGE_TAG:-latest}
     environment:
-      - MICROSERVICE_NAME
-      - MICROSERVICE_PORT
+      - COMMANDS_PORT
       - SERVICE
       - SPRING_PROFILES_ACTIVE
       - OAUTH_CLIENT_ID
