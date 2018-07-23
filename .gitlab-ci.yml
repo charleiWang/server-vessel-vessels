@@ -58,6 +58,7 @@ maven-build-view:
   variables:
     SPRING_PROFILES_ACTIVE: test
     MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+    ELASTIC_XPACKSECURITYUSER: ${DEV_ELASTIC_XPACKSECURITYUSER}
   only:
     - branches
   cache:
@@ -165,7 +166,9 @@ deploy-view-dev:
   services:
     - docker:dind
   script:
-    - deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+    - >
+      deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      ELASTIC_XPACKSECURITYUSER=${DEV_ELASTIC_XPACKSECURITYUSER}
   environment:
     name: dev/view
     url: https://appdev.${DEV_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/view
@@ -209,7 +212,9 @@ deploy-view-supporting-branch:
   services:
     - docker:dind
   script:
-    - deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+    - >
+      deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      ELASTIC_XPACKSECURITYUSER=${DEV_ELASTIC_XPACKSECURITYUSER}
   environment:
     name: dev/view
     url: https://appdev.${DEV_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/view
@@ -254,7 +259,9 @@ deploy-view-pro:
   services:
     - docker:dind
   script:
-    - deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+    - >
+      deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      ELASTIC_XPACKSECURITYUSER=${PRO_ELASTIC_XPACKSECURITYUSER}
   environment:
     name: pro/view
     url: https://${PRO_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/view
