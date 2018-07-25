@@ -9,10 +9,12 @@ maven-build-lib:
   stage: build-lib
   image: redmic/maven-gitlab
   variables:
+    MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
     SPRING_PROFILES_ACTIVE: test
-    MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   only:
     - branches
+  except:
+    - master
   cache:
     paths:
       - .m2/repository/
@@ -32,10 +34,15 @@ maven-build-commands:
   stage: build-services
   image: redmic/maven-gitlab
   variables:
+    MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
     SPRING_PROFILES_ACTIVE: test
-    MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+    OAUTH_CLIENT_ID: ${DEV_OAUTH_CLIENT_ID}
+    OAUTH_CLIENT_SECRET: ${DEV_OAUTH_CLIENT_SECRET}
+    TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
   only:
     - branches
+  except:
+    - master
   cache:
     paths:
       - .m2/repository/
@@ -56,11 +63,16 @@ maven-build-view:
   stage: build-services
   image: redmic/maven-gitlab
   variables:
+    MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
     SPRING_PROFILES_ACTIVE: test
-    MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+    OAUTH_CLIENT_ID: ${DEV_OAUTH_CLIENT_ID}
+    OAUTH_CLIENT_SECRET: ${DEV_OAUTH_CLIENT_SECRET}
+    TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
     ELASTIC_XPACKSECURITYUSER: ${DEV_ELASTIC_XPACKSECURITYUSER}
   only:
     - branches
+  except:
+    - master
   cache:
     paths:
       - .m2/repository/
@@ -140,15 +152,17 @@ deploy-commands-dev:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${DEV_SSH_REMOTE}
     SERVICE: ${CI_PROJECT_NAME}-commands
-    ACTIVE_PROFILE: pre
+    IMAGE_NAME: ${CI_REGISTRY_IMAGE}
     IMAGE_TAG: ${CI_COMMIT_SHA}
     COMPOSE_FILE: docker-compose.${CI_PROJECT_NAME}-commands.tmpl.yml:docker-compose.${CI_PROJECT_NAME}-commands.dev.yml
   services:
     - docker:dind
   script:
-    - deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+    - >
+      deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      SPRING_PROFILES_ACTIVE=pre OAUTH_CLIENT_ID=${DEV_OAUTH_CLIENT_ID} OAUTH_CLIENT_SECRET=${DEV_OAUTH_CLIENT_SECRET}
   environment:
-    name: dev/commands
+    name: dev/${CI_PROJECT_NAME}-commands
     url: https://appdev.${DEV_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/commands
   only:
     - dev
@@ -160,17 +174,18 @@ deploy-view-dev:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${DEV_SSH_REMOTE}
     SERVICE: ${CI_PROJECT_NAME}-view
-    ACTIVE_PROFILE: pre
+    IMAGE_NAME: ${CI_REGISTRY_IMAGE}
     IMAGE_TAG: ${CI_COMMIT_SHA}
     COMPOSE_FILE: docker-compose.${CI_PROJECT_NAME}-view.tmpl.yml:docker-compose.${CI_PROJECT_NAME}-view.dev.yml
   services:
     - docker:dind
   script:
     - >
-      deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      SPRING_PROFILES_ACTIVE=pre OAUTH_CLIENT_ID=${DEV_OAUTH_CLIENT_ID} OAUTH_CLIENT_SECRET=${DEV_OAUTH_CLIENT_SECRET}
       ELASTIC_XPACKSECURITYUSER=${DEV_ELASTIC_XPACKSECURITYUSER}
   environment:
-    name: dev/view
+    name: dev/${CI_PROJECT_NAME}-view
     url: https://appdev.${DEV_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/view
   only:
     - dev
@@ -182,15 +197,17 @@ deploy-commands-supporting-branch:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${DEV_SSH_REMOTE}
     SERVICE: ${CI_PROJECT_NAME}-commands
-    ACTIVE_PROFILE: pre
+    IMAGE_NAME: ${CI_REGISTRY_IMAGE}
     IMAGE_TAG: ${CI_COMMIT_SHA}
     COMPOSE_FILE: docker-compose.${CI_PROJECT_NAME}-commands.tmpl.yml:docker-compose.${CI_PROJECT_NAME}-commands.dev.yml
   services:
     - docker:dind
   script:
-    - deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+    - >
+      deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      SPRING_PROFILES_ACTIVE=pre OAUTH_CLIENT_ID=${DEV_OAUTH_CLIENT_ID} OAUTH_CLIENT_SECRET=${DEV_OAUTH_CLIENT_SECRET}
   environment:
-    name: dev/commands
+    name: dev/${CI_PROJECT_NAME}-commands
     url: https://appdev.${DEV_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/commands
   only:
     - branches
@@ -206,17 +223,18 @@ deploy-view-supporting-branch:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${DEV_SSH_REMOTE}
     SERVICE: ${CI_PROJECT_NAME}-view
-    ACTIVE_PROFILE: pre
+    IMAGE_NAME: ${CI_REGISTRY_IMAGE}
     IMAGE_TAG: ${CI_COMMIT_SHA}
     COMPOSE_FILE: docker-compose.${CI_PROJECT_NAME}-view.tmpl.yml:docker-compose.${CI_PROJECT_NAME}-view.dev.yml
   services:
     - docker:dind
   script:
     - >
-      deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      SPRING_PROFILES_ACTIVE=pre OAUTH_CLIENT_ID=${DEV_OAUTH_CLIENT_ID} OAUTH_CLIENT_SECRET=${DEV_OAUTH_CLIENT_SECRET}
       ELASTIC_XPACKSECURITYUSER=${DEV_ELASTIC_XPACKSECURITYUSER}
   environment:
-    name: dev/view
+    name: dev/${CI_PROJECT_NAME}-view
     url: https://appdev.${DEV_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/view
   only:
     - branches
@@ -232,15 +250,17 @@ deploy-commands-pro:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${PRO_SSH_REMOTE}
     SERVICE: ${CI_PROJECT_NAME}-commands
-    ACTIVE_PROFILE: prod
+    IMAGE_NAME: ${CI_REGISTRY_IMAGE}
     IMAGE_TAG: ${CI_COMMIT_TAG}
     COMPOSE_FILE: docker-compose.${CI_PROJECT_NAME}-commands.tmpl.yml:docker-compose.${CI_PROJECT_NAME}-commands.prod.yml
   services:
     - docker:dind
   script:
-    - deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+    - >
+      deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      SPRING_PROFILES_ACTIVE=prod OAUTH_CLIENT_ID=${PRO_OAUTH_CLIENT_ID} OAUTH_CLIENT_SECRET=${PRO_OAUTH_CLIENT_SECRET}
   environment:
-    name: pro/commands
+    name: pro/${CI_PROJECT_NAME}-commands
     url: https://${PRO_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/commands
   only:
     - tags
@@ -253,17 +273,18 @@ deploy-view-pro:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${PRO_SSH_REMOTE}
     SERVICE: ${CI_PROJECT_NAME}-view
-    ACTIVE_PROFILE: prod
+    IMAGE_NAME: ${CI_REGISTRY_IMAGE}
     IMAGE_TAG: ${CI_COMMIT_TAG}
     COMPOSE_FILE: docker-compose.${CI_PROJECT_NAME}-view.tmpl.yml:docker-compose.${CI_PROJECT_NAME}-view.prod.yml
   services:
     - docker:dind
   script:
     - >
-      deploy.sh SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
+      SPRING_PROFILES_ACTIVE=prod OAUTH_CLIENT_ID=${PRO_OAUTH_CLIENT_ID} OAUTH_CLIENT_SECRET=${PRO_OAUTH_CLIENT_SECRET}
       ELASTIC_XPACKSECURITYUSER=${PRO_ELASTIC_XPACKSECURITYUSER}
   environment:
-    name: pro/view
+    name: pro/${CI_PROJECT_NAME}-view
     url: https://${PRO_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/view
   only:
     - tags
