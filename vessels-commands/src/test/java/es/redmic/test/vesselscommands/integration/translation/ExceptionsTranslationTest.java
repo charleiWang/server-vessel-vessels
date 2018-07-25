@@ -8,21 +8,30 @@ import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.MessageSource;
+import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import es.redmic.commandslib.exceptions.HistoryNotFoundException;
 import es.redmic.exception.common.PatternUtils;
-import es.redmic.test.vesselscommands.integration.common.CommonIntegrationTest;
+import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.aggregate.VesselAggregate;
 import es.redmic.vesselscommands.commands.UpdateVesselCommand;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-public class ExceptionsTranslationTest extends CommonIntegrationTest {
+@SpringBootTest(classes = { VesselsCommandsApplication.class })
+@ActiveProfiles("test")
+public class ExceptionsTranslationTest {
+
+	@ClassRule
+	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1);
 
 	@Autowired
 	MessageSource messageSource;

@@ -12,15 +12,21 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.reflect.Whitebox;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -29,7 +35,7 @@ import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.exception.data.DeleteItemException;
 import es.redmic.exception.data.ItemAlreadyExistException;
 import es.redmic.exception.data.ItemNotFoundException;
-import es.redmic.test.vesselscommands.integration.common.CommonIntegrationTest;
+import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.commands.VesselCommandHandler;
 import es.redmic.vesselslib.dto.VesselDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventType;
@@ -49,10 +55,22 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@KafkaListener(topics = "${broker.topic.vessel}", groupId = "test")
-public class VesselCommandHandlerTest extends CommonIntegrationTest {
+@SpringBootTest(classes = { VesselsCommandsApplication.class })
+@ActiveProfiles("test")
+@DirtiesContext
+@KafkaListener(topics = "${broker.topic.vessel}", groupId = "${random.value}")
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselCommandHandlerTest" })
+public class VesselCommandHandlerTest {
 
 	protected static Logger logger = LogManager.getLogger();
+
+	// number of brokers.
+	private final static Integer numBrokers = 3;
+	// partitions per topic.
+	private final static Integer partitionsPerTopic = 3;
+
+	@ClassRule
+	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(numBrokers, true, partitionsPerTopic);
 
 	private static final Integer mmsi = 1234;
 
@@ -68,7 +86,7 @@ public class VesselCommandHandlerTest extends CommonIntegrationTest {
 	VesselCommandHandler vesselCommandHandler;
 
 	@Before
-	public void before() {
+	public void setup() {
 
 		blockingQueue = new LinkedBlockingDeque<>();
 	}
@@ -80,15 +98,15 @@ public class VesselCommandHandlerTest extends CommonIntegrationTest {
 	@Test
 	public void createVesselConfirmedEvent_SendVesselCreatedEvent_IfReceivesSuccess() throws InterruptedException {
 
-		// Envía create para meterlo en el stream y lo saca de la cola
+		logger.debug("----> createVesselConfirmedEvent");
+		// Envía create para meterlo en el stream
 		CreateVesselEvent createVesselEvent = VesselDataUtil.getCreateEvent(mmsi + 1);
 		kafkaTemplate.send(VESSEL_TOPIC, createVesselEvent.getAggregateId(), createVesselEvent);
-		blockingQueue.poll(20, TimeUnit.SECONDS);
 
 		// Envía confirmed y espera un evento de created con el vessel original dentro
 		CreateVesselConfirmedEvent event = VesselDataUtil.getCreateVesselConfirmedEvent(mmsi + 1);
 		kafkaTemplate.send(VESSEL_TOPIC, event.getAggregateId(), event);
-		Event confirm = (Event) blockingQueue.poll(40, TimeUnit.SECONDS);
+		Event confirm = (Event) blockingQueue.poll(60, TimeUnit.SECONDS);
 
 		assertNotNull(confirm);
 		assertEquals(VesselEventType.VESSEL_CREATED.toString(), confirm.getType());
@@ -101,15 +119,15 @@ public class VesselCommandHandlerTest extends CommonIntegrationTest {
 	@Test
 	public void updateVesselConfirmedEvent_SendVesselUpdatedEvent_IfReceivesSuccess() throws InterruptedException {
 
-		// Envía update para meterlo en el stream y lo saca de la cola
+		logger.debug("----> updateVesselConfirmedEvent");
+		// Envía update para meterlo en el stream
 		UpdateVesselEvent updateVesselEvent = VesselDataUtil.getUpdateEvent(mmsi + 2);
 		kafkaTemplate.send(VESSEL_TOPIC, updateVesselEvent.getAggregateId(), updateVesselEvent);
-		blockingQueue.poll(20, TimeUnit.SECONDS);
 
 		// Envía confirmed y espera un evento de updated con el vessel original dentro
 		UpdateVesselConfirmedEvent event = VesselDataUtil.getUpdateVesselConfirmedEvent(mmsi + 2);
 		kafkaTemplate.send(VESSEL_TOPIC, event.getAggregateId(), event);
-		Event confirm = (Event) blockingQueue.poll(30, TimeUnit.SECONDS);
+		Event confirm = (Event) blockingQueue.poll(60, TimeUnit.SECONDS);
 
 		assertNotNull(confirm);
 		assertEquals(VesselEventType.VESSEL_UPDATED.toString(), confirm.getType());
@@ -120,13 +138,14 @@ public class VesselCommandHandlerTest extends CommonIntegrationTest {
 	@Test
 	public void deleteVesselConfirmedEvent_SendVesselDeletedEvent_IfReceivesSuccess() throws InterruptedException {
 
+		logger.debug("----> DeleteVesselConfirmedEvent");
 		DeleteVesselConfirmedEvent event = VesselDataUtil.getDeleteVesselConfirmedEvent(mmsi + 3);
 
 		ListenableFuture<SendResult<String, Event>> future = kafkaTemplate.send(VESSEL_TOPIC, event.getAggregateId(),
 				event);
 		future.addCallback(new SendListener());
 
-		Event confirm = (Event) blockingQueue.poll(20, TimeUnit.SECONDS);
+		Event confirm = (Event) blockingQueue.poll(60, TimeUnit.SECONDS);
 
 		assertNotNull(confirm);
 		assertEquals(VesselEventType.VESSEL_DELETED.toString(), confirm.getType());
@@ -143,6 +162,7 @@ public class VesselCommandHandlerTest extends CommonIntegrationTest {
 	@Test(expected = ItemAlreadyExistException.class)
 	public void createVesselFailedEvent_SendVesselCancelledEvent_IfReceivesSuccess() throws Exception {
 
+		logger.debug("----> createVesselFailedEvent");
 		CreateVesselFailedEvent event = VesselDataUtil.getCreateVesselFailedEvent(mmsi + 4);
 
 		// Añade completableFeature para que se resuelva al recibir el mensaje.
@@ -167,6 +187,7 @@ public class VesselCommandHandlerTest extends CommonIntegrationTest {
 	@Test(expected = ItemNotFoundException.class)
 	public void updateVesselFailedEvent_SendVesselCancelledEvent_IfReceivesSuccess() throws Exception {
 
+		logger.debug("----> updateVesselFailedEvent");
 		// Envía created para meterlo en el stream y lo saca de la cola
 		VesselCreatedEvent vesselCreatedEvent = VesselDataUtil.getVesselCreatedEvent(mmsi + 5);
 		vesselCreatedEvent.setSessionId(UUID.randomUUID().toString());
@@ -203,6 +224,7 @@ public class VesselCommandHandlerTest extends CommonIntegrationTest {
 	@Test(expected = DeleteItemException.class)
 	public void deleteVesselFailedEvent_SendVesselCancelledEvent_IfReceivesSuccess() throws Exception {
 
+		logger.debug("----> deleteVesselFailedEvent");
 		// Envía created para meterlo en el stream y lo saca de la cola
 		VesselCreatedEvent vesselCreatedEvent = VesselDataUtil.getVesselCreatedEvent(mmsi + 6);
 		vesselCreatedEvent.setSessionId(UUID.randomUUID().toString());

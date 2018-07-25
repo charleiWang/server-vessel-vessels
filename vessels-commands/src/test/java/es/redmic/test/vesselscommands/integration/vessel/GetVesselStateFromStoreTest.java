@@ -5,33 +5,48 @@ import static org.junit.Assert.assertNotNull;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
-import es.redmic.test.vesselscommands.integration.common.CommonIntegrationTest;
+import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.commands.VesselCommandHandler;
 import es.redmic.vesselslib.dto.VesselDTO;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=GetVesselStateFromStoreTest",
-		"spring.kafka.client-id=GetVesselStateFromStoreTest" })
-public class GetVesselStateFromStoreTest extends CommonIntegrationTest {
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=GetVesselStateFromStoreTest" })
+@SpringBootTest(classes = { VesselsCommandsApplication.class })
+@ActiveProfiles("test")
+@DirtiesContext
+public class GetVesselStateFromStoreTest {
 
 	protected static Logger logger = LogManager.getLogger();
 
+	// number of brokers.
+	private final static Integer numBrokers = 3;
+	// partitions per topic.
+	private final static Integer partitionsPerTopic = 3;
+
+	@ClassRule
+	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(numBrokers, true, partitionsPerTopic);
+
 	// @formatter:off
 	
-	private static final Integer mmsi = 1234,
+	private static final Integer mmsi = 2222,
 			mmsiOther = 5678;
 
 	private static final String aggregateId = VesselDataUtil.PREFIX + mmsi,
@@ -72,6 +87,7 @@ public class GetVesselStateFromStoreTest extends CommonIntegrationTest {
 			logger.info("Waitting for msg send confirmation");
 		}
 
+		Thread.sleep(4000);
 		for (int i = 0; i < 10; i++) {
 			try {
 				logger.info("try " + i);

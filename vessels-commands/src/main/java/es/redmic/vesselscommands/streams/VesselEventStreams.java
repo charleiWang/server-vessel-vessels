@@ -60,8 +60,6 @@ public class VesselEventStreams extends EventStreams {
 
 	private Event getCreatedEvent(Event confirmedEvent, Event requestEvent) {
 
-		logger.debug("Creando evento de creado exitoso para Vessel");
-
 		if (!isSameSession(confirmedEvent, requestEvent)) {
 			String message = "Recibido evento de petición con id de sessión diferente al evento de confirmación para item "
 					+ confirmedEvent.getAggregateId();
@@ -74,6 +72,8 @@ public class VesselEventStreams extends EventStreams {
 			logger.error("Se esperaba un evento de petición de tipo CREATE para Vessel.");
 			return null;
 		}
+
+		logger.debug("Creando evento de creado exitoso para Vessel");
 
 		VesselDTO vessel = ((VesselEvent) requestEvent).getVessel();
 
@@ -109,8 +109,6 @@ public class VesselEventStreams extends EventStreams {
 
 	private Event getUpdatedEvent(Event confirmedEvent, Event requestEvent) {
 
-		logger.debug("Creando evento de modificado exitoso para Vessel");
-
 		if (!isSameSession(confirmedEvent, requestEvent)) {
 			String message = "Recibido evento de petición con id de sessión diferente al evento de confirmación para item "
 					+ confirmedEvent.getAggregateId();
@@ -123,6 +121,8 @@ public class VesselEventStreams extends EventStreams {
 			logger.error("Se esperaba un evento de petición de UPDATE para Vessel.");
 			return null;
 		}
+
+		logger.debug("Creando evento de modificado exitoso para Vessel");
 
 		VesselDTO vessel = ((VesselEvent) requestEvent).getVessel();
 
@@ -162,13 +162,13 @@ public class VesselEventStreams extends EventStreams {
 
 	private Event getCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		logger.debug("Creando evento de cancelación para Vessel");
-
 		if (!(lastSuccessEvent.getType().equals(VesselEventType.VESSEL_CREATED.name())
 				|| lastSuccessEvent.getType().equals(VesselEventType.VESSEL_UPDATED.name()))) {
 			logger.error("Se esperaba un evento satisfactorio de tipo CREATED o UPDATED para Vessel.");
 			return null;
 		}
+
+		logger.debug("Creando evento de cancelación para Vessel");
 
 		VesselDTO vessel = ((VesselEvent) lastSuccessEvent).getVessel();
 

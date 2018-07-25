@@ -47,8 +47,6 @@ public class VesselTypeEventStreams extends EventStreams {
 
 	private Event getCreatedEvent(Event confirmedEvent, Event requestEvent) {
 
-		logger.debug("Creando evento de creado exitoso");
-
 		if (!isSameSession(confirmedEvent, requestEvent)) {
 			String message = "Recibido evento de petición con id de sessión diferente al evento de confirmación para item "
 					+ confirmedEvent.getAggregateId();
@@ -61,6 +59,8 @@ public class VesselTypeEventStreams extends EventStreams {
 			logger.error("Se esperaba un evento de petición de tipo CREATE para VesselType.");
 			return null;
 		}
+
+		logger.debug("Creando evento de creado exitoso para VesselType");
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) requestEvent).getVesselType();
 
@@ -96,8 +96,6 @@ public class VesselTypeEventStreams extends EventStreams {
 
 	private Event getUpdatedEvent(Event confirmedEvent, Event requestEvent) {
 
-		logger.debug("Creando evento de modificado exitoso para VesselType");
-
 		if (!isSameSession(confirmedEvent, requestEvent)) {
 			String message = "Recibido evento de petición con id de sessión diferente al evento de confirmación para item "
 					+ confirmedEvent.getAggregateId();
@@ -110,6 +108,8 @@ public class VesselTypeEventStreams extends EventStreams {
 			logger.error("Se esperaba un evento de petición de UPDATE para VesselType.");
 			return null;
 		}
+
+		logger.debug("Creando evento de modificado exitoso para VesselType");
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) requestEvent).getVesselType();
 
@@ -150,13 +150,13 @@ public class VesselTypeEventStreams extends EventStreams {
 
 	private Event getCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		logger.debug("Creando evento de cancelación");
-
 		if (!(lastSuccessEvent.getType().equals(VesselTypeEventType.VESSELTYPE_CREATED.name())
 				|| lastSuccessEvent.getType().equals(VesselTypeEventType.VESSELTYPE_UPDATED.name()))) {
 			logger.error("Se esperaba un evento satisfactorio de tipo CREATED o UPDATED.");
 			return null;
 		}
+
+		logger.debug("Creando evento de cancelación para VesselType");
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
 

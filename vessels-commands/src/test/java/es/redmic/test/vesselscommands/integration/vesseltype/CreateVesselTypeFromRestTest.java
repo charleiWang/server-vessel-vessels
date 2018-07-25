@@ -59,8 +59,7 @@ import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeEvent;
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselTypeFromRestTest",
-		"spring.kafka.client-id=CreateVesselTypeFromRestTest" })
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselTypeFromRestTest" })
 @KafkaListener(topics = "${broker.topic.vessel-type}", groupId = "test")
 public class CreateVesselTypeFromRestTest extends DocumentationCommandBaseTest {
 

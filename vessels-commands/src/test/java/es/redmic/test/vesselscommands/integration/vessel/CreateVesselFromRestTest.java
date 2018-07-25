@@ -64,8 +64,7 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselFromRestTest",
-		"spring.kafka.client-id=CreateVesselFromRestTest" })
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselFromRestTest" })
 @KafkaListener(topics = "${broker.topic.vessel}", groupId = "test")
 public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 
@@ -77,7 +76,7 @@ public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 	@ClassRule
 	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(numBrokers, true, partitionsPerTopic);
 
-	private final Integer mmsi = 1234;
+	private final Integer mmsi = 1111;
 
 	// @formatter:off
 	
