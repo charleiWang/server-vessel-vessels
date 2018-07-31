@@ -4,6 +4,9 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -33,6 +36,10 @@ public class VesselDTO extends CommonDTO {
 			+ "{\"name\":\"callSign\",\"type\":[\"string\", \"null\"]},"
 			+ "{\"name\":\"length\",\"type\":[\"double\", \"null\"]},"
 			+ "{\"name\":\"beam\",\"type\":[\"double\", \"null\"]},"
+			+ "{\"name\":\"inserted\",\"type\":[\"null\",{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}],"
+				+ "\"default\": null},"
+			+ "{\"name\":\"updated\",\"type\":[\"null\",{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}],"
+				+ "\"default\": null},"
 			+ "{\"name\":\"id\",\"type\":\"string\"}]}");
 	// @formatter:on
 
@@ -60,6 +67,10 @@ public class VesselDTO extends CommonDTO {
 	private Double length;
 
 	private Double beam;
+
+	private DateTime inserted;
+
+	private DateTime updated;
 
 	public Integer getMmsi() {
 		return mmsi;
@@ -121,6 +132,22 @@ public class VesselDTO extends CommonDTO {
 		this.beam = beam;
 	}
 
+	public DateTime getInserted() {
+		return inserted;
+	}
+
+	public void setInserted(DateTime inserted) {
+		this.inserted = inserted;
+	}
+
+	public DateTime getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(DateTime updated) {
+		this.updated = updated;
+	}
+
 	@JsonIgnore
 	@Override
 	public org.apache.avro.Schema getSchema() {
@@ -146,6 +173,10 @@ public class VesselDTO extends CommonDTO {
 		case 6:
 			return beam;
 		case 7:
+			return inserted != null ? inserted.getMillis() : null;
+		case 8:
+			return updated != null ? updated.getMillis() : null;
+		case 9:
 			return getId();
 		default:
 			throw new org.apache.avro.AvroRuntimeException("Bad index");
@@ -178,6 +209,12 @@ public class VesselDTO extends CommonDTO {
 			beam = (java.lang.Double) value$;
 			break;
 		case 7:
+			inserted = value$ != null ? new DateTime(value$, DateTimeZone.UTC) : null;
+			break;
+		case 8:
+			updated = value$ != null ? new DateTime(value$, DateTimeZone.UTC) : null;
+			break;
+		case 9:
 			setId(value$.toString());
 			break;
 		default:
