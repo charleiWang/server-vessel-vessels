@@ -59,6 +59,11 @@ public class VesselCommandHandler extends CommandHandler {
 	@Value("${stream.windows.time.ms}")
 	private Long streamWindowsTime;
 
+	@Value("${process.eventsource.timeout.ms}")
+	private long processTimeoutMS;
+
+	private final String REDMIC_PROCESS = "REDMIC_PROCESS";
+
 	private VesselStateStore vesselStateStore;
 
 	@Autowired
@@ -129,6 +134,10 @@ public class VesselCommandHandler extends CommandHandler {
 
 		// Emite evento para enviar a kafka
 		publishToKafka(event, vessel_topic);
+
+		// Se resuelve con un timeout mayor, establecido para procesos automáticos
+		if (event.getUserId().equals(REDMIC_PROCESS))
+			return getResult(processTimeoutMS, event.getSessionId(), completableFuture);
 
 		// Obtiene el resultado cuando se resuelva la espera
 		return getResult(event.getSessionId(), completableFuture);
