@@ -1,5 +1,7 @@
 package es.redmic.vesselscommands.commands;
 
+import org.joda.time.DateTime;
+
 import es.redmic.commandslib.commands.Command;
 import es.redmic.exception.databinding.FieldNotValidException;
 import es.redmic.vesselslib.dto.VesselDTO;
@@ -22,6 +24,9 @@ public class CreateVesselCommand extends Command {
 			// Se crea un id único para el vessel
 			vessel.setId(PREFIX + vessel.getMmsi());
 		}
+
+		vessel.setInserted(DateTime.now());
+		vessel.setUpdated(DateTime.now());
 
 		this.setVessel(vessel);
 	}
