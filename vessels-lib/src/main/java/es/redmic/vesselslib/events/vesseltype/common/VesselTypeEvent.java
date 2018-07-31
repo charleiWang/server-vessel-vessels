@@ -83,13 +83,7 @@ public abstract class VesselTypeEvent extends Event {
 
 	@JsonIgnore
 	public static String getVesselTypeEventSchema() {
-		// @formatter:off
-		return "{\"name\":\"vesselType\",\"type\":{ \"type\":\"record\",\"name\":\"VesselTypeDTO\","
-				+ "\"namespace\":\"es.redmic.vesselslib.dto\",\"fields\":["
-				+ "{\"name\":\"code\",\"type\":\"string\"},"
-				+ "{\"name\":\"name\",\"type\":\"string\"},"
-				+ "{\"name\":\"name_en\",\"type\":\"string\"},"
-				+ "{\"name\":\"id\",\"type\":\"string\"}]}}";
-		// @formatter:on
+
+		return "{\"name\":\"vesselType\", \"type\": " + VesselTypeDTO.SCHEMA$.toString() + "}";
 	}
 }

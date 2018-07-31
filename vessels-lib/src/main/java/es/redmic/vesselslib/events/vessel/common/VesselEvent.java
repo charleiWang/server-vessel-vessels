@@ -82,22 +82,7 @@ public abstract class VesselEvent extends Event {
 
 	@JsonIgnore
 	public static String getVesselEventSchema() {
-		// @formatter:off
-		return "{\"name\":\"vessel\",\"type\":{\"type\":\"record\",\"name\":\"VesselDTO\","
-				+ "\"namespace\":\"es.redmic.vesselslib.dto\",\"fields\":["
-					+ "{\"name\":\"mmsi\",\"type\":\"int\"},"
-					+ "{\"name\":\"imo\",\"type\":[\"int\", \"null\"]},"
-					+ "{\"name\":\"type\",\"type\":[{ \"name\":\"VesselTypeDTO\", \"type\":\"record\","
-							+ "\"namespace\":\"es.redmic.vesselslib.dto\",\"fields\":["
-						+ "{\"name\":\"code\",\"type\":\"string\"},"
-						+ "{\"name\":\"name\",\"type\":\"string\"},"
-						+ "{\"name\":\"name_en\",\"type\":\"string\"},"
-						+ "{\"name\":\"id\",\"type\":\"string\"}]}, \"null\"]},"
-					+ "{\"name\":\"name\",\"type\":[\"string\", \"null\"]},"
-					+ "{\"name\":\"callSign\",\"type\":[\"string\", \"null\"]},"
-					+ "{\"name\":\"length\",\"type\":[\"double\", \"null\"]},"
-					+ "{\"name\":\"beam\",\"type\":[\"double\", \"null\"]},"
-					+ "{\"name\":\"id\",\"type\":\"string\"}]}}";
-		// @formatter:on
+
+		return "{\"name\":\"vessel\", \"type\": " + VesselDTO.SCHEMA$.toString() + "}";
 	}
 }
