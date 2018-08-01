@@ -54,6 +54,8 @@ public class VesselController extends RWController<Vessel, VesselDTO, MetadataQu
 		try {
 			result = service.save(mapper.getMapperFacade().map(event.getVessel(), Vessel.class));
 		} catch (Exception e) {
+			logger.error(
+					"Error al procesar CreateVesselEvent para vessel " + event.getAggregateId() + " " + e.getMessage());
 			publishFailedEvent(
 					VesselEventFactory.getCreateVesselFailedEvent(event, ExceptionType.INTERNAL_EXCEPTION.name(), null),
 					vessel_topic);
