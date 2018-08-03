@@ -3,6 +3,8 @@ package es.redmic.vesselslib.unit.utils;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.joda.time.DateTime;
+
 import es.redmic.vesselslib.dto.VesselDTO;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventType;
@@ -178,6 +180,8 @@ public abstract class VesselDataUtil {
 		vessel.setBeam(30.2);
 		vessel.setLength(230.5);
 		vessel.setCallSign("23e2");
+		vessel.setInserted(DateTime.now());
+		vessel.setUpdated(DateTime.now());
 
 		VesselTypeDTO vesselType = new VesselTypeDTO();
 		vesselType.setCode("70");

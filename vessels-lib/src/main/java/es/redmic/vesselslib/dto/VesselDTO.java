@@ -13,7 +13,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaUrl;
 
 import es.redmic.brokerlib.avro.common.CommonDTO;
+import es.redmic.brokerlib.deserializer.CustomDateTimeDeserializer;
 import es.redmic.brokerlib.deserializer.CustomRelationDeserializer;
+import es.redmic.brokerlib.serializer.CustomDateTimeSerializer;
 import es.redmic.vesselslib.constraintvalidation.vessel.ValidateVesselId;
 
 @ValidateVesselId(mmsi = "mmsi", imo = "imo")
@@ -68,8 +70,12 @@ public class VesselDTO extends CommonDTO {
 
 	private Double beam;
 
+	@JsonSerialize(using = CustomDateTimeSerializer.class)
+	@JsonDeserialize(using = CustomDateTimeDeserializer.class)
 	private DateTime inserted;
 
+	@JsonSerialize(using = CustomDateTimeSerializer.class)
+	@JsonDeserialize(using = CustomDateTimeDeserializer.class)
 	private DateTime updated;
 
 	public Integer getMmsi() {
@@ -209,10 +215,10 @@ public class VesselDTO extends CommonDTO {
 			beam = (java.lang.Double) value$;
 			break;
 		case 7:
-			inserted = value$ != null ? new DateTime(value$, DateTimeZone.UTC) : null;
+			inserted = value$ != null ? new DateTime(value$, DateTimeZone.UTC).toDateTime() : null;
 			break;
 		case 8:
-			updated = value$ != null ? new DateTime(value$, DateTimeZone.UTC) : null;
+			updated = value$ != null ? new DateTime(value$, DateTimeZone.UTC).toDateTime() : null;
 			break;
 		case 9:
 			setId(value$.toString());

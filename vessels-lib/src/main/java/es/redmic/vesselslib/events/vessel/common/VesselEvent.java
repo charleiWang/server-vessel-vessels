@@ -1,5 +1,6 @@
 package es.redmic.vesselslib.events.vessel.common;
 
+import org.apache.avro.Schema;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -24,6 +25,7 @@ public abstract class VesselEvent extends Event {
 		this.vessel = vessel;
 	}
 
+	@JsonIgnore
 	@Override
 	public Object get(int field$) {
 		switch (field$) {
@@ -48,6 +50,7 @@ public abstract class VesselEvent extends Event {
 		}
 	}
 
+	@JsonIgnore
 	@Override
 	public void put(int field$, Object value$) {
 		switch (field$) {
@@ -84,5 +87,11 @@ public abstract class VesselEvent extends Event {
 	public static String getVesselEventSchema() {
 
 		return "{\"name\":\"vessel\", \"type\": " + VesselDTO.SCHEMA$.toString() + "}";
+	}
+
+	@JsonIgnore
+	@Override
+	public Schema getSchema() {
+		return null;
 	}
 }

@@ -7,6 +7,8 @@ import org.apache.avro.Schema;
 import org.apache.avro.reflect.ReflectData;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
@@ -56,7 +58,8 @@ public class VesselEventsCheckAvroSchemaTest extends VesselAvroBaseTest {
 	}
 
 	@Test
-	public void VesselCreatedEventSerializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect() {
+	public void VesselCreatedEventSerializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect()
+			throws JsonProcessingException {
 
 		VesselCreatedEvent event = VesselDataUtil.getCreatedEvent();
 
