@@ -8,6 +8,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -32,6 +34,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import es.redmic.brokerlib.avro.geodata.tracking.vessels.AISTrackingDTO;
 import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
+import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.commands.VesselTypeCommandHandler;
 import es.redmic.vesselscommands.statestore.VesselTypeStateStore;
@@ -43,7 +46,7 @@ import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-public class CreateVesselFromTrackingTest {
+public class CreateVesselFromTrackingTest extends KafkaBaseIntegrationTest {
 
 	@Value("${broker.topic.realtime.tracking.vessels}")
 	String REALTIME_TRACKING_VESSELS_TOPIC;
@@ -68,6 +71,11 @@ public class CreateVesselFromTrackingTest {
 
 	@Autowired
 	VesselTypeCommandHandler vesselTypeCommandHandler;
+
+	@PostConstruct
+	public void CreateVesselFromTrackingTestPostConstruct() throws Exception {
+		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+	}
 
 	@BeforeClass
 	public static void setup() {

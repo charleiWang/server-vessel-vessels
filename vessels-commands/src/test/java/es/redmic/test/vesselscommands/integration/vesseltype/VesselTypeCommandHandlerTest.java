@@ -9,6 +9,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -35,6 +37,7 @@ import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.exception.data.DeleteItemException;
 import es.redmic.exception.data.ItemAlreadyExistException;
 import es.redmic.exception.data.ItemNotFoundException;
+import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.commands.VesselTypeCommandHandler;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
@@ -60,7 +63,7 @@ import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 @DirtiesContext
 @KafkaListener(topics = "${broker.topic.vessel-type}", groupId = "${random.value}")
 @TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselTypeCommandHandlerTest" })
-public class VesselTypeCommandHandlerTest {
+public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 	protected static Logger logger = LogManager.getLogger();
 
@@ -84,6 +87,12 @@ public class VesselTypeCommandHandlerTest {
 
 	@Autowired
 	VesselTypeCommandHandler vesselTypeCommandHandler;
+
+	@PostConstruct
+	public void VesselTypeCommandHandlerTestPostConstruct() throws Exception {
+
+		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+	}
 
 	@Before
 	public void setup() {
@@ -178,7 +187,7 @@ public class VesselTypeCommandHandlerTest {
 				event.getAggregateId(), event);
 		future.addCallback(new SendListener());
 
-		Event confirm = (Event) blockingQueue.poll(30, TimeUnit.SECONDS);
+		Event confirm = (Event) blockingQueue.poll(40, TimeUnit.SECONDS);
 
 		// Obtiene el resultado
 		Whitebox.invokeMethod(vesselTypeCommandHandler, "getResult", event.getSessionId(), completableFuture);

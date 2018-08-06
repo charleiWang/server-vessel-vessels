@@ -8,6 +8,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -30,6 +32,7 @@ import es.redmic.brokerlib.alert.AlertType;
 import es.redmic.brokerlib.alert.Message;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
+import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselslib.events.vessel.VesselEventType;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
@@ -43,7 +46,7 @@ import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 @DirtiesContext
 @KafkaListener(topics = "${broker.topic.vessel}", groupId = "testPostUpdate")
 @TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselPostUpdateHandlerTest" })
-public class VesselPostUpdateHandlerTest {
+public class VesselPostUpdateHandlerTest extends KafkaBaseIntegrationTest {
 
 	protected static Logger logger = LogManager.getLogger();
 
@@ -69,6 +72,12 @@ public class VesselPostUpdateHandlerTest {
 	protected BlockingQueue<Object> blockingQueue;
 
 	protected BlockingQueue<Object> blockingQueueForAlerts;
+
+	@PostConstruct
+	public void VesselPostUpdateHandlerTestPostConstruct() throws Exception {
+
+		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+	}
 
 	@Before
 	public void before() {

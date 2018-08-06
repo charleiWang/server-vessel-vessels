@@ -18,6 +18,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -92,6 +94,12 @@ public class CreateVesselTypeFromRestTest extends DocumentationCommandBaseTest {
 
 	@Value("${broker.topic.vessel-type}")
 	private String VESSEL_TYPE_TOPIC;
+
+	@PostConstruct
+	public void CreateVesselTypeFromRestTestPostConstruct() throws Exception {
+
+		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+	}
 
 	@BeforeClass
 	public static void setup() {

@@ -3,6 +3,8 @@ package es.redmic.test.vesselscommands.integration.vesseltype;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.ClassRule;
@@ -22,6 +24,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
+import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.commands.VesselTypeCommandHandler;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
@@ -32,7 +35,7 @@ import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeEvent;
 @ActiveProfiles("test")
 @DirtiesContext
 @TestPropertySource(properties = { "spring.kafka.consumer.group-id=GetVesselTypeStateFromStoreTest" })
-public class GetVesselTypeStateFromStoreTest {
+public class GetVesselTypeStateFromStoreTest extends KafkaBaseIntegrationTest {
 
 	protected static Logger logger = LogManager.getLogger();
 
@@ -61,6 +64,12 @@ public class GetVesselTypeStateFromStoreTest {
 
 	@Autowired
 	private VesselTypeCommandHandler vesselTypeCommandHandler;
+
+	@PostConstruct
+	public void GetVesselTypeStateFromStoreTestPostConstruct() throws Exception {
+
+		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+	}
 
 	@Test
 	public void createVesselType_getVesselTypeState_IfConfigIsCorrect() throws Exception {

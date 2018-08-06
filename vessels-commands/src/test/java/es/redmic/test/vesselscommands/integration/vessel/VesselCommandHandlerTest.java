@@ -9,6 +9,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -35,6 +37,7 @@ import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.exception.data.DeleteItemException;
 import es.redmic.exception.data.ItemAlreadyExistException;
 import es.redmic.exception.data.ItemNotFoundException;
+import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.commands.VesselCommandHandler;
 import es.redmic.vesselslib.dto.VesselDTO;
@@ -60,7 +63,7 @@ import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 @DirtiesContext
 @KafkaListener(topics = "${broker.topic.vessel}", groupId = "${random.value}")
 @TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselCommandHandlerTest" })
-public class VesselCommandHandlerTest {
+public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 	protected static Logger logger = LogManager.getLogger();
 
@@ -84,6 +87,12 @@ public class VesselCommandHandlerTest {
 
 	@Autowired
 	VesselCommandHandler vesselCommandHandler;
+
+	@PostConstruct
+	public void VesselCommandHandlerTestPostConstruct() throws Exception {
+
+		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+	}
 
 	@Before
 	public void setup() {
