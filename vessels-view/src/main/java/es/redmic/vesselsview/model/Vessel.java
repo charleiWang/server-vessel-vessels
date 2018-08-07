@@ -1,8 +1,8 @@
 package es.redmic.vesselsview.model;
 
-import es.redmic.models.es.common.model.BaseAbstractStringES;
+import es.redmic.models.es.common.model.BaseUpdatableES;
 
-public class Vessel extends BaseAbstractStringES {
+public class Vessel extends BaseUpdatableES {
 
 	private Integer mmsi;
 

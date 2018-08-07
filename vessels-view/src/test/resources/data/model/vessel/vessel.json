@@ -11,5 +11,7 @@
 	"name": "GRANDE ITALIA",
 	"callSign": "IBTF",
 	"beam": 33.5,
-	"length": 300.3
+	"length": 300.3,
+	"updated": "2017-05-23T12:35:12.052+00:00",
+	"inserted": "2017-05-23T12:35:12.052+00:00"
 }
