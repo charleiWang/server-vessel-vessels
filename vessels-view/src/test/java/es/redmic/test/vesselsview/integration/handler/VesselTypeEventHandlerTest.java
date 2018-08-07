@@ -10,8 +10,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.joda.time.DateTime;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,10 @@ import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -28,7 +35,7 @@ import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.exception.data.ItemNotFoundException;
 import es.redmic.models.es.data.common.model.DataHitWrapper;
-import es.redmic.test.vesselsview.integration.common.CommonIntegrationTest;
+import es.redmic.testutils.documentation.DocumentationViewBaseTest;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventType;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
@@ -48,7 +55,10 @@ import es.redmic.viewlib.config.MapperScanBeanItfc;
 @SpringBootTest(classes = { VesselsViewApplication.class })
 @RunWith(SpringJUnit4ClassRunner.class)
 @KafkaListener(topics = "${broker.topic.vessel-type}", groupId = "test")
-public class VesselTypeEventHandlerTest extends CommonIntegrationTest {
+@TestPropertySource(properties = { "schema.registry.port=18084" })
+@DirtiesContext
+@ActiveProfiles("test")
+public class VesselTypeEventHandlerTest extends DocumentationViewBaseTest {
 
 	private final String USER_ID = "1";
 
@@ -65,6 +75,15 @@ public class VesselTypeEventHandlerTest extends CommonIntegrationTest {
 
 	@Value("${broker.topic.vessel-type}")
 	private String VESSEL_TYPE_TOPIC;
+
+	@ClassRule
+	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1);
+
+	@PostConstruct
+	public void CreateVesselFromRestTestPostConstruct() throws Exception {
+
+		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+	}
 
 	@BeforeClass
 	public static void setup() {
