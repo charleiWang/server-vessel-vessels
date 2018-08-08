@@ -2,8 +2,6 @@ version: '3.5'
 
 services:
   vessels-commands:
-    ports:
-      - ${COMMANDS_PORT}
     networks:
       - traefik-net
     deploy:
