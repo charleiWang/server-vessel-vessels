@@ -10,8 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -45,10 +43,9 @@ import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 @ActiveProfiles("test")
 @DirtiesContext
 @KafkaListener(topics = "${broker.topic.vessel}", groupId = "testPostUpdate")
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselPostUpdateHandlerTest" })
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselPostUpdateHandlerTest",
+		"schema.registry.port=18085" })
 public class VesselPostUpdateHandlerTest extends KafkaBaseIntegrationTest {
-
-	protected static Logger logger = LogManager.getLogger();
 
 	// number of brokers.
 	private final static Integer numBrokers = 3;

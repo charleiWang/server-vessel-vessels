@@ -62,7 +62,8 @@ import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 @ActiveProfiles("test")
 @DirtiesContext
 @KafkaListener(topics = "${broker.topic.vessel}", groupId = "${random.value}")
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselCommandHandlerTest" })
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselCommandHandlerTest",
+		"schema.registry.port=18084" })
 public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 	protected static Logger logger = LogManager.getLogger();
@@ -154,7 +155,7 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 				event);
 		future.addCallback(new SendListener());
 
-		Event confirm = (Event) blockingQueue.poll(60, TimeUnit.SECONDS);
+		Event confirm = (Event) blockingQueue.poll(30, TimeUnit.SECONDS);
 
 		assertNotNull(confirm);
 		assertEquals(VesselEventType.VESSEL_DELETED.toString(), confirm.getType());
@@ -202,13 +203,15 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 		vesselCreatedEvent.setSessionId(UUID.randomUUID().toString());
 		vesselCreatedEvent.getVessel().setName("Nombre erroneo al crearlo");
 		kafkaTemplate.send(VESSEL_TOPIC, vesselCreatedEvent.getAggregateId(), vesselCreatedEvent);
-		blockingQueue.poll(20, TimeUnit.SECONDS);
+		Event created = (Event) blockingQueue.poll(20, TimeUnit.SECONDS);
+		assertNotNull(created);
 
 		// Envía updated para meterlo en el stream y lo saca de la cola
 		VesselUpdatedEvent vesselUpdatedEvent = VesselDataUtil.getVesselUpdatedEvent(mmsi + 5);
 		vesselUpdatedEvent.setSessionId(UUID.randomUUID().toString());
 		kafkaTemplate.send(VESSEL_TOPIC, vesselUpdatedEvent.getAggregateId(), vesselUpdatedEvent);
-		blockingQueue.poll(20, TimeUnit.SECONDS);
+		Event updated = (Event) blockingQueue.poll(20, TimeUnit.SECONDS);
+		assertNotNull(updated);
 
 		// Envía failed y espera un evento de cancelled con el vessel original dentro
 		UpdateVesselFailedEvent event = VesselDataUtil.getUpdateVesselFailedEvent(mmsi + 5);

@@ -31,7 +31,8 @@ import es.redmic.vesselslib.dto.VesselDTO;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=GetVesselStateFromStoreTest" })
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=GetVesselStateFromStoreTest",
+		"schema.registry.port=18083" })
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext

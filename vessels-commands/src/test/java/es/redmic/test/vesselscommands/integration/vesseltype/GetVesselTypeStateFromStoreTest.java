@@ -34,7 +34,8 @@ import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeEvent;
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=GetVesselTypeStateFromStoreTest" })
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=GetVesselTypeStateFromStoreTest",
+		"schema.registry.port=18087" })
 public class GetVesselTypeStateFromStoreTest extends KafkaBaseIntegrationTest {
 
 	protected static Logger logger = LogManager.getLogger();
