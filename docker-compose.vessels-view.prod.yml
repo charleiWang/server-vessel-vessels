@@ -2,8 +2,6 @@ version: '3.5'
 
 services:
   vessels-view:
-    ports:
-      - ${VIEW_PORT}
     networks:
       - traefik-net
     deploy:
