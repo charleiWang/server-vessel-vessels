@@ -19,11 +19,8 @@ import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 
 public class VesselTypeEventStreams extends EventStreams {
 
-	private AlertService alertService;
-
 	public VesselTypeEventStreams(StreamConfig config, AlertService alertService) {
-		super(config);
-		this.alertService = alertService;
+		super(config, alertService);
 		logger.info("Arrancado servicio de compensación de errores de edición de VesselType con Id: " + this.serviceId);
 		init();
 	}
@@ -48,10 +45,6 @@ public class VesselTypeEventStreams extends EventStreams {
 	private Event getCreatedEvent(Event confirmedEvent, Event requestEvent) {
 
 		if (!isSameSession(confirmedEvent, requestEvent)) {
-			String message = "Recibido evento de petición con id de sessión diferente al evento de confirmación para item "
-					+ confirmedEvent.getAggregateId();
-			logger.error(message);
-			alertService.errorAlert(confirmedEvent.getAggregateId(), message);
 			return null;
 		}
 
@@ -97,10 +90,6 @@ public class VesselTypeEventStreams extends EventStreams {
 	private Event getUpdatedEvent(Event confirmedEvent, Event requestEvent) {
 
 		if (!isSameSession(confirmedEvent, requestEvent)) {
-			String message = "Recibido evento de petición con id de sessión diferente al evento de confirmación para item "
-					+ confirmedEvent.getAggregateId();
-			logger.error(message);
-			alertService.errorAlert(confirmedEvent.getAggregateId(), message);
 			return null;
 		}
 

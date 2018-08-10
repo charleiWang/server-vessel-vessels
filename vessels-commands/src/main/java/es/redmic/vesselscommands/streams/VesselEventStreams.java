@@ -32,12 +32,9 @@ public class VesselEventStreams extends EventStreams {
 
 	private String vesselTypeTopic;
 
-	private AlertService alertService;
-
 	public VesselEventStreams(StreamConfig config, String vesselTypeTopic, AlertService alertService) {
-		super(config);
+		super(config, alertService);
 		this.vesselTypeTopic = vesselTypeTopic;
-		this.alertService = alertService;
 		logger.info("Arrancado servicio de compensación de errores de edición y PostUpdate de Vessel con Id: "
 				+ this.serviceId);
 		init();
@@ -67,10 +64,6 @@ public class VesselEventStreams extends EventStreams {
 		assert confirmedEvent.getType().equals(VesselEventType.CREATE_VESSEL_CONFIRMED.name());
 
 		if (!isSameSession(confirmedEvent, requestEvent)) {
-			String message = "Recibido evento de petición con id de sessión diferente al evento de confirmación para item "
-					+ confirmedEvent.getAggregateId();
-			logger.error(message);
-			alertService.errorAlert(confirmedEvent.getAggregateId(), message);
 			return null;
 		}
 
@@ -107,10 +100,6 @@ public class VesselEventStreams extends EventStreams {
 		assert confirmedEvent.getType().equals(VesselEventType.UPDATE_VESSEL_CONFIRMED.name());
 
 		if (!isSameSession(confirmedEvent, requestEvent)) {
-			String message = "Recibido evento de petición con id de sessión diferente al evento de confirmación para item "
-					+ confirmedEvent.getAggregateId();
-			logger.error(message);
-			alertService.errorAlert(confirmedEvent.getAggregateId(), message);
 			return null;
 		}
 

@@ -90,7 +90,7 @@ public class VesselCommandHandler extends CommandHandler {
 					.serviceId(vessels_id_config)
 					.stateStoreDir(state_store_vessels_dir)
 					.topic(vessel_topic)
-					.build());
+					.build(), alertService);
 
 		new VesselEventStreams(
 				StreamConfig.Builder
