@@ -3,7 +3,7 @@ package es.redmic.vesselslib.events.vessel.create;
 import org.apache.avro.Schema;
 
 import es.redmic.vesselslib.dto.VesselDTO;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 
 public class VesselCreatedEvent extends VesselEvent {
@@ -17,14 +17,14 @@ public class VesselCreatedEvent extends VesselEvent {
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
 
-	static VesselEventType type = VesselEventType.VESSEL_CREATED;
+	static String type = VesselEventTypes.CREATED;
 
 	public VesselCreatedEvent() {
-		super(type.name());
+		super(type);
 	}
 
 	public VesselCreatedEvent(VesselDTO vessel) {
-		super(type.name());
+		super(type);
 		this.setVessel(vessel);
 	}
 

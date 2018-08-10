@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.apache.avro.Schema;
 
 import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vesseltype.VesselTypeEventType;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 
 public class CreateVesselTypeEvent extends VesselTypeEvent {
@@ -19,15 +19,15 @@ public class CreateVesselTypeEvent extends VesselTypeEvent {
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
 
-	static VesselTypeEventType type = VesselTypeEventType.CREATE_VESSELTYPE;
+	static String type = VesselTypeEventTypes.CREATE;
 
 	public CreateVesselTypeEvent() {
-		super(type.name());
+		super(type);
 		setSessionId(UUID.randomUUID().toString());
 	}
 
 	public CreateVesselTypeEvent(VesselTypeDTO vesselType) {
-		super(type.name());
+		super(type);
 		this.setVesselType(vesselType);
 		setSessionId(UUID.randomUUID().toString());
 	}

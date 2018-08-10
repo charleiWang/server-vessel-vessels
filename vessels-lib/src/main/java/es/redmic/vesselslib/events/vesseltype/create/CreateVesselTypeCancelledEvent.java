@@ -4,7 +4,7 @@ import org.apache.avro.Schema;
 
 import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vesseltype.VesselTypeEventType;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 
 public class CreateVesselTypeCancelledEvent extends EventError {
 
@@ -17,14 +17,14 @@ public class CreateVesselTypeCancelledEvent extends EventError {
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
 
-	static VesselTypeEventType type = VesselTypeEventType.CREATE_VESSELTYPE_CANCELLED;
+	static String type = VesselTypeEventTypes.CREATE_CANCELLED;
 
 	public CreateVesselTypeCancelledEvent() {
-		super(type.name());
+		super(type);
 	}
 
 	public CreateVesselTypeCancelledEvent(VesselTypeDTO vesselType) {
-		super(type.name());
+		super(type);
 	}
 
 	@Override

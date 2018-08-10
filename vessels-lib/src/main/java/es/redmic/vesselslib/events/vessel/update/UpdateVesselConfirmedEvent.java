@@ -3,7 +3,7 @@ package es.redmic.vesselslib.events.vessel.update;
 import org.apache.avro.Schema;
 
 import es.redmic.brokerlib.avro.common.SimpleEvent;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 
 public class UpdateVesselConfirmedEvent extends SimpleEvent {
 
@@ -15,10 +15,10 @@ public class UpdateVesselConfirmedEvent extends SimpleEvent {
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
 
-	static VesselEventType type = VesselEventType.UPDATE_VESSEL_CONFIRMED;
+	static String type = VesselEventTypes.UPDATE_CONFIRMED;
 
 	public UpdateVesselConfirmedEvent() {
-		super(type.name());
+		super(type);
 	}
 
 	@Override

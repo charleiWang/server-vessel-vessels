@@ -3,7 +3,7 @@ package es.redmic.vesselslib.events.vessel.delete;
 import org.apache.avro.Schema;
 
 import es.redmic.brokerlib.avro.common.SimpleEvent;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 
 public class DeleteVesselConfirmedEvent extends SimpleEvent {
 
@@ -15,10 +15,10 @@ public class DeleteVesselConfirmedEvent extends SimpleEvent {
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
 
-	static VesselEventType type = VesselEventType.DELETE_VESSEL_CONFIRMED;
+	static String type = VesselEventTypes.DELETE_CONFIRMED;
 
 	public DeleteVesselConfirmedEvent() {
-		super(type.name());
+		super(type);
 	}
 
 	@Override
