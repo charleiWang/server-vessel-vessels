@@ -93,7 +93,7 @@ public abstract class VesselTypeDataUtil {
 	public static VesselTypeUpdatedEvent getVesselTypeUpdatedEvent() {
 
 		VesselTypeUpdatedEvent event = new VesselTypeUpdatedEvent().buildFrom(getUpdateEvent());
-		event.setType(VesselTypeEventTypes.VESSELTYPE_UPDATED);
+		event.setType(VesselTypeEventTypes.UPDATED);
 		event.setVesselType(getVesselType());
 		return event;
 	}
