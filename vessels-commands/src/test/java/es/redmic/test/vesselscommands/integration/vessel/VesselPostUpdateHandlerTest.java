@@ -32,7 +32,7 @@ import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
@@ -126,13 +126,13 @@ public class VesselPostUpdateHandlerTest extends KafkaBaseIntegrationTest {
 
 		Event update = (Event) blockingQueue.poll(30, TimeUnit.SECONDS);
 		assertNotNull(update);
-		assertEquals(VesselEventType.UPDATE_VESSEL.toString(), update.getType());
+		assertEquals(VesselEventTypes.UPDATE, update.getType());
 		assertEquals(vesselTypeUpdatedEvent.getVesselType(), ((UpdateVesselEvent) update).getVessel().getType());
 		assertEquals(vesselCreatedEvent.getAggregateId(), ((UpdateVesselEvent) update).getAggregateId());
 
 		Event update2 = (Event) blockingQueue.poll(30, TimeUnit.SECONDS);
 		assertNotNull(update2);
-		assertEquals(VesselEventType.UPDATE_VESSEL.toString(), update2.getType());
+		assertEquals(VesselEventTypes.UPDATE, update2.getType());
 		assertEquals(vesselTypeUpdatedEvent.getVesselType(), ((UpdateVesselEvent) update2).getVessel().getType());
 		assertEquals(vesselCreatedEvent2.getAggregateId(), ((UpdateVesselEvent) update2).getAggregateId());
 

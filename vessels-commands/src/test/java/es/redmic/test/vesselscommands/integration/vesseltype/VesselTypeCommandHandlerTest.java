@@ -41,7 +41,7 @@ import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.commands.VesselTypeCommandHandler;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vesseltype.VesselTypeEventType;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeCancelledEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
@@ -121,7 +121,7 @@ public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 		Event confirm = (Event) blockingQueue.poll(120, TimeUnit.SECONDS);
 
 		assertNotNull(confirm);
-		assertEquals(VesselTypeEventType.VESSELTYPE_CREATED.toString(), confirm.getType());
+		assertEquals(VesselTypeEventTypes.CREATED, confirm.getType());
 
 		assertEquals(createVesselTypeEvent.getVesselType(), ((VesselTypeCreatedEvent) confirm).getVesselType());
 	}
@@ -144,7 +144,7 @@ public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 		Event confirm = (Event) blockingQueue.poll(60, TimeUnit.SECONDS);
 
 		assertNotNull(confirm);
-		assertEquals(VesselTypeEventType.VESSELTYPE_UPDATED.toString(), confirm.getType());
+		assertEquals(VesselTypeEventTypes.UPDATED, confirm.getType());
 		assertEquals(updateVesselTypeEvent.getVesselType(), ((VesselTypeUpdatedEvent) confirm).getVesselType());
 	}
 
@@ -162,7 +162,7 @@ public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 		Event confirm = (Event) blockingQueue.poll(60, TimeUnit.SECONDS);
 
 		assertNotNull(confirm);
-		assertEquals(VesselTypeEventType.VESSELTYPE_DELETED.toString(), confirm.getType());
+		assertEquals(VesselTypeEventTypes.DELETED, confirm.getType());
 		assertEquals(event.getAggregateId(), confirm.getAggregateId());
 		assertEquals(event.getUserId(), confirm.getUserId());
 		assertEquals(event.getSessionId(), confirm.getSessionId());
@@ -194,7 +194,7 @@ public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 		Whitebox.invokeMethod(vesselTypeCommandHandler, "getResult", event.getSessionId(), completableFuture);
 
 		assertNotNull(confirm);
-		assertEquals(VesselTypeEventType.CREATE_VESSELTYPE_CANCELLED.toString(), confirm.getType());
+		assertEquals(VesselTypeEventTypes.CREATE_CANCELLED, confirm.getType());
 	}
 
 	// Envía un evento de error de modificación y debe provocar un evento Cancelled
@@ -231,7 +231,7 @@ public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 		Whitebox.invokeMethod(vesselTypeCommandHandler, "getResult", event.getSessionId(), completableFuture);
 
 		assertNotNull(confirm);
-		assertEquals(VesselTypeEventType.UPDATE_VESSELTYPE_CANCELLED.toString(), confirm.getType());
+		assertEquals(VesselTypeEventTypes.UPDATE_CANCELLED, confirm.getType());
 		assertEquals(vesselTypeUpdateEvent.getVesselType(), ((UpdateVesselTypeCancelledEvent) confirm).getVesselType());
 	}
 
@@ -270,7 +270,7 @@ public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 		Whitebox.invokeMethod(vesselTypeCommandHandler, "getResult", event.getSessionId(), completableFuture);
 
 		assertNotNull(confirm);
-		assertEquals(VesselTypeEventType.DELETE_VESSELTYPE_CANCELLED.toString(), confirm.getType());
+		assertEquals(VesselTypeEventTypes.DELETE_CANCELLED, confirm.getType());
 		assertEquals(vesselTypeUpdateEvent.getVesselType(), ((DeleteVesselTypeCancelledEvent) confirm).getVesselType());
 	}
 

@@ -16,7 +16,7 @@ import es.redmic.vesselscommands.commands.CreateVesselTypeCommand;
 import es.redmic.vesselscommands.commands.DeleteVesselTypeCommand;
 import es.redmic.vesselscommands.commands.UpdateVesselTypeCommand;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vesseltype.VesselTypeEventType;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeEvent;
@@ -41,7 +41,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 		assertEquals(evt.getVesselType(), vessel);
 		assertNotNull(evt.getId());
 		assertEquals(evt.getAggregateId(), vessel.getId());
-		assertEquals(evt.getType(), VesselTypeEventType.CREATE_VESSELTYPE.name());
+		assertEquals(evt.getType(), VesselTypeEventTypes.CREATE);
 		assertTrue(evt.getVersion().equals(1));
 	}
 
@@ -62,7 +62,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 		assertEquals(evt.getVesselType(), vessel);
 		assertNotNull(evt.getId());
 		assertEquals(evt.getAggregateId(), vessel.getId());
-		assertEquals(evt.getType(), VesselTypeEventType.UPDATE_VESSELTYPE.name());
+		assertEquals(evt.getType(), VesselTypeEventTypes.UPDATE);
 		assertTrue(evt.getVersion().equals(2));
 	}
 
@@ -103,7 +103,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 		assertNotNull(evt.getDate());
 		assertNotNull(evt.getId());
 		assertEquals(evt.getAggregateId(), vessel.getId());
-		assertEquals(evt.getType(), VesselTypeEventType.DELETE_VESSELTYPE.name());
+		assertEquals(evt.getType(), VesselTypeEventTypes.DELETE);
 		assertTrue(evt.getVersion().equals(3));
 	}
 

@@ -8,7 +8,7 @@ import org.joda.time.DateTime;
 
 import es.redmic.exception.common.ExceptionType;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vesseltype.VesselTypeEventType;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeFailedEvent;
@@ -32,7 +32,7 @@ public abstract class VesselTypeDataUtil {
 		event.setAggregateId(PREFIX + code);
 		event.setDate(DateTime.now());
 		event.setId(UUID.randomUUID().toString());
-		event.setType(VesselTypeEventType.CREATE_VESSELTYPE.name());
+		event.setType(VesselTypeEventTypes.CREATE);
 		event.setVersion(1);
 		event.setUserId(USER);
 		event.setSessionId("sessionIdA");
@@ -74,7 +74,7 @@ public abstract class VesselTypeDataUtil {
 		event.setAggregateId(PREFIX + code);
 		event.setDate(DateTime.now());
 		event.setId(UUID.randomUUID().toString());
-		event.setType(VesselTypeEventType.UPDATE_VESSELTYPE.name());
+		event.setType(VesselTypeEventTypes.UPDATE);
 		event.setVersion(2);
 		event.setUserId(USER);
 		event.setSessionId("sessionIdB");
@@ -116,7 +116,7 @@ public abstract class VesselTypeDataUtil {
 		event.setAggregateId(PREFIX + code);
 		event.setDate(DateTime.now());
 		event.setId(UUID.randomUUID().toString());
-		event.setType(VesselTypeEventType.DELETE_VESSELTYPE.name());
+		event.setType(VesselTypeEventTypes.DELETE);
 		event.setVersion(3);
 		event.setUserId(USER);
 		event.setSessionId("sessionIdC");
