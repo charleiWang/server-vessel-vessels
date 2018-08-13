@@ -12,35 +12,59 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import es.redmic.brokerlib.avro.common.Event;
+import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
+import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
+import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
+import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplyEventTest extends AggregateBaseTest {
 
 	@Test
-	public void applyVesselCreateEvent_ChangeAggrefateState_IfProcessIsOk() {
+	public void applyCreateVesselEvent_ChangeAggrefateState_IfProcessIsOk() {
 
 		CreateVesselEvent evt = getCreateVesselEvent();
 
 		agg.apply(evt);
 
-		checkCreateState(evt);
+		checkCreateOrUpdateState(evt);
 	}
 
 	@Test
-	public void applyVesselUpdateEvent_ChangeAggregateState_IfProcessIsOk() {
+	public void applyVesselCreatedEvent_ChangeAggrefateState_IfProcessIsOk() {
+
+		VesselCreatedEvent evt = getVesselCreatedEvent();
+
+		agg.apply(evt);
+
+		checkCreateOrUpdateState(evt);
+	}
+
+	@Test
+	public void applyUpdateVesselEvent_ChangeAggregateState_IfProcessIsOk() {
 
 		UpdateVesselEvent evt = getUpdateVesselEvent();
 
 		agg.apply(evt);
 
-		checkUpdateState(evt);
+		checkCreateOrUpdateState(evt);
 	}
 
 	@Test
-	public void applyVesselDeleteEvent_ChangeAggregateState_IfProcessIsOk() {
+	public void applyVesselUpdatedEvent_ChangeAggregateState_IfProcessIsOk() {
+
+		VesselUpdatedEvent evt = getVesselUpdatedEvent();
+
+		agg.apply(evt);
+
+		checkCreateOrUpdateState(evt);
+	}
+
+	@Test
+	public void applyDeleteVesselEvent_ChangeAggregateState_IfProcessIsOk() {
 
 		DeleteVesselEvent evt = getDeleteVesselEvent();
 
@@ -50,13 +74,23 @@ public class ApplyEventTest extends AggregateBaseTest {
 	}
 
 	@Test
+	public void applyVesselDeletedEvent_ChangeAggregateState_IfProcessIsOk() {
+
+		VesselDeletedEvent evt = getVesselDeletedEvent();
+
+		agg.apply(evt);
+
+		checkDeletedState(evt);
+	}
+
+	@Test
 	public void loadFromHistory_ChangeAggregateStateToCreate_IfEventIsCreate() {
 
 		CreateVesselEvent evt = getCreateVesselEvent();
 
 		agg.loadFromHistory(evt);
 
-		checkCreateState(evt);
+		checkCreateOrUpdateState(evt);
 	}
 
 	@Test
@@ -66,7 +100,7 @@ public class ApplyEventTest extends AggregateBaseTest {
 
 		agg.loadFromHistory(evt);
 
-		checkUpdateState(evt);
+		checkCreateOrUpdateState(evt);
 	}
 
 	@Test
@@ -88,22 +122,30 @@ public class ApplyEventTest extends AggregateBaseTest {
 		history.add(getUpdateVesselEvent());
 		history.add(getDeleteVesselEvent());
 
-		DeleteVesselEvent evt = getDeleteVesselEvent();
+		history.add(getDeleteVesselEvent());
 
-		agg.loadFromHistory(evt);
+		agg.loadFromHistory(history);
 
-		checkDeleteState(evt);
+		checkDeleteState((DeleteVesselEvent) history.get(3));
 	}
 
-	private void checkCreateState(CreateVesselEvent evt) {
+	@Test
+	public void loadFromHistory_ChangeAggregateStateToDeleted_IfEventIsDelete() {
 
-		assertEquals(agg.getVersion(), evt.getVersion());
-		assertEquals(agg.getAggregateId(), evt.getAggregateId());
-		assertEquals(agg.getVessel(), evt.getVessel());
-		assertFalse(agg.isDeleted());
+		List<Event> history = new ArrayList<>();
+
+		history.add(getCreateVesselEvent());
+		history.add(getUpdateVesselEvent());
+		history.add(getDeleteVesselEvent());
+
+		history.add(getVesselDeletedEvent());
+
+		agg.loadFromHistory(history);
+
+		checkDeletedState((VesselDeletedEvent) history.get(3));
 	}
 
-	private void checkUpdateState(UpdateVesselEvent evt) {
+	private void checkCreateOrUpdateState(VesselEvent evt) {
 
 		assertEquals(agg.getVersion(), evt.getVersion());
 		assertEquals(agg.getAggregateId(), evt.getAggregateId());
@@ -112,6 +154,13 @@ public class ApplyEventTest extends AggregateBaseTest {
 	}
 
 	private void checkDeleteState(DeleteVesselEvent evt) {
+
+		assertEquals(agg.getVersion(), evt.getVersion());
+		assertEquals(agg.getAggregateId(), evt.getAggregateId());
+		assertFalse(agg.isDeleted());
+	}
+
+	private void checkDeletedState(VesselDeletedEvent evt) {
 
 		assertEquals(agg.getVersion(), evt.getVersion());
 		assertEquals(agg.getAggregateId(), evt.getAggregateId());

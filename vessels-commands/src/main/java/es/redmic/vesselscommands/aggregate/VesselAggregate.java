@@ -1,11 +1,7 @@
 package es.redmic.vesselscommands.aggregate;
 
 import es.redmic.brokerlib.avro.common.Event;
-import es.redmic.brokerlib.avro.common.SimpleEvent;
 import es.redmic.commandslib.aggregate.Aggregate;
-import es.redmic.commandslib.exceptions.HistoryNotFoundException;
-import es.redmic.commandslib.exceptions.ItemLockedException;
-import es.redmic.exception.data.ItemNotFoundException;
 import es.redmic.exception.database.DBNotFoundException;
 import es.redmic.vesselscommands.commands.CreateVesselCommand;
 import es.redmic.vesselscommands.commands.DeleteVesselCommand;
@@ -15,15 +11,10 @@ import es.redmic.vesselslib.dto.VesselDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
-import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
-import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
-import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
-import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
-import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 
 public class VesselAggregate extends Aggregate {
 
@@ -39,28 +30,16 @@ public class VesselAggregate extends Aggregate {
 
 		assert vesselStateStore != null;
 
-		String vesselId = cmd.getVessel().getId();
+		String id = cmd.getVessel().getId();
 
-		if (vesselId != null) {
-			// comprueba que el MMSI no esté introducido
-			Event state = vesselStateStore.getVessel(vesselId);
-
-			if (state != null) {
-
-				loadFromHistory(state);
-
-				if (!isDeleted()) {
-					logger.info("Descartando barco " + vesselId + ". El barco ya está registrado.");
-					return null; // Se lanza excepción en el origen no aquí
-				}
-				reset();
-			}
+		if (exist(id)) {
+			logger.info("Descartando inserción de " + id + ". El item ya está registrado.");
+			return null; // Se lanza excepción en el origen no aquí
 		}
-
-		this.setAggregateId(vesselId);
+		this.setAggregateId(id);
 
 		CreateVesselEvent evt = new CreateVesselEvent(cmd.getVessel());
-		evt.setAggregateId(vesselId);
+		evt.setAggregateId(id);
 		evt.setVersion(1);
 		return evt;
 	}
@@ -69,29 +48,16 @@ public class VesselAggregate extends Aggregate {
 
 		assert vesselStateStore != null;
 
-		String vesselId = cmd.getVessel().getId();
+		String id = cmd.getVessel().getId();
 
-		Event state = vesselStateStore.getVessel(vesselId);
-
-		if (state == null) {
-			logger.error("Intentando modificar un elemento del cual no se tiene historial, ", vesselId);
-			throw new HistoryNotFoundException(VesselEventTypes.UPDATE.toString(), vesselId);
-		}
+		Event state = getStateFromHistory(id);
 
 		loadFromHistory(state);
 
-		if (this.deleted) {
-			logger.error("Intentando modificar un elemento eliminado, ", vesselId);
-			throw new ItemNotFoundException("id", vesselId);
-		}
-
-		if (VesselEventTypes.isLocked(state.getType())) {
-			logger.error("Intentando modificar un elemento bloqueado por una edición en curso, ", vesselId);
-			throw new ItemLockedException("id", vesselId);
-		}
+		checkState(id, state.getType());
 
 		UpdateVesselEvent evt = new UpdateVesselEvent(cmd.getVessel());
-		evt.setAggregateId(vesselId);
+		evt.setAggregateId(id);
 		evt.setVersion(getVersion() + 1);
 		return evt;
 	}
@@ -100,29 +66,16 @@ public class VesselAggregate extends Aggregate {
 
 		assert vesselStateStore != null;
 
-		String vesselId = cmd.getVesselId();
+		String id = cmd.getVesselId();
 
-		Event state = vesselStateStore.getVessel(vesselId);
-
-		if (state == null) {
-			logger.error("Intentando eliminar un elemento del cual no se tiene historial, " + vesselId);
-			throw new HistoryNotFoundException(VesselEventTypes.DELETE.toString(), vesselId);
-		}
+		Event state = getStateFromHistory(id);
 
 		loadFromHistory(state);
 
-		if (this.deleted) {
-			logger.error("Intentando eliminar un elemento que ya está eliminado, ", vesselId);
-			throw new ItemNotFoundException("id", vesselId);
-		}
-
-		if (VesselEventTypes.isLocked(state.getType())) {
-			logger.error("Intentando eliminar un elemento bloqueado por una edición en curso, ", vesselId);
-			throw new ItemLockedException("id", vesselId);
-		}
+		checkState(id, state.getType());
 
 		DeleteVesselEvent evt = new DeleteVesselEvent();
-		evt.setAggregateId(vesselId);
+		evt.setAggregateId(id);
 		evt.setVersion(getVersion() + 1);
 		return evt;
 	}
@@ -135,7 +88,7 @@ public class VesselAggregate extends Aggregate {
 
 		CreateVesselCommand cmd = new CreateVesselCommand(type);
 
-		Event state = vesselStateStore.getVessel(cmd.getVessel().getId());
+		Event state = getItemFromStateStore(cmd.getVessel().getId());
 
 		if (state == null) {
 			throw new DBNotFoundException("id", cmd.getVessel().getId());
@@ -147,6 +100,18 @@ public class VesselAggregate extends Aggregate {
 	}
 
 	@Override
+	protected boolean isLocked(String eventType) {
+
+		return VesselEventTypes.isLocked(eventType);
+	}
+
+	@Override
+	protected Event getItemFromStateStore(String id) {
+
+		return vesselStateStore.getVessel(id);
+	}
+
+	@Override
 	public void loadFromHistory(Event history) {
 
 		logger.debug("Cargando último estado del vessel ", history.getAggregateId());
@@ -155,113 +120,54 @@ public class VesselAggregate extends Aggregate {
 
 		switch (eventType) {
 		case "CREATE":
-			apply((CreateVesselEvent) history);
-			break;
-		case "CREATE_CONFIRMED":
-			apply((CreateVesselConfirmedEvent) history);
+			logger.debug("En fase de creación");
+			apply((VesselEvent) history);
 			break;
 		case "CREATED":
-			apply((VesselCreatedEvent) history);
+			logger.debug("Item creado");
+			apply((VesselEvent) history);
 			break;
 		case "UPDATE":
-			apply((UpdateVesselEvent) history);
-			break;
-		case "UPDATE_CONFIRMED":
-			apply((UpdateVesselConfirmedEvent) history);
+			logger.debug("En fase de modificación");
+			apply((VesselEvent) history);
 			break;
 		case "UPDATED":
-			apply((VesselUpdatedEvent) history);
-			break;
-		case "DELETE":
-			apply((DeleteVesselEvent) history);
-			break;
-		case "DELETE_CONFIRMED":
-			apply((DeleteVesselConfirmedEvent) history);
+			logger.debug("Item modificado");
+			apply((VesselEvent) history);
 			break;
 		case "DELETED":
+			logger.debug("Item borrado");
 			apply((VesselDeletedEvent) history);
-			break;
-		// FAILED
-		case "CREATE_FAILED":
-		case "UPDATE_FAILED":
-		case "DELETE_FAILED":
-			logger.debug("Evento fallido");
-			_apply((SimpleEvent) history);
 			break;
 		// CANCELLED
 		case "CREATE_CANCELLED":
+			logger.debug("Compensación por creación fallida");
 			apply((CreateVesselCancelledEvent) history);
 			break;
 		case "UPDATE_CANCELLED":
 		case "DELETE_CANCELLED":
 			logger.debug("Compensación por edición/borrado fallido");
-			_apply((VesselEvent) history);
+			apply((VesselEvent) history);
 			break;
 		default:
-			logger.debug("Evento no manejado ", history.getType());
+			super._loadFromHistory(history);
 			break;
 		}
 	}
 
-	public void apply(CreateVesselEvent event) {
-		logger.debug("En fase de creación");
-		_apply(event);
-	}
-
-	public void apply(CreateVesselConfirmedEvent event) {
-		logger.debug("Creación confirmada");
-		_apply(event);
-	}
-
-	public void apply(VesselCreatedEvent event) {
-		logger.debug("Item creado");
-		_apply(event);
-	}
-
 	public void apply(CreateVesselCancelledEvent event) {
-		logger.debug("Compensación por creación fallida");
 		this.deleted = true;
-		setVersion(event.getVersion());
-		setAggregateId(event.getAggregateId());
-	}
-
-	public void apply(UpdateVesselEvent event) {
-		logger.debug("En fase de modificación");
-		_apply(event);
-	}
-
-	public void apply(UpdateVesselConfirmedEvent event) {
-		logger.debug("Modificación confirmada");
-		_apply(event);
-	}
-
-	public void apply(VesselUpdatedEvent event) {
-		logger.debug("Item modificado");
-		_apply(event);
-	}
-
-	public void apply(DeleteVesselEvent event) {
-		logger.debug("En fase de borrado");
-		this.deleted = true;
-		_apply(event);
-	}
-
-	public void apply(DeleteVesselConfirmedEvent event) {
-		logger.debug("Borrado confirmado");
-		this.deleted = true;
-		_apply(event);
+		apply(event);
 	}
 
 	public void apply(VesselDeletedEvent event) {
-		logger.debug("Item borrado");
 		this.deleted = true;
-		_apply(event);
+		super.apply(event);
 	}
 
-	private void _apply(VesselEvent event) {
+	public void apply(VesselEvent event) {
 		this.vessel = event.getVessel();
-		setVersion(event.getVersion());
-		setAggregateId(event.getAggregateId());
+		super.apply(event);
 	}
 
 	@Override
