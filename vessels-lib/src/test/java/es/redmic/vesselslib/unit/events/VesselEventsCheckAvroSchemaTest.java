@@ -19,6 +19,11 @@ import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselConfirmedEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselFailedEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.VesselTypeInVesselUpdatedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
@@ -224,6 +229,73 @@ public class VesselEventsCheckAvroSchemaTest extends VesselAvroBaseTest {
 
 		assertTrue("El objeto obtenido debe ser una instancia de CreateVesselCancelledEvent",
 				DeleteVesselCancelledEvent.class.isInstance(result));
+
+		assertEquals(result, event);
+	}
+
+	// UpdateVesselTypeInVessel
+
+	@Test
+	public void UpdateVesselTypeInVesselEventSerializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect() {
+
+		UpdateVesselTypeInVesselEvent event = VesselDataUtil.getUpdateVesselTypeInVesselEvent();
+
+		Object result = serializerAndDeserializer(event);
+
+		assertTrue("El objeto obtenido debe ser una instancia de UpdateVesselTypeInVesselEvent",
+				UpdateVesselTypeInVesselEvent.class.isInstance(result));
+
+		assertEquals(result, event);
+	}
+
+	@Test
+	public void UpdateVesselTypeInVesselConfirmedEventSerializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect() {
+
+		UpdateVesselTypeInVesselConfirmedEvent event = VesselDataUtil.getUpdateVesselTypeInVesselConfirmedEvent();
+
+		Object result = serializerAndDeserializer(event);
+
+		assertTrue("El objeto obtenido debe ser una instancia de UpdateVesselTypeInVesselConfirmedEvent",
+				UpdateVesselTypeInVesselConfirmedEvent.class.isInstance(result));
+
+		assertEquals(result, event);
+	}
+
+	@Test
+	public void VesselTypeInVesselUpdatedEventSerializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect() {
+
+		VesselTypeInVesselUpdatedEvent event = VesselDataUtil.getVesselTypeInVesselUpdatedEvent();
+
+		Object result = serializerAndDeserializer(event);
+
+		assertTrue("El objeto obtenido debe ser una instancia de VesselTypeInVesselUpdatedEvent",
+				VesselTypeInVesselUpdatedEvent.class.isInstance(result));
+
+		assertEquals(result, event);
+	}
+
+	@Test
+	public void UpdateVesselTypeInVesselFailedEventSerializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect() {
+
+		UpdateVesselTypeInVesselFailedEvent event = VesselDataUtil.getUpdateVesselTypeInVesselFailedEvent();
+
+		Object result = serializerAndDeserializer(event);
+
+		assertTrue("El objeto obtenido debe ser una instancia de UpdateVesselTypeInVesselFailedEvent",
+				UpdateVesselTypeInVesselFailedEvent.class.isInstance(result));
+
+		assertEquals(result, event);
+	}
+
+	@Test
+	public void UpdateVesselTypeInVesselCancelledEventSerializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect() {
+
+		UpdateVesselTypeInVesselCancelledEvent event = VesselDataUtil.getUpdateVesselTypeInVesselCancelledEvent();
+
+		Object result = serializerAndDeserializer(event);
+
+		assertTrue("El objeto obtenido debe ser una instancia de UpdateVesselTypeInVesselCancelledEvent",
+				UpdateVesselTypeInVesselCancelledEvent.class.isInstance(result));
 
 		assertEquals(result, event);
 	}

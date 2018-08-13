@@ -18,6 +18,11 @@ import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselConfirmedEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselFailedEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.VesselTypeInVesselUpdatedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
@@ -166,6 +171,61 @@ public abstract class VesselDataUtil {
 		event.setVessel(getVessel());
 		event.setExceptionType("ItemNotFound");
 		return event;
+	}
+
+	// UpdateVesselTypeInVessel
+
+	public static UpdateVesselTypeInVesselEvent getUpdateVesselTypeInVesselEvent() {
+
+		UpdateVesselTypeInVesselEvent event = new UpdateVesselTypeInVesselEvent();
+		event.setAggregateId(PREFIX + MMSI);
+		event.setType(VesselEventTypes.UPDATE_VESSELTYPE);
+		event.setVersion(2);
+		event.setUserId(USER);
+		event.setVesselType(VesselTypeDataUtil.getVesselType());
+		return event;
+	}
+
+	public static UpdateVesselTypeInVesselConfirmedEvent getUpdateVesselTypeInVesselConfirmedEvent() {
+
+		UpdateVesselTypeInVesselConfirmedEvent event = new UpdateVesselTypeInVesselConfirmedEvent()
+				.buildFrom(getUpdateVesselTypeInVesselEvent());
+		event.setType(VesselEventTypes.UPDATE_VESSELTYPE_CONFIRMED);
+		return event;
+	}
+
+	public static VesselTypeInVesselUpdatedEvent getVesselTypeInVesselUpdatedEvent() {
+		VesselTypeInVesselUpdatedEvent event = new VesselTypeInVesselUpdatedEvent()
+				.buildFrom(getUpdateVesselTypeInVesselEvent());
+		event.setType(VesselEventTypes.VESSELTYPE_UPDATED);
+		event.setVesselType(VesselTypeDataUtil.getVesselType());
+		return event;
+	}
+
+	public static UpdateVesselTypeInVesselFailedEvent getUpdateVesselTypeInVesselFailedEvent() {
+
+		UpdateVesselTypeInVesselFailedEvent event = new UpdateVesselTypeInVesselFailedEvent()
+				.buildFrom(getUpdateVesselTypeInVesselEvent());
+		event.setType(VesselEventTypes.UPDATE_VESSELTYPE_FAILED);
+		event.setExceptionType("ItemNotFound");
+		Map<String, String> arguments = new HashMap<>();
+		arguments.put("a", "b");
+		event.setArguments(arguments);
+		return event;
+	}
+
+	public static UpdateVesselTypeInVesselCancelledEvent getUpdateVesselTypeInVesselCancelledEvent() {
+
+		UpdateVesselTypeInVesselCancelledEvent event = new UpdateVesselTypeInVesselCancelledEvent()
+				.buildFrom(getUpdateVesselTypeInVesselEvent());
+		event.setType(VesselEventTypes.UPDATE_VESSELTYPE_CANCELLED);
+		event.setVesselType(VesselTypeDataUtil.getVesselType());
+		event.setExceptionType("ItemNotFound");
+		Map<String, String> arguments = new HashMap<>();
+		arguments.put("a", "b");
+		event.setArguments(arguments);
+		return event;
+
 	}
 
 	//////////////////////
