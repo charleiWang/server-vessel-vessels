@@ -10,7 +10,7 @@ import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.commandslib.statestore.StreamConfig;
 import es.redmic.commandslib.streams.EventStreams;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vesseltype.VesselTypeEventType;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.create.VesselTypeCreatedEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCancelledEvent;
@@ -29,12 +29,12 @@ public class VesselTypeEventStreams extends EventStreams {
 	protected void processCreatedStream(KStream<String, Event> vesselTypeEvents) {
 
 		// Stream filtrado por eventos de confirmación al crear
-		KStream<String, Event> createConfirmedEvents = vesselTypeEvents.filter(
-				(id, event) -> (VesselTypeEventType.CREATE_VESSELTYPE_CONFIRMED.toString().equals(event.getType())));
+		KStream<String, Event> createConfirmedEvents = vesselTypeEvents
+				.filter((id, event) -> (VesselTypeEventTypes.CREATE_CONFIRMED.toString().equals(event.getType())));
 
 		// Stream filtrado por eventos de petición de crear
 		KStream<String, Event> createRequestEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventType.CREATE_VESSELTYPE.toString().equals(event.getType())));
+				.filter((id, event) -> (VesselTypeEventTypes.CREATE.toString().equals(event.getType())));
 
 		// Join por id, mandando a kafka el evento de éxito
 		createConfirmedEvents.join(createRequestEvents,
@@ -44,9 +44,9 @@ public class VesselTypeEventStreams extends EventStreams {
 
 	private Event getCreatedEvent(Event confirmedEvent, Event requestEvent) {
 
-		assert requestEvent.getType().equals(VesselTypeEventType.CREATE_VESSELTYPE.name());
+		assert requestEvent.getType().equals(VesselTypeEventTypes.CREATE);
 
-		assert confirmedEvent.getType().equals(VesselTypeEventType.CREATE_VESSELTYPE_CONFIRMED.name());
+		assert confirmedEvent.getType().equals(VesselTypeEventTypes.CREATE_CONFIRMED);
 
 		if (!isSameSession(confirmedEvent, requestEvent)) {
 			return null;
@@ -65,12 +65,12 @@ public class VesselTypeEventStreams extends EventStreams {
 	protected void processUpdatedStream(KStream<String, Event> vesselTypeEvents) {
 
 		// Stream filtrado por eventos de confirmación al modificar
-		KStream<String, Event> updateConfirmedEvents = vesselTypeEvents.filter(
-				(id, event) -> (VesselTypeEventType.UPDATE_VESSELTYPE_CONFIRMED.toString().equals(event.getType())));
+		KStream<String, Event> updateConfirmedEvents = vesselTypeEvents
+				.filter((id, event) -> (VesselTypeEventTypes.UPDATE_CONFIRMED.toString().equals(event.getType())));
 
 		// Stream filtrado por eventos de petición de modificar
 		KStream<String, Event> updateRequestEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventType.UPDATE_VESSELTYPE.toString().equals(event.getType())));
+				.filter((id, event) -> (VesselTypeEventTypes.UPDATE.toString().equals(event.getType())));
 
 		// Join por id, mandando a kafka el evento de éxito
 		updateConfirmedEvents.join(updateRequestEvents,
@@ -80,9 +80,9 @@ public class VesselTypeEventStreams extends EventStreams {
 
 	private Event getUpdatedEvent(Event confirmedEvent, Event requestEvent) {
 
-		assert requestEvent.getType().equals(VesselTypeEventType.UPDATE_VESSELTYPE.name());
+		assert requestEvent.getType().equals(VesselTypeEventTypes.UPDATE);
 
-		assert confirmedEvent.getType().equals(VesselTypeEventType.UPDATE_VESSELTYPE_CONFIRMED.name());
+		assert confirmedEvent.getType().equals(VesselTypeEventTypes.UPDATE_CONFIRMED);
 
 		if (!isSameSession(confirmedEvent, requestEvent)) {
 			return null;
@@ -105,8 +105,8 @@ public class VesselTypeEventStreams extends EventStreams {
 		// Stream filtrado por eventos de creaciones y modificaciones correctos (solo el
 		// último que se produzca por id)
 		KStream<String, Event> successEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventType.VESSELTYPE_CREATED.toString().equals(event.getType())
-						|| VesselTypeEventType.VESSELTYPE_UPDATED.toString().equals(event.getType())));
+				.filter((id, event) -> (VesselTypeEventTypes.CREATED.toString().equals(event.getType())
+						|| VesselTypeEventTypes.VESSELTYPE_UPDATED.toString().equals(event.getType())));
 
 		processUpdateFailedStream(vesselTypeEvents, successEvents);
 
@@ -118,8 +118,8 @@ public class VesselTypeEventStreams extends EventStreams {
 			KStream<String, Event> successEvents) {
 
 		// Stream filtrado por eventos de fallo al modificar
-		KStream<String, Event> failedEvents = vesselTypeEvents.filter(
-				(id, event) -> (VesselTypeEventType.UPDATE_VESSELTYPE_FAILED.toString().equals(event.getType())));
+		KStream<String, Event> failedEvents = vesselTypeEvents
+				.filter((id, event) -> (VesselTypeEventTypes.UPDATE_FAILED.toString().equals(event.getType())));
 
 		KTable<String, Event> successEventsTable = successEvents.groupByKey().reduce((aggValue, newValue) -> newValue);
 
@@ -134,8 +134,8 @@ public class VesselTypeEventStreams extends EventStreams {
 			KStream<String, Event> successEvents) {
 
 		// Stream filtrado por eventos de fallo al borrar
-		KStream<String, Event> failedEvents = vesselTypeEvents.filter(
-				(id, event) -> (VesselTypeEventType.DELETE_VESSELTYPE_FAILED.toString().equals(event.getType())));
+		KStream<String, Event> failedEvents = vesselTypeEvents
+				.filter((id, event) -> (VesselTypeEventTypes.DELETE_FAILED.toString().equals(event.getType())));
 
 		KTable<String, Event> successEventsTable = successEvents.groupByKey().reduce((aggValue, newValue) -> newValue);
 
@@ -148,10 +148,10 @@ public class VesselTypeEventStreams extends EventStreams {
 
 	private Event getUpdateCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		assert failedEvent.getType().equals(VesselTypeEventType.UPDATE_VESSELTYPE_FAILED.name());
+		assert failedEvent.getType().equals(VesselTypeEventTypes.UPDATE_FAILED);
 
-		assert lastSuccessEvent.getType().equals(VesselTypeEventType.VESSELTYPE_CREATED.name())
-				|| lastSuccessEvent.getType().equals(VesselTypeEventType.VESSELTYPE_UPDATED.name());
+		assert lastSuccessEvent.getType().equals(VesselTypeEventTypes.CREATED)
+				|| lastSuccessEvent.getType().equals(VesselTypeEventTypes.VESSELTYPE_UPDATED);
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
 
@@ -168,10 +168,10 @@ public class VesselTypeEventStreams extends EventStreams {
 
 	private Event getDeleteCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		assert failedEvent.getType().equals(VesselTypeEventType.DELETE_VESSELTYPE_FAILED.name());
+		assert failedEvent.getType().equals(VesselTypeEventTypes.DELETE_FAILED);
 
-		assert lastSuccessEvent.getType().equals(VesselTypeEventType.VESSELTYPE_CREATED.name())
-				|| lastSuccessEvent.getType().equals(VesselTypeEventType.VESSELTYPE_UPDATED.name());
+		assert lastSuccessEvent.getType().equals(VesselTypeEventTypes.CREATED)
+				|| lastSuccessEvent.getType().equals(VesselTypeEventTypes.VESSELTYPE_UPDATED);
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
 

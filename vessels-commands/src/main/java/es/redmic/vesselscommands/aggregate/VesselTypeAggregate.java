@@ -12,7 +12,7 @@ import es.redmic.vesselscommands.commands.DeleteVesselTypeCommand;
 import es.redmic.vesselscommands.commands.UpdateVesselTypeCommand;
 import es.redmic.vesselscommands.statestore.VesselTypeStateStore;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vesseltype.VesselTypeEventType;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeCancelledEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
@@ -74,7 +74,7 @@ public class VesselTypeAggregate extends Aggregate {
 
 		if (state == null) {
 			logger.error("Intentando modificar un elemento del cual no se tiene historial", vesselTypeId);
-			throw new HistoryNotFoundException(VesselTypeEventType.UPDATE_VESSELTYPE.toString(), vesselTypeId);
+			throw new HistoryNotFoundException(VesselTypeEventTypes.UPDATE, vesselTypeId);
 		}
 
 		loadFromHistory(state);
@@ -84,7 +84,7 @@ public class VesselTypeAggregate extends Aggregate {
 			throw new ItemNotFoundException("id", vesselTypeId);
 		}
 
-		if (itemIsLocked(state.getType())) {
+		if (VesselTypeEventTypes.isLocked(state.getType())) {
 			logger.error("Intentando modificar un elemento bloqueado por una edición en curso, ", vesselTypeId);
 			throw new ItemLockedException("id", vesselTypeId);
 		}
@@ -105,7 +105,7 @@ public class VesselTypeAggregate extends Aggregate {
 
 		if (state == null) {
 			logger.error("Intentando eliminar un elemento del cual no se tiene historial, " + vesselTypeId);
-			throw new HistoryNotFoundException(VesselTypeEventType.UPDATE_VESSELTYPE.toString(), vesselTypeId);
+			throw new HistoryNotFoundException(VesselTypeEventTypes.UPDATE, vesselTypeId);
 		}
 
 		loadFromHistory(state);
@@ -115,7 +115,7 @@ public class VesselTypeAggregate extends Aggregate {
 			throw new ItemNotFoundException("id", vesselTypeId);
 		}
 
-		if (itemIsLocked(state.getType())) {
+		if (VesselTypeEventTypes.isLocked(state.getType())) {
 			logger.error("Intentando eliminar un elemento bloqueado por una edición en curso, ", vesselTypeId);
 			throw new ItemLockedException("id", vesselTypeId);
 		}
@@ -152,47 +152,47 @@ public class VesselTypeAggregate extends Aggregate {
 
 		String eventType = history.getType();
 
-		switch (VesselTypeEventType.valueOf(eventType)) {
-		case CREATE_VESSELTYPE:
+		switch (eventType) {
+		case "CREATE":
 			apply((CreateVesselTypeEvent) history);
 			break;
-		case CREATE_VESSELTYPE_CONFIRMED:
+		case "CREATE_CONFIRMED":
 			apply((CreateVesselTypeConfirmedEvent) history);
 			break;
-		case VESSELTYPE_CREATED:
+		case "CREATED":
 			apply((VesselTypeCreatedEvent) history);
 			break;
-		case UPDATE_VESSELTYPE:
+		case "UPDATE":
 			apply((UpdateVesselTypeEvent) history);
 			break;
-		case UPDATE_VESSELTYPE_CONFIRMED:
+		case "UPDATE_CONFIRMED":
 			apply((UpdateVesselTypeConfirmedEvent) history);
 			break;
-		case VESSELTYPE_UPDATED:
+		case "UPDATED":
 			apply((VesselTypeUpdatedEvent) history);
 			break;
-		case DELETE_VESSELTYPE:
+		case "DELETE":
 			apply((DeleteVesselTypeEvent) history);
 			break;
-		case DELETE_VESSELTYPE_CONFIRMED:
+		case "DELETE_CONFIRMED":
 			apply((DeleteVesselTypeConfirmedEvent) history);
 			break;
-		case VESSELTYPE_DELETED:
+		case "DELETED":
 			apply((VesselTypeDeletedEvent) history);
 			break;
 		// FAILED
-		case CREATE_VESSELTYPE_FAILED:
-		case UPDATE_VESSELTYPE_FAILED:
-		case DELETE_VESSELTYPE_FAILED:
+		case "CREATE_FAILED":
+		case "UPDATE_FAILED":
+		case "DELETE_FAILED":
 			logger.debug("Evento fallido");
 			_apply((SimpleEvent) history);
 			break;
 		// CANCELLED
-		case CREATE_VESSELTYPE_CANCELLED:
+		case "CREATE_CANCELLED":
 			apply((CreateVesselTypeCancelledEvent) history);
 			break;
-		case UPDATE_VESSELTYPE_CANCELLED:
-		case DELETE_VESSELTYPE_CANCELLED:
+		case "UPDATE_CANCELLED":
+		case "DELETE_CANCELLED":
 			logger.debug("Compensación por edición/borrado fallido");
 			_apply((VesselTypeEvent) history);
 			break;
@@ -266,14 +266,5 @@ public class VesselTypeAggregate extends Aggregate {
 	protected void reset() {
 		this.vesselType = null;
 		super.reset();
-	}
-
-	private boolean itemIsLocked(String eventType) {
-
-		return !(eventType.equals(VesselTypeEventType.VESSELTYPE_CREATED.toString())
-				|| eventType.equals(VesselTypeEventType.VESSELTYPE_UPDATED.toString())
-				|| eventType.equals(VesselTypeEventType.CREATE_VESSELTYPE_CANCELLED.toString())
-				|| eventType.equals(VesselTypeEventType.UPDATE_VESSELTYPE_CANCELLED.toString())
-				|| eventType.equals(VesselTypeEventType.DELETE_VESSELTYPE_CANCELLED.toString()));
 	}
 }
