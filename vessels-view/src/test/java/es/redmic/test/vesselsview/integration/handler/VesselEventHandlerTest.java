@@ -40,7 +40,7 @@ import es.redmic.models.es.data.common.model.DataHitWrapper;
 import es.redmic.testutils.documentation.DocumentationViewBaseTest;
 import es.redmic.vesselslib.dto.VesselDTO;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
@@ -119,7 +119,7 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 		repository.delete(event.getVessel().getId());
 
 		assertNotNull(confirm);
-		assertEquals(VesselEventType.CREATE_VESSEL_CONFIRMED.toString(), confirm.getType());
+		assertEquals(VesselEventTypes.CREATE_CONFIRMED, confirm.getType());
 
 		Vessel vessel = (Vessel) item.get_source();
 		assertEquals(vessel.getId(), event.getAggregateId());
@@ -147,7 +147,7 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 		repository.delete(event.getVessel().getId());
 
 		assertNotNull(confirm);
-		assertEquals(VesselEventType.UPDATE_VESSEL_CONFIRMED.toString(), confirm.getType());
+		assertEquals(VesselEventTypes.UPDATE_CONFIRMED.toString(), confirm.getType());
 
 		Vessel vessel = (Vessel) item.get_source();
 		assertEquals(vessel.getId(), event.getAggregateId());
@@ -168,7 +168,7 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 
 		Event confirm = (Event) blockingQueue.poll(50, TimeUnit.SECONDS);
 		assertNotNull(confirm);
-		assertEquals(VesselEventType.DELETE_VESSEL_CONFIRMED.toString(), confirm.getType());
+		assertEquals(VesselEventTypes.DELETE_CONFIRMED.toString(), confirm.getType());
 
 		DataHitWrapper<?> item = repository.findById(event.getAggregateId());
 		assertNull(item.get_source());
@@ -191,7 +191,7 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 		repository.delete(event.getVessel().getId());
 
 		assertNotNull(fail);
-		assertEquals(VesselEventType.CREATE_VESSEL_FAILED.toString(), fail.getType());
+		assertEquals(VesselEventTypes.CREATE_FAILED.toString(), fail.getType());
 		CreateVesselFailedEvent createVesselFailedEvent = (CreateVesselFailedEvent) fail;
 
 		Map<String, String> arguments = createVesselFailedEvent.getArguments();
@@ -243,7 +243,7 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 		repository.delete(conflict.getId());
 
 		assertNotNull(fail);
-		assertEquals(VesselEventType.UPDATE_VESSEL_FAILED.toString(), fail.getType());
+		assertEquals(VesselEventTypes.UPDATE_FAILED.toString(), fail.getType());
 
 		UpdateVesselFailedEvent createVesselFailedEvent = (UpdateVesselFailedEvent) fail;
 
@@ -328,7 +328,7 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 		CreateVesselEvent createdEvent = new CreateVesselEvent();
 		createdEvent.setId(UUID.randomUUID().toString());
 		createdEvent.setDate(DateTime.now());
-		createdEvent.setType(VesselEventType.CREATE_VESSEL.name());
+		createdEvent.setType(VesselEventTypes.CREATE);
 		createdEvent.setVessel(getVessel());
 		createdEvent.setAggregateId(createdEvent.getVessel().getId());
 		createdEvent.setVersion(1);
@@ -342,7 +342,7 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 		UpdateVesselEvent updatedEvent = new UpdateVesselEvent();
 		updatedEvent.setId(UUID.randomUUID().toString());
 		updatedEvent.setDate(DateTime.now());
-		updatedEvent.setType(VesselEventType.UPDATE_VESSEL.name());
+		updatedEvent.setType(VesselEventTypes.UPDATE);
 		VesselDTO vessel = getVessel();
 		vessel.setName(vessel.getName() + "2");
 		updatedEvent.setVessel(vessel);
@@ -358,7 +358,7 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 		DeleteVesselEvent deletedEvent = new DeleteVesselEvent();
 		deletedEvent.setId(UUID.randomUUID().toString());
 		deletedEvent.setDate(DateTime.now());
-		deletedEvent.setType(VesselEventType.DELETE_VESSEL.name());
+		deletedEvent.setType(VesselEventTypes.DELETE);
 		deletedEvent.setAggregateId(getVessel().getId());
 		deletedEvent.setVersion(3);
 		deletedEvent.setSessionId(UUID.randomUUID().toString());
