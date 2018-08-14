@@ -24,7 +24,7 @@ import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 
 public abstract class VesselTypeDataUtil {
 
-	public final static String PREFIX = "vesseltype-code-", USER = "1";
+	public final static String PREFIX = "vesseltype-code-", USER = "REDMIC_PROCESS";
 
 	public static CreateVesselTypeEvent getCreateEvent(String code) {
 

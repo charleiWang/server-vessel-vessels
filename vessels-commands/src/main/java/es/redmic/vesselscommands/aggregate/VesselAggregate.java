@@ -14,6 +14,7 @@ import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 
 public class VesselAggregate extends Aggregate {
@@ -149,10 +150,21 @@ public class VesselAggregate extends Aggregate {
 			logger.debug("Compensación por edición/borrado fallido");
 			apply((VesselEvent) history);
 			break;
+		case "UPDATE_VESSELTYPE":
+			logger.debug("En fase de edición parcial de veseltype en vessel");
+			apply(history);
+			break;
 		default:
 			super._loadFromHistory(history);
 			break;
 		}
+	}
+
+	public void apply(UpdateVesselTypeInVesselEvent event) {
+		if (this.vessel == null)
+			this.vessel = new VesselDTO();
+		this.vessel.setType(event.getVesselType());
+		super.apply(event);
 	}
 
 	public void apply(CreateVesselCancelledEvent event) {

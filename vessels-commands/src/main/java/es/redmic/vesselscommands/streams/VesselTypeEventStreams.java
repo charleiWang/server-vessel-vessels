@@ -106,7 +106,7 @@ public class VesselTypeEventStreams extends EventStreams {
 		// último que se produzca por id)
 		KStream<String, Event> successEvents = vesselTypeEvents
 				.filter((id, event) -> (VesselTypeEventTypes.CREATED.toString().equals(event.getType())
-						|| VesselTypeEventTypes.VESSELTYPE_UPDATED.toString().equals(event.getType())));
+						|| VesselTypeEventTypes.UPDATED.toString().equals(event.getType())));
 
 		processUpdateFailedStream(vesselTypeEvents, successEvents);
 
@@ -151,7 +151,7 @@ public class VesselTypeEventStreams extends EventStreams {
 		assert failedEvent.getType().equals(VesselTypeEventTypes.UPDATE_FAILED);
 
 		assert lastSuccessEvent.getType().equals(VesselTypeEventTypes.CREATED)
-				|| lastSuccessEvent.getType().equals(VesselTypeEventTypes.VESSELTYPE_UPDATED);
+				|| lastSuccessEvent.getType().equals(VesselTypeEventTypes.UPDATED);
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
 
@@ -171,7 +171,7 @@ public class VesselTypeEventStreams extends EventStreams {
 		assert failedEvent.getType().equals(VesselTypeEventTypes.DELETE_FAILED);
 
 		assert lastSuccessEvent.getType().equals(VesselTypeEventTypes.CREATED)
-				|| lastSuccessEvent.getType().equals(VesselTypeEventTypes.VESSELTYPE_UPDATED);
+				|| lastSuccessEvent.getType().equals(VesselTypeEventTypes.UPDATED);
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
 

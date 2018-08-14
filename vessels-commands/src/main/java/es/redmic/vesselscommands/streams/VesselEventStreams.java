@@ -22,14 +22,15 @@ import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
-import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 
 public class VesselEventStreams extends EventStreams {
 
+	private static final String REDMIC_PROCESS = "REDMIC_PROCESS";
 	private String vesselTypeTopic;
 
 	public VesselEventStreams(StreamConfig config, String vesselTypeTopic, AlertService alertService) {
@@ -91,6 +92,8 @@ public class VesselEventStreams extends EventStreams {
 		updateConfirmedEvents.join(updateRequestEvents,
 				(confirmedEvent, requestEvent) -> getUpdatedEvent(confirmedEvent, requestEvent),
 				JoinWindows.of(windowsTime)).to(topic);
+
+		processPartialUpdatedStream(vesselEvents, updateConfirmedEvents);
 	}
 
 	private Event getUpdatedEvent(Event confirmedEvent, Event requestEvent) {
@@ -108,6 +111,61 @@ public class VesselEventStreams extends EventStreams {
 		logger.info("Creando evento VesselUpdatedEvent para: " + confirmedEvent.getAggregateId());
 
 		VesselUpdatedEvent successfulEvent = new VesselUpdatedEvent().buildFrom(confirmedEvent);
+		successfulEvent.setVessel(vessel);
+		return successfulEvent;
+	}
+
+	private void processPartialUpdatedStream(KStream<String, Event> vesselEvents,
+			KStream<String, Event> updateConfirmedEvents) {
+
+		// Stream filtrado por eventos de petición de modificar vesseltype
+		KStream<String, Event> updateRequestEvents = vesselEvents
+				.filter((id, event) -> (VesselEventTypes.UPDATE_VESSELTYPE.equals(event.getType())));
+
+		// Join por id, mandando a kafka el evento de éxito
+		KStream<String, UpdateVesselTypeInVesselEvent> partialUpdateEvent = updateConfirmedEvents.join(
+				updateRequestEvents,
+				(confirmedEvent, requestEvent) -> checkConfirmPartialUpdate(confirmedEvent, requestEvent),
+				JoinWindows.of(windowsTime));
+
+		// Stream filtrado por eventos de creaciones y modificaciones correctos (solo el
+		// último que se produzca por id)
+		KStream<String, Event> successEvents = vesselEvents
+				.filter((id, event) -> (VesselEventTypes.CREATED.equals(event.getType())
+						|| VesselEventTypes.UPDATED.equals(event.getType())));
+
+		KTable<String, Event> successEventsTable = successEvents.groupByKey().reduce((aggValue, newValue) -> newValue);
+
+		// Join por id, mandando a kafka el evento de compensación
+		partialUpdateEvent.join(successEventsTable, (partialUpdateConfirmEvent,
+				lastSuccessEvent) -> getUpdatedEventFromPartialUpdate(partialUpdateConfirmEvent, lastSuccessEvent))
+				.to(topic);
+	}
+
+	// Comprueba si la confirmación corresponde con el evento enviado.
+	private UpdateVesselTypeInVesselEvent checkConfirmPartialUpdate(Event confirmedEvent, Event requestEvent) {
+
+		if (!isSameSession(confirmedEvent, requestEvent)) {
+			return null;
+		}
+		return (UpdateVesselTypeInVesselEvent) requestEvent;
+	}
+
+	private Event getUpdatedEventFromPartialUpdate(UpdateVesselTypeInVesselEvent partialUpdateConfirmEvent,
+			Event lastSuccessEvent) {
+
+		assert (lastSuccessEvent.getType().equals(VesselEventTypes.CREATED)
+				|| lastSuccessEvent.getType().equals(VesselEventTypes.UPDATED));
+
+		assert partialUpdateConfirmEvent.getType().equals(VesselEventTypes.UPDATE_VESSELTYPE);
+
+		VesselDTO vessel = ((VesselEvent) lastSuccessEvent).getVessel();
+		vessel.setType(partialUpdateConfirmEvent.getVesselType());
+
+		logger.info("Creando evento VesselUpdatedEvent por una edición parcial de vesselType para: "
+				+ partialUpdateConfirmEvent.getAggregateId());
+
+		VesselUpdatedEvent successfulEvent = new VesselUpdatedEvent().buildFrom(partialUpdateConfirmEvent);
 		successfulEvent.setVessel(vessel);
 		return successfulEvent;
 	}
@@ -171,6 +229,10 @@ public class VesselEventStreams extends EventStreams {
 
 		logger.info("Enviando evento UpdateVesselCancelledEvent para: " + failedEvent.getAggregateId());
 
+		if (failedEvent.getUserId().equals(REDMIC_PROCESS))
+			alertService.errorAlert("UpdateVesselCancelledEvent para: " + failedEvent.getAggregateId(),
+					eventError.getExceptionType() + " " + eventError.getArguments());
+
 		UpdateVesselCancelledEvent cancelledEvent = new UpdateVesselCancelledEvent().buildFrom(failedEvent);
 		cancelledEvent.setVessel(vessel);
 		cancelledEvent.setExceptionType(eventError.getExceptionType());
@@ -224,18 +286,18 @@ public class VesselEventStreams extends EventStreams {
 		KStream<String, Event> updateReferenceEvents = vesselTypeEvents
 				.filter((id, event) -> (VesselTypeEventTypes.UPDATED.equals(event.getType())));
 
-		KStream<String, ArrayList<VesselEvent>> join = updateReferenceEvents.join(vesselEventsTable,
+		KStream<String, ArrayList<UpdateVesselTypeInVesselEvent>> join = updateReferenceEvents.join(vesselEventsTable,
 				(updateReferenceEvent, vesselWithReferenceEvents) -> getPostUpdateEvent(updateReferenceEvent,
 						vesselWithReferenceEvents));
 
 		// desagregar, cambiar clave por la de vessel y enviar a topic
-		join.flatMapValues(value -> value).selectKey((k, v) -> v.getVessel().getId()).to(topic);
+		join.flatMapValues(value -> value).selectKey((k, v) -> v.getAggregateId()).to(topic);
 	}
 
-	private ArrayList<VesselEvent> getPostUpdateEvent(Event updateReferenceEvent,
+	private ArrayList<UpdateVesselTypeInVesselEvent> getPostUpdateEvent(Event updateReferenceEvent,
 			HashMap<String, VesselEvent> vesselWithReferenceEvents) {
 
-		ArrayList<VesselEvent> result = new ArrayList<>();
+		ArrayList<UpdateVesselTypeInVesselEvent> result = new ArrayList<>();
 
 		for (Map.Entry<String, VesselEvent> entry : vesselWithReferenceEvents.entrySet()) {
 
@@ -260,15 +322,13 @@ public class VesselEventStreams extends EventStreams {
 
 				if (!vesselEvent.getVessel().getType().equals(vesselType)) {
 
-					UpdateVesselEvent updateVesselEvent = new UpdateVesselEvent();
-					updateVesselEvent.setAggregateId(vesselEvent.getAggregateId());
-					updateVesselEvent.setUserId(updateReferenceEvent.getUserId());
-					updateVesselEvent.setVersion(vesselEvent.getVersion() + 1);
+					UpdateVesselTypeInVesselEvent updateVesselType = new UpdateVesselTypeInVesselEvent();
+					updateVesselType.setAggregateId(vesselEvent.getAggregateId());
+					updateVesselType.setUserId(updateReferenceEvent.getUserId());
+					updateVesselType.setVersion(vesselEvent.getVersion() + 1);
+					updateVesselType.setVesselType(((VesselTypeEvent) updateReferenceEvent).getVesselType());
+					result.add(updateVesselType);
 
-					VesselDTO vessel = vesselEvent.getVessel();
-					vessel.setType(((VesselTypeEvent) updateReferenceEvent).getVesselType());
-					updateVesselEvent.setVessel(vessel);
-					result.add(updateVesselEvent);
 				} else {
 					logger.debug("VesselType ya estaba actualizado o los campos indexados no han cambiado ");
 				}
