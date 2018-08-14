@@ -47,6 +47,7 @@ import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
@@ -153,6 +154,37 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 		assertEquals(vessel.getId(), event.getAggregateId());
 		assertEquals(vessel.getMmsi(), event.getVessel().getMmsi());
 		assertEquals(vessel.getName(), event.getVessel().getName());
+	}
+
+	@Test
+	public void sendUpdateVesselTypeInVesselEvent_UpdateItem_IfEventIsOk() throws Exception {
+
+		UpdateVesselEvent event = getUpdateVesselEvent();
+
+		repository.save(mapper.getMapperFacade().map(event.getVessel(), Vessel.class));
+
+		UpdateVesselTypeInVesselEvent updateEvent = getUpdateVesselTypeInVesselEvent();
+
+		ListenableFuture<SendResult<String, Event>> future = kafkaTemplate.send(VESSEL_TOPIC,
+				updateEvent.getAggregateId(), updateEvent);
+		future.addCallback(new SendListener());
+
+		Event confirm = (Event) blockingQueue.poll(50, TimeUnit.SECONDS);
+
+		DataHitWrapper<?> item = repository.findById(event.getAggregateId());
+		assertNotNull(item.get_source());
+
+		// Se restablece el estado de la vista
+		repository.delete(event.getVessel().getId());
+
+		assertNotNull(confirm);
+		assertEquals(VesselEventTypes.UPDATE_CONFIRMED.toString(), confirm.getType());
+
+		Vessel vessel = (Vessel) item.get_source();
+		assertEquals(vessel.getId(), event.getAggregateId());
+		assertEquals(vessel.getMmsi(), event.getVessel().getMmsi());
+		assertEquals(vessel.getName(), event.getVessel().getName());
+		assertEquals(vessel.getType().getName(), updateEvent.getVesselType().getName());
 	}
 
 	@Test(expected = ItemNotFoundException.class)
@@ -351,6 +383,21 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 		updatedEvent.setSessionId(UUID.randomUUID().toString());
 		updatedEvent.setUserId(USER_ID);
 		return updatedEvent;
+	}
+
+	protected UpdateVesselTypeInVesselEvent getUpdateVesselTypeInVesselEvent() {
+
+		UpdateVesselTypeInVesselEvent event = new UpdateVesselTypeInVesselEvent().buildFrom(getUpdateVesselEvent());
+
+		VesselDTO vessel = getVessel();
+		vessel.getType().setName("Nombre cambiado");
+		event.setVesselType(vessel.getType());
+		event.setAggregateId(vessel.getId());
+		event.setVersion(3);
+		event.setSessionId(UUID.randomUUID().toString());
+		event.setUserId(USER_ID);
+
+		return event;
 	}
 
 	protected DeleteVesselEvent getDeleteVesselEvent() {

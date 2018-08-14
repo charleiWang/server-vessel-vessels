@@ -16,9 +16,11 @@ import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselsview.model.Vessel;
+import es.redmic.vesselsview.model.VesselType;
 import es.redmic.vesselsview.service.VesselESService;
 import es.redmic.vesselsview.utils.VesselEventFactory;
 import es.redmic.viewlib.common.controller.RWController;
@@ -79,6 +81,31 @@ public class VesselController extends RWController<Vessel, VesselDTO, MetadataQu
 
 		try {
 			result = service.update(mapper.getMapperFacade().map(event.getVessel(), Vessel.class));
+		} catch (Exception e) {
+			publishFailedEvent(
+					VesselEventFactory.getUpdateVesselFailedEvent(event, ExceptionType.INTERNAL_EXCEPTION.name(), null),
+					vessel_topic);
+		}
+
+		if (result.isSuccess()) {
+			logger.info("Vessel modificado en la vista");
+			publishConfirmedEvent(new UpdateVesselConfirmedEvent().buildFrom(event), vessel_topic);
+		} else {
+			publishFailedEvent(VesselEventFactory.getUpdateVesselFailedEvent(event, result.getExeptionType(),
+					result.getExceptionArguments()), vessel_topic);
+		}
+	}
+
+	@KafkaHandler
+	public void listen(UpdateVesselTypeInVesselEvent event) {
+
+		logger.info("Modificar vesseltype en vessel");
+
+		EventApplicationResult result = null;
+
+		try {
+			result = service.updateVesselTypeInVessel(event.getAggregateId(),
+					mapper.getMapperFacade().map(event.getVesselType(), VesselType.class));
 		} catch (Exception e) {
 			publishFailedEvent(
 					VesselEventFactory.getUpdateVesselFailedEvent(event, ExceptionType.INTERNAL_EXCEPTION.name(), null),

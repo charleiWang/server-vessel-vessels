@@ -1,5 +1,8 @@
 package es.redmic.vesselsview.repository;
 
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,6 +10,7 @@ import org.elasticsearch.action.search.MultiSearchRequestBuilder;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.MultiSearchResponse.Item;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -17,6 +21,7 @@ import es.redmic.exception.common.ExceptionType;
 import es.redmic.models.es.common.dto.EventApplicationResult;
 import es.redmic.models.es.common.query.dto.MetadataQueryDTO;
 import es.redmic.vesselsview.model.Vessel;
+import es.redmic.vesselsview.model.VesselType;
 import es.redmic.viewlib.data.repository.IDataRepository;
 
 @Repository
@@ -35,6 +40,22 @@ public class VesselESRepository extends RWDataESRepository<Vessel, MetadataQuery
 
 	public VesselESRepository() {
 		super(INDEX, TYPE);
+	}
+
+	@SuppressWarnings("unchecked")
+	public EventApplicationResult updateVesselTypeInVessel(String vesselId, VesselType vesselType) {
+
+		XContentBuilder doc;
+
+		try {
+			doc = jsonBuilder().startObject().field("type", objectMapper.convertValue(vesselType, Map.class))
+					.endObject();
+		} catch (IllegalArgumentException | IOException e1) {
+			LOGGER.debug("Error modificando el item con id " + vesselId + " en " + getIndex()[0] + " " + getType()[0]);
+			return new EventApplicationResult(ExceptionType.ES_UPDATE_DOCUMENT.toString());
+		}
+
+		return update(vesselId, doc);
 	}
 
 	@Override
