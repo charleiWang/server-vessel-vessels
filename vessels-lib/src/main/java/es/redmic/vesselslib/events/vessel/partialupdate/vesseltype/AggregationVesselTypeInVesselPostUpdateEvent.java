@@ -18,8 +18,10 @@ public class AggregationVesselTypeInVesselPostUpdateEvent extends VesselTypeEven
 				+ getEventBaseSchema() + "]}");
 		// @formatter:on
 
+	static String type = "AGGREGATION";
+
 	public AggregationVesselTypeInVesselPostUpdateEvent() {
-		super("");
+		super(type);
 		setSessionId(UUID.randomUUID().toString());
 	}
 
