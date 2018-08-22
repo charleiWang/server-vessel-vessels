@@ -36,7 +36,7 @@ import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.exception.data.ItemNotFoundException;
 import es.redmic.models.es.data.common.model.DataHitWrapper;
 import es.redmic.testutils.documentation.DocumentationViewBaseTest;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;

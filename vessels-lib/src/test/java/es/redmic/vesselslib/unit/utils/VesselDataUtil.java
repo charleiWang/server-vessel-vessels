@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.joda.time.DateTime;
 
-import es.redmic.vesselslib.dto.VesselDTO;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;

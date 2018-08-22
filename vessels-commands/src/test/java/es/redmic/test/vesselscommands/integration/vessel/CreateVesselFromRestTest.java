@@ -53,7 +53,7 @@ import es.redmic.vesselscommands.handler.VesselCommandHandler;
 import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
 import es.redmic.vesselscommands.statestore.VesselStateStore;
 import es.redmic.vesselscommands.statestore.VesselTypeStateStore;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;

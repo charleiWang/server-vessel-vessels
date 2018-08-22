@@ -1,4 +1,4 @@
-package es.redmic.vesselslib.dto;
+package es.redmic.vesselslib.dto.vessel;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
@@ -17,6 +17,7 @@ import es.redmic.brokerlib.deserializer.CustomDateTimeDeserializer;
 import es.redmic.brokerlib.deserializer.CustomRelationDeserializer;
 import es.redmic.brokerlib.serializer.CustomDateTimeSerializer;
 import es.redmic.vesselslib.constraintvalidation.vessel.ValidateVesselId;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 @ValidateVesselId(mmsi = "mmsi", imo = "imo")
 public class VesselDTO extends CommonDTO {
@@ -25,11 +26,11 @@ public class VesselDTO extends CommonDTO {
 
 	@JsonIgnore
 	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse(
-		"{\"type\":\"record\",\"name\":\"VesselDTO\",\"namespace\":\"es.redmic.vesselslib.dto\",\"fields\":["
+		"{\"type\":\"record\",\"name\":\"VesselDTO\",\"namespace\":\"es.redmic.vesselslib.dto.vessel\",\"fields\":["
 			+ "{\"name\":\"mmsi\",\"type\":\"int\"},"
 			+ "{\"name\":\"imo\",\"type\":[\"int\", \"null\"]},"
 			+ "{\"name\":\"type\",\"type\":[{ \"name\":\"VesselTypeDTO\", \"type\":\"record\","
-					+ "\"namespace\":\"es.redmic.vesselslib.dto\",\"fields\":["
+					+ "\"namespace\":\"es.redmic.vesselslib.dto.vesseltype\",\"fields\":["
 				+ "{\"name\":\"code\",\"type\":\"string\"},"
 				+ "{\"name\":\"name\",\"type\":\"string\"},"
 				+ "{\"name\":\"name_en\",\"type\":\"string\"},"

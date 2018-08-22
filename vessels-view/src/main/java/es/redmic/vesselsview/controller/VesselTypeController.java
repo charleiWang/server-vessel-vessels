@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import es.redmic.exception.common.ExceptionType;
 import es.redmic.models.es.common.dto.EventApplicationResult;
 import es.redmic.models.es.common.query.dto.SimpleQueryDTO;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeConfirmedEvent;

@@ -22,7 +22,7 @@ import es.redmic.vesselscommands.commands.vessel.UpdateVesselCommand;
 import es.redmic.vesselscommands.config.UserService;
 import es.redmic.vesselscommands.statestore.VesselStateStore;
 import es.redmic.vesselscommands.streams.VesselEventStreams;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;

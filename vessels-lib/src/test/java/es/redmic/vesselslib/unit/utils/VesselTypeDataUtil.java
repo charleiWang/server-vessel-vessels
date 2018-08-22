@@ -3,7 +3,7 @@ package es.redmic.vesselslib.unit.utils;
 import java.util.HashMap;
 import java.util.Map;
 
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeCancelledEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;

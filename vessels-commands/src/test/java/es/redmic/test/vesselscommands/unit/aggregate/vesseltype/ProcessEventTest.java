@@ -15,7 +15,7 @@ import es.redmic.exception.data.ItemNotFoundException;
 import es.redmic.vesselscommands.commands.vesseltype.CreateVesselTypeCommand;
 import es.redmic.vesselscommands.commands.vesseltype.DeleteVesselTypeCommand;
 import es.redmic.vesselscommands.commands.vesseltype.UpdateVesselTypeCommand;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeEvent;

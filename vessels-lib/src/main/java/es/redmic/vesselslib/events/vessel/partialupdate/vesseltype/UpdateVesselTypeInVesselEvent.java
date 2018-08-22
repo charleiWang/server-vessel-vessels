@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.apache.avro.Schema;
 
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 

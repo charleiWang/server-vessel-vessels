@@ -3,7 +3,7 @@ package es.redmic.vesselscommands.commands.vessel;
 import org.joda.time.DateTime;
 
 import es.redmic.commandslib.commands.Command;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 
 public class UpdateVesselCommand extends Command {
 

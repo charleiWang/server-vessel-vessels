@@ -38,7 +38,7 @@ import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
 import es.redmic.vesselscommands.statestore.VesselTypeStateStore;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)

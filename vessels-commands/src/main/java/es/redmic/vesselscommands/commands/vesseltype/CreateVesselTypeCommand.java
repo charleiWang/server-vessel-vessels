@@ -2,7 +2,7 @@ package es.redmic.vesselscommands.commands.vesseltype;
 
 import es.redmic.commandslib.commands.Command;
 import es.redmic.exception.databinding.FieldNotValidException;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 public class CreateVesselTypeCommand extends Command {
 

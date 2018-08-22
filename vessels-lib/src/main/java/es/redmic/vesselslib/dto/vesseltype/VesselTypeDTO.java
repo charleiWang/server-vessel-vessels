@@ -1,4 +1,4 @@
-package es.redmic.vesselslib.dto;
+package es.redmic.vesselslib.dto.vesseltype;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -15,7 +15,7 @@ public class VesselTypeDTO extends CommonDTO {
 
 	@JsonIgnore
 	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse(
-		"{\"type\":\"record\",\"name\":\"VesselTypeDTO\",\"namespace\":\"es.redmic.vesselslib.dto\",\"fields\":["
+		"{\"type\":\"record\",\"name\":\"VesselTypeDTO\",\"namespace\":\"es.redmic.vesselslib.dto.vesseltype\",\"fields\":["
 			+ "{\"name\":\"code\",\"type\":\"string\"},"
 			+ "{\"name\":\"name\",\"type\":\"string\"},"
 			+ "{\"name\":\"name_en\",\"type\":\"string\"},"

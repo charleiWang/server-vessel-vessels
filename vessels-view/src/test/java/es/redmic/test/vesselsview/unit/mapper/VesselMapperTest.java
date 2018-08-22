@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import es.redmic.models.es.common.dto.JSONCollectionDTO;
 import es.redmic.models.es.data.common.model.DataSearchWrapper;
 import es.redmic.testutils.utils.JsonToBeanTestUtil;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselsview.config.MapperScanBean;
 import es.redmic.vesselsview.mapper.VesselESMapper;
 import es.redmic.vesselsview.mapper.VesselTypeESMapper;

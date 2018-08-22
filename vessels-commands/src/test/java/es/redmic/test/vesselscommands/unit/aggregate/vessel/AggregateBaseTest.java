@@ -6,7 +6,7 @@ import org.mockito.Mockito;
 import es.redmic.test.vesselscommands.integration.vessel.VesselDataUtil;
 import es.redmic.vesselscommands.aggregate.VesselAggregate;
 import es.redmic.vesselscommands.statestore.VesselStateStore;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;

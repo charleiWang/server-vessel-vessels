@@ -8,8 +8,8 @@ import org.joda.time.DateTime;
 
 import es.redmic.exception.common.ExceptionType;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
-import es.redmic.vesselslib.dto.VesselDTO;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;

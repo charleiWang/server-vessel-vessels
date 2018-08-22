@@ -2,7 +2,7 @@ package es.redmic.vesselslib.events.vessel.delete;
 
 import org.apache.avro.Schema;
 
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselCancelledEvent;
 

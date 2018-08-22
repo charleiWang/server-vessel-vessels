@@ -6,7 +6,7 @@ import org.joda.time.DateTimeZone;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import es.redmic.brokerlib.avro.common.Event;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 public abstract class VesselTypeEvent extends Event {
 

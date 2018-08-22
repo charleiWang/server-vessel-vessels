@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.redmic.testutils.dto.DTOBaseTest;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 public class VesselTypeCheckDTOValidationTest extends DTOBaseTest<VesselTypeDTO> {
 

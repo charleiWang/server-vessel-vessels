@@ -7,7 +7,7 @@ import org.joda.time.DateTimeZone;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import es.redmic.brokerlib.avro.common.Event;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 
 public abstract class VesselEvent extends Event {
 
@@ -55,7 +55,7 @@ public abstract class VesselEvent extends Event {
 	public void put(int field$, Object value$) {
 		switch (field$) {
 		case 0:
-			vessel = (es.redmic.vesselslib.dto.VesselDTO) value$;
+			vessel = (es.redmic.vesselslib.dto.vessel.VesselDTO) value$;
 			break;
 		case 1:
 			setAggregateId(value$.toString());

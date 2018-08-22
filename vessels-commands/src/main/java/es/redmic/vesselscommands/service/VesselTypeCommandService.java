@@ -10,7 +10,7 @@ import es.redmic.vesselscommands.commands.vesseltype.CreateVesselTypeCommand;
 import es.redmic.vesselscommands.commands.vesseltype.DeleteVesselTypeCommand;
 import es.redmic.vesselscommands.commands.vesseltype.UpdateVesselTypeCommand;
 import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 @Service
 public class VesselTypeCommandService implements CommandServiceItfc<VesselTypeDTO> {

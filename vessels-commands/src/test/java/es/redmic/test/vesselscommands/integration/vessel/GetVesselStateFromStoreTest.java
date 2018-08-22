@@ -27,7 +27,7 @@ import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.handler.VesselCommandHandler;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)

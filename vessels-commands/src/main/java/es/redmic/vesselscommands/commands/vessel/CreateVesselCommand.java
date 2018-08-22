@@ -4,7 +4,7 @@ import org.joda.time.DateTime;
 
 import es.redmic.commandslib.commands.Command;
 import es.redmic.exception.databinding.FieldNotValidException;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 
 public class CreateVesselCommand extends Command {
 

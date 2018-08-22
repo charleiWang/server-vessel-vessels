@@ -3,7 +3,7 @@ package es.redmic.vesselslib.events.vessel.create;
 import org.apache.avro.Schema;
 
 import es.redmic.brokerlib.avro.common.EventError;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 
 public class CreateVesselCancelledEvent extends EventError {

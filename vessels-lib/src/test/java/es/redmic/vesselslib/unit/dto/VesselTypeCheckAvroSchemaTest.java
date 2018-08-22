@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.unit.utils.VesselAvroBaseTest;
 import es.redmic.vesselslib.unit.utils.VesselTypeDataUtil;
 
