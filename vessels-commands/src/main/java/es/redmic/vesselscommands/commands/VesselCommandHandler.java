@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.commandslib.commands.CommandHandler;
-import es.redmic.commandslib.statestore.StreamConfig;
+import es.redmic.commandslib.streaming.common.StreamConfig;
+import es.redmic.commandslib.streaming.common.StreamConfig.Builder;
 import es.redmic.exception.factory.ExceptionFactory;
 import es.redmic.vesselscommands.aggregate.VesselAggregate;
 import es.redmic.vesselscommands.config.UserService;
@@ -42,19 +43,22 @@ public class VesselCommandHandler extends CommandHandler {
 	private String bootstrapServers;
 
 	@Value("${broker.topic.vessel}")
-	private String vessel_topic;
+	private String vesselTopic;
+
+	@Value("${broker.topic.vessels.agg.by.vesseltype}")
+	private String vesselsAggByVesselTypeTopic;
 
 	@Value("${broker.state.store.vessels.dir}")
-	private String state_store_vessels_dir;
+	private String stateStoreVesselsDir;
 
 	@Value("${broker.state.store.vessels.id}")
-	private String vessels_id_config;
+	private String vesselsIdConfig;
 
 	@Value("${broker.stream.events.vessels.id}")
-	private String vessels_events_stream_id;
+	private String vesselsEventsStreamId;
 
 	@Value("${broker.topic.vessel-type}")
-	private String vessel_type_topic;
+	private String vesselTypeTopic;
 
 	@Value("${stream.windows.time.ms}")
 	private Long streamWindowsTime;
@@ -82,25 +86,23 @@ public class VesselCommandHandler extends CommandHandler {
 	private void setUp() {
 
 		// @formatter:off
-
+		
+		Builder config = StreamConfig.Builder
+			.bootstrapServers(bootstrapServers)
+			.schemaRegistry(schemaRegistry)
+			.stateStoreDir(stateStoreVesselsDir)
+			.topic(vesselTopic);
+		
 		vesselStateStore = new VesselStateStore(
-				StreamConfig.Builder
-					.bootstrapServers(bootstrapServers)
-					.schemaRegistry(schemaRegistry)
-					.serviceId(vessels_id_config)
-					.stateStoreDir(state_store_vessels_dir)
-					.topic(vessel_topic)
+				config
+					.serviceId(vesselsIdConfig)
 					.build(), alertService);
 
 		new VesselEventStreams(
-				StreamConfig.Builder
-					.bootstrapServers(bootstrapServers)
-					.schemaRegistry(schemaRegistry)
-					.serviceId(vessels_events_stream_id)
-					.stateStoreDir(state_store_vessels_dir)
-					.topic(vessel_topic)
+				config
+					.serviceId(vesselsEventsStreamId)
 					.windowsTime(streamWindowsTime)
-					.build(), vessel_type_topic, alertService);
+					.build(), vesselTypeTopic, vesselsAggByVesselTypeTopic, alertService);
 		// @formatter:on
 	}
 
@@ -133,7 +135,7 @@ public class VesselCommandHandler extends CommandHandler {
 		CompletableFuture<VesselDTO> completableFuture = getCompletableFeature(event.getSessionId(), agg.getVessel());
 
 		// Emite evento para enviar a kafka
-		publishToKafka(event, vessel_topic);
+		publishToKafka(event, vesselTopic);
 
 		// Se resuelve con un timeout mayor, establecido para procesos automáticos
 		if (event.getUserId().equals(REDMIC_PROCESS))
@@ -166,7 +168,7 @@ public class VesselCommandHandler extends CommandHandler {
 		CompletableFuture<VesselDTO> completableFuture = getCompletableFeature(event.getSessionId(), agg.getVessel());
 
 		// Emite evento para enviar a kafka
-		publishToKafka(event, vessel_topic);
+		publishToKafka(event, vesselTopic);
 
 		// Obtiene el resultado cuando se resuelva la espera
 		return getResult(event.getSessionId(), completableFuture);
@@ -193,7 +195,7 @@ public class VesselCommandHandler extends CommandHandler {
 		CompletableFuture<VesselDTO> completableFuture = getCompletableFeature(event.getSessionId(), agg.getVessel());
 
 		// Emite evento para enviar a kafka
-		publishToKafka(event, vessel_topic);
+		publishToKafka(event, vesselTopic);
 
 		// Obtiene el resultado cuando se resuelva la espera
 		return getResult(event.getSessionId(), completableFuture);
@@ -231,7 +233,7 @@ public class VesselCommandHandler extends CommandHandler {
 
 		logger.info("Enviando evento VesselDeletedEvent para: " + event.getAggregateId());
 
-		publishToKafka(new VesselDeletedEvent().buildFrom(event), vessel_topic);
+		publishToKafka(new VesselDeletedEvent().buildFrom(event), vesselTopic);
 	}
 
 	@KafkaHandler
@@ -251,7 +253,7 @@ public class VesselCommandHandler extends CommandHandler {
 		evt.setExceptionType(event.getExceptionType());
 		evt.setArguments(event.getArguments());
 
-		publishToKafka(evt, vessel_topic);
+		publishToKafka(evt, vesselTopic);
 	}
 
 	@KafkaHandler
