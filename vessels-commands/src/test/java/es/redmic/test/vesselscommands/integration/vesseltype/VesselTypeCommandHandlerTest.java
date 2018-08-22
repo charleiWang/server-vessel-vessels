@@ -39,7 +39,7 @@ import es.redmic.exception.data.ItemAlreadyExistException;
 import es.redmic.exception.data.ItemNotFoundException;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
-import es.redmic.vesselscommands.commands.VesselTypeCommandHandler;
+import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeCancelledEvent;

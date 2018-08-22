@@ -23,7 +23,7 @@ import es.redmic.commandslib.exceptions.HistoryNotFoundException;
 import es.redmic.exception.common.PatternUtils;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.aggregate.VesselAggregate;
-import es.redmic.vesselscommands.commands.UpdateVesselCommand;
+import es.redmic.vesselscommands.commands.vessel.UpdateVesselCommand;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { VesselsCommandsApplication.class })

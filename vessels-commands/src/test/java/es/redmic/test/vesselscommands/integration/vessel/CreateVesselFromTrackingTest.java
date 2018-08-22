@@ -36,7 +36,7 @@ import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
-import es.redmic.vesselscommands.commands.VesselTypeCommandHandler;
+import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
 import es.redmic.vesselscommands.statestore.VesselTypeStateStore;
 import es.redmic.vesselslib.dto.VesselDTO;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;

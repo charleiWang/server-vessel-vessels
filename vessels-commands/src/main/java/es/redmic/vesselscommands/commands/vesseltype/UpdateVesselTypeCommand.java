@@ -1,4 +1,4 @@
-package es.redmic.vesselscommands.commands;
+package es.redmic.vesselscommands.commands.vesseltype;
 
 import es.redmic.commandslib.commands.Command;
 import es.redmic.vesselslib.dto.VesselTypeDTO;

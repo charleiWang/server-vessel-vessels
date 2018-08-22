@@ -1,4 +1,4 @@
-package es.redmic.vesselscommands.commands;
+package es.redmic.vesselscommands.commands.vessel;
 
 import org.joda.time.DateTime;
 

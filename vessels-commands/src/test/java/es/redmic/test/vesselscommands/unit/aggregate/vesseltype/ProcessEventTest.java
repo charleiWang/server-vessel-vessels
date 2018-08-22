@@ -12,9 +12,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import es.redmic.commandslib.exceptions.ItemLockedException;
 import es.redmic.exception.data.ItemNotFoundException;
-import es.redmic.vesselscommands.commands.CreateVesselTypeCommand;
-import es.redmic.vesselscommands.commands.DeleteVesselTypeCommand;
-import es.redmic.vesselscommands.commands.UpdateVesselTypeCommand;
+import es.redmic.vesselscommands.commands.vesseltype.CreateVesselTypeCommand;
+import es.redmic.vesselscommands.commands.vesseltype.DeleteVesselTypeCommand;
+import es.redmic.vesselscommands.commands.vesseltype.UpdateVesselTypeCommand;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;

@@ -1,4 +1,4 @@
-package es.redmic.vesselscommands.commands;
+package es.redmic.vesselscommands.handler;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -16,6 +16,9 @@ import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.common.StreamConfig.Builder;
 import es.redmic.exception.factory.ExceptionFactory;
 import es.redmic.vesselscommands.aggregate.VesselTypeAggregate;
+import es.redmic.vesselscommands.commands.vesseltype.CreateVesselTypeCommand;
+import es.redmic.vesselscommands.commands.vesseltype.DeleteVesselTypeCommand;
+import es.redmic.vesselscommands.commands.vesseltype.UpdateVesselTypeCommand;
 import es.redmic.vesselscommands.config.UserService;
 import es.redmic.vesselscommands.statestore.VesselTypeStateStore;
 import es.redmic.vesselscommands.streams.VesselTypeEventStreams;

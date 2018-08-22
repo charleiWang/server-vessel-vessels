@@ -26,7 +26,7 @@ import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
-import es.redmic.vesselscommands.commands.VesselCommandHandler;
+import es.redmic.vesselscommands.handler.VesselCommandHandler;
 import es.redmic.vesselslib.dto.VesselDTO;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 

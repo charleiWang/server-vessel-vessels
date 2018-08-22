@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import es.redmic.commandslib.service.CommandServiceItfc;
-import es.redmic.vesselscommands.commands.CreateVesselTypeCommand;
-import es.redmic.vesselscommands.commands.DeleteVesselTypeCommand;
-import es.redmic.vesselscommands.commands.UpdateVesselTypeCommand;
-import es.redmic.vesselscommands.commands.VesselTypeCommandHandler;
+import es.redmic.vesselscommands.commands.vesseltype.CreateVesselTypeCommand;
+import es.redmic.vesselscommands.commands.vesseltype.DeleteVesselTypeCommand;
+import es.redmic.vesselscommands.commands.vesseltype.UpdateVesselTypeCommand;
+import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
 
 @Service
