@@ -7,8 +7,8 @@ import org.apache.kafka.streams.kstream.KTable;
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
-import es.redmic.commandslib.statestore.StreamConfig;
-import es.redmic.commandslib.streams.EventStreams;
+import es.redmic.commandslib.streaming.common.StreamConfig;
+import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
 import es.redmic.vesselslib.dto.VesselTypeDTO;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
@@ -17,11 +17,11 @@ import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCancelledEv
 import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeCancelledEvent;
 import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 
-public class VesselTypeEventStreams extends EventStreams {
+public class VesselTypeEventStreams extends EventSourcingStreams {
 
 	public VesselTypeEventStreams(StreamConfig config, AlertService alertService) {
 		super(config, alertService);
-		logger.info("Arrancado servicio de compensación de errores de edición de VesselType con Id: " + this.serviceId);
+		logger.info("Arrancado servicio de streaming para event sourcing de VesselType con Id: " + this.serviceId);
 		init();
 	}
 
