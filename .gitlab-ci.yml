@@ -269,10 +269,13 @@ deploy-commands-pro:
   variables:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${PRO_SSH_REMOTE}
+    STATUS_CHECK_DELAY: 120
+    STACK: vessel
+    SERVICES_TO_CHECK: $${STACK}_$${SERVICE}
     SERVICE: ${CI_PROJECT_NAME}-commands
     IMAGE_NAME: ${CI_REGISTRY_IMAGE}
     IMAGE_TAG: ${CI_COMMIT_SHA}
-    COMPOSE_FILE: docker-compose.${CI_PROJECT_NAME}-commands.tmpl.yml:docker-compose.${CI_PROJECT_NAME}-commands.prod.yml
+    COMPOSE_FILE: docker-compose.$${SERVICE}.tmpl.yml:docker-compose.$${SERVICE}.prod.yml
   services:
     - docker:dind
   script:
@@ -292,10 +295,13 @@ deploy-view-pro:
   variables:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${PRO_SSH_REMOTE}
+    STATUS_CHECK_DELAY: 120
+    STACK: vessel
+    SERVICES_TO_CHECK: $${STACK}_$${SERVICE}
     SERVICE: ${CI_PROJECT_NAME}-view
     IMAGE_NAME: ${CI_REGISTRY_IMAGE}
     IMAGE_TAG: ${CI_COMMIT_SHA}
-    COMPOSE_FILE: docker-compose.${CI_PROJECT_NAME}-view.tmpl.yml:docker-compose.${CI_PROJECT_NAME}-view.prod.yml
+    COMPOSE_FILE: docker-compose.$${SERVICE}.tmpl.yml:docker-compose.$${SERVICE}.prod.yml
   services:
     - docker:dind
   script:
