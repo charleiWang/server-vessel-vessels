@@ -1,8 +1,6 @@
 package es.redmic.vesselscommands.streams;
 
-import org.apache.kafka.streams.kstream.JoinWindows;
 import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KTable;
 
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
@@ -25,24 +23,26 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		init();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see es.redmic.commandslib.streaming.streams.EventSourcingStreams#
+	 * createExtraStreams()
+	 */
+
 	@Override
-	protected void processCreatedStream(KStream<String, Event> vesselTypeEvents) {
+	protected void createExtraStreams() {
+		// No existen streams extra necesarios
 
-		// Stream filtrado por eventos de confirmación al crear
-		KStream<String, Event> createConfirmedEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventTypes.CREATE_CONFIRMED.toString().equals(event.getType())));
-
-		// Stream filtrado por eventos de petición de crear
-		KStream<String, Event> createRequestEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventTypes.CREATE.toString().equals(event.getType())));
-
-		// Join por id, mandando a kafka el evento de éxito
-		createConfirmedEvents.join(createRequestEvents,
-				(confirmedEvent, requestEvent) -> getCreatedEvent(confirmedEvent, requestEvent),
-				JoinWindows.of(windowsTime)).to(topic);
 	}
 
-	private Event getCreatedEvent(Event confirmedEvent, Event requestEvent) {
+	/*
+	 * Función que apartir del evento de confirmación de la vista y del evento
+	 * create (petición de creación), si todo es correcto, genera evento created
+	 */
+
+	@Override
+	protected Event getCreatedEvent(Event confirmedEvent, Event requestEvent) {
 
 		assert requestEvent.getType().equals(VesselTypeEventTypes.CREATE);
 
@@ -61,24 +61,13 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		return successfulEvent;
 	}
 
+	/*
+	 * Función que apartir del evento de confirmación de la vista y del evento
+	 * update (petición de modificación), si todo es correcto, genera evento updated
+	 */
+
 	@Override
-	protected void processUpdatedStream(KStream<String, Event> vesselTypeEvents) {
-
-		// Stream filtrado por eventos de confirmación al modificar
-		KStream<String, Event> updateConfirmedEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventTypes.UPDATE_CONFIRMED.toString().equals(event.getType())));
-
-		// Stream filtrado por eventos de petición de modificar
-		KStream<String, Event> updateRequestEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventTypes.UPDATE.toString().equals(event.getType())));
-
-		// Join por id, mandando a kafka el evento de éxito
-		updateConfirmedEvents.join(updateRequestEvents,
-				(confirmedEvent, requestEvent) -> getUpdatedEvent(confirmedEvent, requestEvent),
-				JoinWindows.of(windowsTime)).to(topic);
-	}
-
-	private Event getUpdatedEvent(Event confirmedEvent, Event requestEvent) {
+	protected Event getUpdatedEvent(Event confirmedEvent, Event requestEvent) {
 
 		assert requestEvent.getType().equals(VesselTypeEventTypes.UPDATE);
 
@@ -99,54 +88,24 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		return successfulEvent;
 	}
 
+	/*
+	 * Función que a partir del último evento correcto + el evento de edición
+	 * parcial + la confirmación de la vista, si todo es correcto, genera evento
+	 * updated
+	 */
+
 	@Override
-	protected void processFailedChangeStream(KStream<String, Event> vesselTypeEvents) {
-
-		// Stream filtrado por eventos de creaciones y modificaciones correctos (solo el
-		// último que se produzca por id)
-		KStream<String, Event> successEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventTypes.CREATED.toString().equals(event.getType())
-						|| VesselTypeEventTypes.UPDATED.toString().equals(event.getType())));
-
-		processUpdateFailedStream(vesselTypeEvents, successEvents);
-
-		processDeleteFailedStream(vesselTypeEvents, successEvents);
-
+	protected void processPartialUpdatedStream(KStream<String, Event> vesselTypeEvents,
+			KStream<String, Event> updateConfirmedEvents) {
 	}
 
-	protected void processUpdateFailedStream(KStream<String, Event> vesselTypeEvents,
-			KStream<String, Event> successEvents) {
+	/*
+	 * Función que a partir del evento fallido y el último evento correcto, genera
+	 * evento UpdateCancelled
+	 */
 
-		// Stream filtrado por eventos de fallo al modificar
-		KStream<String, Event> failedEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventTypes.UPDATE_FAILED.toString().equals(event.getType())));
-
-		KTable<String, Event> successEventsTable = successEvents.groupByKey().reduce((aggValue, newValue) -> newValue);
-
-		// Join por id, mandando a kafka el evento de compensación
-		failedEvents
-				.join(successEventsTable,
-						(failedEvent, lastSuccessEvent) -> getUpdateCancelledEvent(failedEvent, lastSuccessEvent))
-				.to(topic);
-	}
-
-	protected void processDeleteFailedStream(KStream<String, Event> vesselTypeEvents,
-			KStream<String, Event> successEvents) {
-
-		// Stream filtrado por eventos de fallo al borrar
-		KStream<String, Event> failedEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventTypes.DELETE_FAILED.toString().equals(event.getType())));
-
-		KTable<String, Event> successEventsTable = successEvents.groupByKey().reduce((aggValue, newValue) -> newValue);
-
-		// Join por id, mandando a kafka el evento de compensación
-		failedEvents
-				.join(successEventsTable,
-						(failedEvent, lastSuccessEvent) -> getDeleteCancelledEvent(failedEvent, lastSuccessEvent))
-				.to(topic);
-	}
-
-	private Event getUpdateCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
+	@Override
+	protected Event getUpdateCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
 		assert failedEvent.getType().equals(VesselTypeEventTypes.UPDATE_FAILED);
 
@@ -166,7 +125,13 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		return cancelledEvent;
 	}
 
-	private Event getDeleteCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
+	/*
+	 * Función que a partir del evento fallido y el último evento correcto, genera
+	 * evento DeleteFailed
+	 */
+
+	@Override
+	protected Event getDeleteCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
 		assert failedEvent.getType().equals(VesselTypeEventTypes.DELETE_FAILED);
 
@@ -186,7 +151,13 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		return cancelledEvent;
 	}
 
+	/*
+	 * Función para procesar modificaciones de referencias
+	 */
+
 	@Override
 	protected void processPostUpdateStream(KStream<String, Event> events) {
+
+		// En este caso no hay modificación de relaciones
 	}
 }
