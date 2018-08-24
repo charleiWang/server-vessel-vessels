@@ -10,6 +10,7 @@ import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
@@ -23,6 +24,7 @@ import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
+import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
@@ -42,6 +44,13 @@ public abstract class VesselDataUtil {
 		event.setUserId(USER);
 		event.setVessel(getVessel());
 
+		return event;
+	}
+
+	public static CreateVesselEnrichedEvent getCreateVesselEnrichedEvent() {
+
+		CreateVesselEnrichedEvent event = new CreateVesselEnrichedEvent().buildFrom(getCreateEvent());
+		event.setVessel(getVessel());
 		return event;
 	}
 
@@ -87,6 +96,13 @@ public abstract class VesselDataUtil {
 		event.setUserId(USER);
 		event.setVessel(getVessel());
 
+		return event;
+	}
+
+	public static UpdateVesselEnrichedEvent getUpdateVesselEnrichedEvent() {
+
+		UpdateVesselEnrichedEvent event = new UpdateVesselEnrichedEvent().buildFrom(getUpdateEvent());
+		event.setVessel(getVessel());
 		return event;
 	}
 
