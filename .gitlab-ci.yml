@@ -269,6 +269,9 @@ deploy-commands-pro:
   variables:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${PRO_SSH_REMOTE}
+    STATUS_CHECK_DELAY: 120
+    STACK: vessel
+    SERVICES_TO_CHECK: vessel_${CI_PROJECT_NAME}-commands
     SERVICE: ${CI_PROJECT_NAME}-commands
     IMAGE_NAME: ${CI_REGISTRY_IMAGE}
     IMAGE_TAG: ${CI_COMMIT_SHA}
@@ -292,6 +295,9 @@ deploy-view-pro:
   variables:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${PRO_SSH_REMOTE}
+    STATUS_CHECK_DELAY: 120
+    STACK: vessel
+    SERVICES_TO_CHECK: vessel_${CI_PROJECT_NAME}-view
     SERVICE: ${CI_PROJECT_NAME}-view
     IMAGE_NAME: ${CI_REGISTRY_IMAGE}
     IMAGE_TAG: ${CI_COMMIT_SHA}
