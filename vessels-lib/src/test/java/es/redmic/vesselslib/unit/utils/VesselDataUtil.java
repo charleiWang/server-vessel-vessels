@@ -14,6 +14,8 @@ import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCheckFailedEvent;
+import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCheckedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
@@ -135,6 +137,21 @@ public abstract class VesselDataUtil {
 		event.setType(VesselEventTypes.DELETE);
 		event.setVersion(3);
 		event.setUserId(USER);
+		return event;
+	}
+
+	public static DeleteVesselCheckedEvent getDeleteVesselCheckedEvent() {
+
+		return new DeleteVesselCheckedEvent().buildFrom(getDeleteEvent());
+	}
+
+	public static DeleteVesselCheckFailedEvent getDeleteVesselCheckFailedEvent() {
+
+		DeleteVesselCheckFailedEvent event = new DeleteVesselCheckFailedEvent().buildFrom(getDeleteEvent());
+		event.setExceptionType("ItemIsReferenced");
+		Map<String, String> arguments = new HashMap<>();
+		arguments.put("a", "b");
+		event.setArguments(arguments);
 		return event;
 	}
 

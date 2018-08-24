@@ -11,6 +11,8 @@ import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeFailedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.VesselTypeCreatedEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCancelledEvent;
+import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCheckFailedEvent;
+import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCheckedEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeFailedEvent;
@@ -170,6 +172,32 @@ public class VesselTypeEventsCheckAvroSchemaTest extends VesselAvroBaseTest {
 
 		assertTrue("El objeto obtenido debe ser una instancia de DeleteVesselTypeEvent",
 				DeleteVesselTypeEvent.class.isInstance(result));
+
+		assertEquals(result, event);
+	}
+
+	@Test
+	public void DeleteVesselTypeCheckedEventSerializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect() {
+
+		DeleteVesselTypeCheckedEvent event = VesselTypeDataUtil.getDeleteVesselTypeCheckedEvent();
+
+		Object result = serializerAndDeserializer(event);
+
+		assertTrue("El objeto obtenido debe ser una instancia de DeleteVesselTypeCheckedEvent",
+				DeleteVesselTypeCheckedEvent.class.isInstance(result));
+
+		assertEquals(result, event);
+	}
+
+	@Test
+	public void DeleteVesselTypeCheckFailedEventSerializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect() {
+
+		DeleteVesselTypeCheckFailedEvent event = VesselTypeDataUtil.getDeleteVesselTypeCheckFailedEvent();
+
+		Object result = serializerAndDeserializer(event);
+
+		assertTrue("El objeto obtenido debe ser una instancia de DeleteVesselTypeCheckFailedEvent",
+				DeleteVesselTypeCheckFailedEvent.class.isInstance(result));
 
 		assertEquals(result, event);
 	}
