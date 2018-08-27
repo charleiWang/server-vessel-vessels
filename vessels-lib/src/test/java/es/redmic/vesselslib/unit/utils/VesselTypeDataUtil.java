@@ -10,6 +10,7 @@ import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEv
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeFailedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.VesselTypeCreatedEvent;
+import es.redmic.vesselslib.events.vesseltype.delete.CheckDeleteVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCancelledEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCheckFailedEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCheckedEvent;
@@ -133,6 +134,11 @@ public abstract class VesselTypeDataUtil {
 		event.setVersion(3);
 		event.setUserId(USER);
 		return event;
+	}
+
+	public static CheckDeleteVesselTypeEvent getCheckDeleteVesselTypeEvent() {
+
+		return new CheckDeleteVesselTypeEvent().buildFrom(getDeleteEvent());
 	}
 
 	public static DeleteVesselTypeCheckedEvent getDeleteVesselTypeCheckedEvent() {
