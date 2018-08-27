@@ -18,7 +18,7 @@ import es.redmic.vesselscommands.commands.vesseltype.UpdateVesselTypeCommand;
 import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
-import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeEvent;
+import es.redmic.vesselslib.events.vesseltype.delete.CheckDeleteVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeEvent;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -89,7 +89,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 	}
 
 	@Test
-	public void processDeleteVesselTypeCommand_ReturnVesselTypeDeletedEvent_IfProcessIsOk() {
+	public void processDeleteVesselTypeCommand_ReturnCheckDeleteVesselTypeEvent_IfProcessIsOk() {
 
 		when(vesselsTypeStateStore.getVesselType(any())).thenReturn(getVesselTypeUpdatedEvent());
 
@@ -97,13 +97,13 @@ public class ProcessEventTest extends AggregateBaseTest {
 
 		DeleteVesselTypeCommand command = new DeleteVesselTypeCommand(vessel.getId());
 
-		DeleteVesselTypeEvent evt = agg.process(command);
+		CheckDeleteVesselTypeEvent evt = agg.process(command);
 
 		assertNotNull(evt);
 		assertNotNull(evt.getDate());
 		assertNotNull(evt.getId());
 		assertEquals(evt.getAggregateId(), vessel.getId());
-		assertEquals(evt.getType(), VesselTypeEventTypes.DELETE);
+		assertEquals(evt.getType(), VesselTypeEventTypes.CHECK_DELETE);
 		assertTrue(evt.getVersion().equals(3));
 	}
 

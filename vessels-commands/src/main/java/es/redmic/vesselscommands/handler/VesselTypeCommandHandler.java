@@ -27,7 +27,10 @@ import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeCancelledEv
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeFailedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.VesselTypeCreatedEvent;
+import es.redmic.vesselslib.events.vesseltype.delete.CheckDeleteVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCancelledEvent;
+import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCheckFailedEvent;
+import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCheckedEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.VesselTypeDeletedEvent;
@@ -47,6 +50,9 @@ public class VesselTypeCommandHandler extends CommandHandler {
 
 	@Value("${broker.topic.vessel-type}")
 	private String vesselTypeTopic;
+
+	@Value("${broker.topic.vessels.agg.by.vesseltype}")
+	private String vesselsAggByVesselTypeTopic;
 
 	@Value("${broker.state.store.vesseltypes.dir}")
 	private String stateStoreVesseltypesDir;
@@ -92,7 +98,7 @@ public class VesselTypeCommandHandler extends CommandHandler {
 				config
 					.serviceId(vesseltypesEventsStreamId)
 					.windowsTime(streamWindowsTime)
-					.build(), alertService);
+					.build(), vesselsAggByVesselTypeTopic, alertService);
 		
 		// @formatter:on
 	}
@@ -161,7 +167,7 @@ public class VesselTypeCommandHandler extends CommandHandler {
 		agg.setAggregateId(id);
 
 		// Se procesa el comando, obteniendo el evento generado
-		DeleteVesselTypeEvent event = agg.process(cmd);
+		CheckDeleteVesselTypeEvent event = agg.process(cmd);
 
 		// Si no se genera evento significa que no se va a aplicar
 		if (event == null)
@@ -211,6 +217,14 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	}
 
 	@KafkaHandler
+	private void listen(DeleteVesselTypeCheckedEvent event) {
+
+		logger.info("Enviando evento DeleteVesselTypeEvent para: " + event.getAggregateId());
+
+		publishToKafka(new DeleteVesselTypeEvent().buildFrom(event), vesselTypeTopic);
+	}
+
+	@KafkaHandler
 	private void listen(DeleteVesselTypeConfirmedEvent event) {
 
 		logger.info("Enviando evento VesselTypeDeletedEvent para: " + event.getAggregateId());
@@ -256,6 +270,18 @@ public class VesselTypeCommandHandler extends CommandHandler {
 
 		resolveCommand(event.getSessionId(),
 				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+	}
+
+	@KafkaHandler
+	private void listen(DeleteVesselTypeCheckFailedEvent event) {
+
+		logger.info("Enviando evento DeleteVesselTypeCheckFailedEvent para: " + event.getAggregateId());
+
+		DeleteVesselTypeCancelledEvent evt = new DeleteVesselTypeCancelledEvent().buildFrom(event);
+		evt.setExceptionType(event.getExceptionType());
+		evt.setArguments(event.getArguments());
+
+		publishToKafka(evt, vesselTypeTopic);
 	}
 
 	@KafkaHandler

@@ -1,30 +1,50 @@
 package es.redmic.vesselscommands.streams;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.KTable;
 
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
+import es.redmic.brokerlib.avro.common.EventTypes;
+import es.redmic.brokerlib.avro.serde.hashmap.HashMapSerde;
+import es.redmic.commandslib.exceptions.ExceptionType;
 import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
 import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.AggregationVesselTypeInVesselPostUpdateEvent;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.create.VesselTypeCreatedEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCancelledEvent;
+import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCheckFailedEvent;
+import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCheckedEvent;
 import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeCancelledEvent;
 import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 
 public class VesselTypeEventStreams extends EventSourcingStreams {
 
-	public VesselTypeEventStreams(StreamConfig config, AlertService alertService) {
+	private String vesselsAggByVesselTypeTopic;
+
+	private HashMapSerde<String, AggregationVesselTypeInVesselPostUpdateEvent> hashMapSerde;
+
+	private KTable<String, HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent>> aggByVesselType;
+
+	public VesselTypeEventStreams(StreamConfig config, String vesselsAggByVesselTypeTopic, AlertService alertService) {
 		super(config, alertService);
+		this.vesselsAggByVesselTypeTopic = vesselsAggByVesselTypeTopic;
+		this.hashMapSerde = new HashMapSerde<>(schemaRegistry);
 		logger.info("Arrancado servicio de streaming para event sourcing de VesselType con Id: " + this.serviceId);
 		init();
 	}
 
 	/*
-	 * (non-Javadoc)
+	 * Crea KTable de vessels agregados por vesseltype
 	 * 
 	 * @see es.redmic.commandslib.streaming.streams.EventSourcingStreams#
 	 * createExtraStreams()
@@ -32,8 +52,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 	@Override
 	protected void createExtraStreams() {
-		// No existen streams extra necesarios
-
+		aggByVesselType = builder.table(vesselsAggByVesselTypeTopic, Consumed.with(Serdes.String(), hashMapSerde));
 	}
 
 	/*
@@ -86,6 +105,38 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		VesselTypeUpdatedEvent successfulEvent = new VesselTypeUpdatedEvent().buildFrom(confirmedEvent);
 		successfulEvent.setVesselType(vesselType);
 		return successfulEvent;
+	}
+
+	/*
+	 * Comprueba si vesselType está referenciado en vessel para cancelar el borrado
+	 */
+
+	@Override
+	protected void processDeleteStream(KStream<String, Event> events) {
+
+		// Stream filtrado por eventos de borrado
+		KStream<String, Event> deleteEvents = events
+				.filter((id, event) -> (EventTypes.CHECK_DELETE.equals(event.getType())));
+
+		deleteEvents.leftJoin(aggByVesselType,
+				(deleteEvent, vesselAggByVesselType) -> getDeleteResultEvent(deleteEvent, vesselAggByVesselType));
+	}
+
+	private Event getDeleteResultEvent(Event deleteEvent,
+			HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent> vesselAggByVesselType) {
+
+		if (vesselAggByVesselType == null || vesselAggByVesselType.isEmpty()) { // elemento no referenciado
+
+			return new DeleteVesselTypeCheckedEvent().buildFrom(deleteEvent);
+		} else { // elemento referenciado
+
+			DeleteVesselTypeCheckFailedEvent evt = new DeleteVesselTypeCheckFailedEvent().buildFrom(deleteEvent);
+			evt.setExceptionType(ExceptionType.ITEM_REFERENCED.toString());
+			Map<String, String> arguments = new HashMap<>();
+			arguments.put("id", deleteEvent.getAggregateId());
+			evt.setArguments(arguments);
+			return evt;
+		}
 	}
 
 	/*

@@ -12,7 +12,7 @@ import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeCancelledEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
-import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeEvent;
+import es.redmic.vesselslib.events.vesseltype.delete.CheckDeleteVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.VesselTypeDeletedEvent;
 import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeEvent;
 
@@ -64,7 +64,7 @@ public class VesselTypeAggregate extends Aggregate {
 		return evt;
 	}
 
-	public DeleteVesselTypeEvent process(DeleteVesselTypeCommand cmd) {
+	public CheckDeleteVesselTypeEvent process(DeleteVesselTypeCommand cmd) {
 
 		assert vesselTypeStateStore != null;
 
@@ -76,9 +76,10 @@ public class VesselTypeAggregate extends Aggregate {
 
 		checkState(id, state.getType());
 
-		DeleteVesselTypeEvent evt = new DeleteVesselTypeEvent();
+		CheckDeleteVesselTypeEvent evt = new CheckDeleteVesselTypeEvent();
 		evt.setAggregateId(id);
 		evt.setVersion(getVersion() + 1);
+
 		return evt;
 	}
 
