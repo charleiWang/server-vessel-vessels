@@ -1,4 +1,4 @@
-package es.redmic.vesselslib.unit.events;
+package es.redmic.vesselslib.unit.events.vesseltype;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
