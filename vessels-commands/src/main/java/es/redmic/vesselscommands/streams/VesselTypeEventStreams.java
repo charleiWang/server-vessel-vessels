@@ -1,12 +1,13 @@
 package es.redmic.vesselscommands.streams;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
+
+import com.google.common.collect.ImmutableMap;
 
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
@@ -18,14 +19,9 @@ import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
 import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.AggregationVesselTypeInVesselPostUpdateEvent;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventFactory;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
-import es.redmic.vesselslib.events.vesseltype.create.VesselTypeCreatedEvent;
-import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCancelledEvent;
-import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCheckFailedEvent;
-import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCheckedEvent;
-import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeCancelledEvent;
-import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 
 public class VesselTypeEventStreams extends EventSourcingStreams {
 
@@ -73,11 +69,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) requestEvent).getVesselType();
 
-		logger.info("Enviando evento VesselTypeCreatedEvent para: " + confirmedEvent.getAggregateId());
-
-		VesselTypeCreatedEvent successfulEvent = new VesselTypeCreatedEvent().buildFrom(confirmedEvent);
-		successfulEvent.setVesselType(vesselType);
-		return successfulEvent;
+		return VesselTypeEventFactory.getEvent(confirmedEvent, VesselTypeEventTypes.CREATED, vesselType);
 	}
 
 	/*
@@ -96,15 +88,9 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 			return null;
 		}
 
-		logger.debug("Creando evento de modificado exitoso para VesselType");
-
 		VesselTypeDTO vesselType = ((VesselTypeEvent) requestEvent).getVesselType();
 
-		logger.info("Enviando evento VesselTypeUpdatedEvent para: " + confirmedEvent.getAggregateId());
-
-		VesselTypeUpdatedEvent successfulEvent = new VesselTypeUpdatedEvent().buildFrom(confirmedEvent);
-		successfulEvent.setVesselType(vesselType);
-		return successfulEvent;
+		return VesselTypeEventFactory.getEvent(requestEvent, VesselTypeEventTypes.UPDATED, vesselType);
 	}
 
 	/*
@@ -127,15 +113,11 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 		if (vesselAggByVesselType == null || vesselAggByVesselType.isEmpty()) { // elemento no referenciado
 
-			return new DeleteVesselTypeCheckedEvent().buildFrom(deleteEvent);
+			return VesselTypeEventFactory.getEvent(deleteEvent, VesselTypeEventTypes.DELETE_CHECKED);
 		} else { // elemento referenciado
 
-			DeleteVesselTypeCheckFailedEvent evt = new DeleteVesselTypeCheckFailedEvent().buildFrom(deleteEvent);
-			evt.setExceptionType(ExceptionType.ITEM_REFERENCED.toString());
-			Map<String, String> arguments = new HashMap<>();
-			arguments.put("id", deleteEvent.getAggregateId());
-			evt.setArguments(arguments);
-			return evt;
+			return VesselTypeEventFactory.getEvent(deleteEvent, VesselTypeEventTypes.DELETE_CHECK_FAILED,
+					ExceptionType.ITEM_REFERENCED.toString(), ImmutableMap.of("id", deleteEvent.getAggregateId()));
 		}
 	}
 
@@ -167,13 +149,8 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 		EventError eventError = (EventError) failedEvent;
 
-		logger.info("Enviando evento UpdateVesselTypeCancelledEvent para: " + failedEvent.getAggregateId());
-
-		UpdateVesselTypeCancelledEvent cancelledEvent = new UpdateVesselTypeCancelledEvent().buildFrom(failedEvent);
-		cancelledEvent.setVesselType(vesselType);
-		cancelledEvent.setExceptionType(eventError.getExceptionType());
-		cancelledEvent.setArguments(eventError.getArguments());
-		return cancelledEvent;
+		return VesselTypeEventFactory.getEvent(failedEvent, VesselTypeEventTypes.UPDATE_CANCELLED, vesselType,
+				eventError.getExceptionType(), eventError.getArguments());
 	}
 
 	/*
@@ -193,13 +170,8 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 		EventError eventError = (EventError) failedEvent;
 
-		logger.info("Enviar evento DeleteVesselTypeCancelledEvent para: " + failedEvent.getAggregateId());
-
-		DeleteVesselTypeCancelledEvent cancelledEvent = new DeleteVesselTypeCancelledEvent().buildFrom(failedEvent);
-		cancelledEvent.setVesselType(vesselType);
-		cancelledEvent.setExceptionType(eventError.getExceptionType());
-		cancelledEvent.setArguments(eventError.getArguments());
-		return cancelledEvent;
+		return VesselTypeEventFactory.getEvent(failedEvent, VesselTypeEventTypes.DELETE_CANCELLED, vesselType,
+				eventError.getExceptionType(), eventError.getArguments());
 	}
 
 	/*

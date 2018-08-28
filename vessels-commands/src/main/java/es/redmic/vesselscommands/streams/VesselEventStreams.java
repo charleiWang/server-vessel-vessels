@@ -21,14 +21,11 @@ import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
+import es.redmic.vesselslib.events.vessel.VesselEventFactory;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
-import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
-import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.AggregationVesselTypeInVesselPostUpdateEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
-import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
-import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 
@@ -42,6 +39,8 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 	private GlobalKTable<String, HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent>> aggByVesselType;
 
+	private KStream<String, Event> vesselTypeEvents;
+
 	public VesselEventStreams(StreamConfig config, String vesselTypeTopic, String vesselsAggByVesselTypeTopic,
 			AlertService alertService) {
 		super(config, alertService);
@@ -54,7 +53,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 	}
 
 	/*
-	 * Crea stream de vessels agregados por vesseltype
+	 * Crea GlobalKTable de vessels agregados por vesseltype
 	 * 
 	 * @see es.redmic.commandslib.streaming.streams.EventSourcingStreams#
 	 * createExtraStreams()
@@ -66,6 +65,8 @@ public class VesselEventStreams extends EventSourcingStreams {
 		// vessels agregados por vesselType
 		aggByVesselType = builder.globalTable(vesselsAggByVesselTypeTopic,
 				Consumed.with(Serdes.String(), hashMapSerde));
+
+		vesselTypeEvents = builder.stream(vesselTypeTopic);
 	}
 
 	/*
@@ -86,11 +87,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 		VesselDTO vessel = ((VesselEvent) requestEvent).getVessel();
 
-		logger.info("Creando evento VesselCreatedEvent para: " + confirmedEvent.getAggregateId());
-
-		VesselCreatedEvent successfulEvent = new VesselCreatedEvent().buildFrom(confirmedEvent);
-		successfulEvent.setVessel(vessel);
-		return successfulEvent;
+		return VesselEventFactory.getEvent(confirmedEvent, VesselEventTypes.CREATED, vessel);
 	}
 
 	/*
@@ -111,11 +108,15 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 		VesselDTO vessel = ((VesselEvent) requestEvent).getVessel();
 
-		logger.info("Creando evento VesselUpdatedEvent para: " + confirmedEvent.getAggregateId());
+		return VesselEventFactory.getEvent(confirmedEvent, VesselEventTypes.UPDATED, vessel);
+	}
 
-		VesselUpdatedEvent successfulEvent = new VesselUpdatedEvent().buildFrom(confirmedEvent);
-		successfulEvent.setVessel(vessel);
-		return successfulEvent;
+	/*
+	 * Comprueba si vessel está referenciado en tracking para cancelar el borrado
+	 */
+	@Override
+	protected void processDeleteStream(KStream<String, Event> events) {
+		// TODO: Implementar en relación a tracking
 	}
 
 	/*
@@ -169,12 +170,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 		VesselDTO vessel = ((VesselEvent) lastSuccessEvent).getVessel();
 		vessel.setType(partialUpdateConfirmEvent.getVesselType());
 
-		logger.info("Creando evento VesselUpdatedEvent por una edición parcial de vesselType para: "
-				+ partialUpdateConfirmEvent.getAggregateId());
-
-		VesselUpdatedEvent successfulEvent = new VesselUpdatedEvent().buildFrom(partialUpdateConfirmEvent);
-		successfulEvent.setVessel(vessel);
-		return successfulEvent;
+		return VesselEventFactory.getEvent(partialUpdateConfirmEvent, VesselEventTypes.UPDATED, vessel);
 	}
 
 	/*
@@ -194,16 +190,11 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 		EventError eventError = (EventError) failedEvent;
 
-		logger.info("Enviando evento UpdateVesselCancelledEvent para: " + failedEvent.getAggregateId());
-
 		alertService.errorAlert("UpdateVesselCancelledEvent para: " + failedEvent.getAggregateId(),
 				eventError.getExceptionType() + " " + eventError.getArguments());
 
-		UpdateVesselCancelledEvent cancelledEvent = new UpdateVesselCancelledEvent().buildFrom(failedEvent);
-		cancelledEvent.setVessel(vessel);
-		cancelledEvent.setExceptionType(eventError.getExceptionType());
-		cancelledEvent.setArguments(eventError.getArguments());
-		return cancelledEvent;
+		return VesselEventFactory.getEvent(failedEvent, VesselEventTypes.UPDATE_CANCELLED, vessel,
+				eventError.getExceptionType(), eventError.getArguments());
 	}
 
 	/*
@@ -223,13 +214,8 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 		EventError eventError = (EventError) failedEvent;
 
-		logger.info("Enviando evento DeleteVesselCancelledEvent para: " + failedEvent.getAggregateId());
-
-		DeleteVesselCancelledEvent cancelledEvent = new DeleteVesselCancelledEvent().buildFrom(failedEvent);
-		cancelledEvent.setVessel(vessel);
-		cancelledEvent.setExceptionType(eventError.getExceptionType());
-		cancelledEvent.setArguments(eventError.getArguments());
-		return cancelledEvent;
+		return VesselEventFactory.getEvent(failedEvent, VesselEventTypes.DELETE_CANCELLED, vessel,
+				eventError.getExceptionType(), eventError.getArguments());
 	}
 
 	/*
@@ -269,8 +255,6 @@ public class VesselEventStreams extends EventSourcingStreams {
 	private void processVesselTypePostUpdate() {
 
 		// Vesseltypes modificados
-		KStream<String, Event> vesselTypeEvents = builder.stream(vesselTypeTopic);
-
 		KStream<String, Event> updateReferenceEvents = vesselTypeEvents
 				.filter((id, event) -> (VesselTypeEventTypes.UPDATED.equals(event.getType())));
 
@@ -296,11 +280,12 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 		ArrayList<UpdateVesselTypeInVesselEvent> result = new ArrayList<>();
 
+		VesselTypeDTO vesselType = ((VesselTypeEvent) updateReferenceEvent).getVesselType();
+
 		for (Map.Entry<String, AggregationVesselTypeInVesselPostUpdateEvent> entry : vesselWithReferenceEvents
 				.entrySet()) {
 
 			AggregationVesselTypeInVesselPostUpdateEvent aggregationEvent = entry.getValue();
-			VesselTypeDTO vesselType = ((VesselTypeEvent) updateReferenceEvent).getVesselType();
 
 			if (VesselEventTypes.isLocked(aggregationEvent.getType())) {
 
@@ -313,23 +298,13 @@ public class VesselEventStreams extends EventSourcingStreams {
 					alertService.errorAlert(aggregationEvent.getAggregateId(), message);
 				}
 
+			} else if (!aggregationEvent.getVesselType().equals(vesselType)) {
+
+				result.add((UpdateVesselTypeInVesselEvent) VesselEventFactory.getEvent(aggregationEvent,
+						updateReferenceEvent, VesselEventTypes.UPDATE_VESSELTYPE));
+
 			} else {
-
-				logger.debug("Creando evento de update para Vessel " + aggregationEvent.getAggregateId()
-						+ " por cambio en vesselType");
-
-				if (!aggregationEvent.getVesselType().equals(vesselType)) {
-
-					UpdateVesselTypeInVesselEvent updateVesselType = new UpdateVesselTypeInVesselEvent();
-					updateVesselType.setAggregateId(aggregationEvent.getAggregateId());
-					updateVesselType.setUserId(updateReferenceEvent.getUserId());
-					updateVesselType.setVersion(aggregationEvent.getVersion() + 1);
-					updateVesselType.setVesselType(((VesselTypeEvent) updateReferenceEvent).getVesselType());
-					result.add(updateVesselType);
-
-				} else {
-					logger.debug("VesselType ya estaba actualizado o los campos indexados no han cambiado ");
-				}
+				logger.debug("VesselType ya estaba actualizado o los campos indexados no han cambiado ");
 			}
 		}
 		return result;

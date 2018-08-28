@@ -23,6 +23,8 @@ import es.redmic.vesselscommands.config.UserService;
 import es.redmic.vesselscommands.statestore.VesselStateStore;
 import es.redmic.vesselscommands.streams.VesselEventStreams;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.events.vessel.VesselEventFactory;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
@@ -234,9 +236,7 @@ public class VesselCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(DeleteVesselConfirmedEvent event) {
 
-		logger.info("Enviando evento VesselDeletedEvent para: " + event.getAggregateId());
-
-		publishToKafka(new VesselDeletedEvent().buildFrom(event), vesselTopic);
+		publishToKafka(VesselEventFactory.getEvent(event, VesselEventTypes.DELETED), vesselTopic);
 	}
 
 	@KafkaHandler
@@ -250,13 +250,8 @@ public class VesselCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(CreateVesselFailedEvent event) {
 
-		logger.info("Enviando evento CreateVesselCancelEvent para: " + event.getAggregateId());
-
-		CreateVesselCancelledEvent evt = new CreateVesselCancelledEvent().buildFrom(event);
-		evt.setExceptionType(event.getExceptionType());
-		evt.setArguments(event.getArguments());
-
-		publishToKafka(evt, vesselTopic);
+		publishToKafka(VesselEventFactory.getEvent(event, VesselEventTypes.CREATE_CANCELLED, event.getExceptionType(),
+				event.getArguments()), vesselTopic);
 	}
 
 	@KafkaHandler
