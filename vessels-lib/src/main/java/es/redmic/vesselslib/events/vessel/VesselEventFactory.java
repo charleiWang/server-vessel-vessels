@@ -13,6 +13,8 @@ import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.common.VesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCancelledEvent;
@@ -23,6 +25,8 @@ import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
+import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
@@ -33,6 +37,20 @@ public class VesselEventFactory {
 	private static Logger logger = LogManager.getLogger();
 
 	public static Event getEvent(Event source, String type) {
+
+		if (type.equals(VesselEventTypes.CREATE_ENRICHED)) {
+
+			logger.info("Creando evento CreateVesselEnrichedEvent para: " + source.getAggregateId());
+
+			return new CreateVesselEnrichedEvent().buildFrom(source);
+		}
+
+		if (type.equals(VesselEventTypes.UPDATE_ENRICHED)) {
+
+			logger.info("Creando evento UpdateVesselEnrichedEvent para: " + source.getAggregateId());
+
+			return new UpdateVesselEnrichedEvent().buildFrom(source);
+		}
 
 		if (type.equals(VesselEventTypes.DELETE)) {
 
@@ -64,6 +82,18 @@ public class VesselEventFactory {
 	public static Event getEvent(Event source, String type, VesselDTO vessel) {
 
 		VesselEvent successfulEvent = null;
+
+		if (type.equals(VesselEventTypes.CREATE)) {
+
+			logger.info("Creando evento CreateVesselEvent para: " + source.getAggregateId());
+			successfulEvent = new CreateVesselEvent().buildFrom(source);
+		}
+
+		if (type.equals(VesselEventTypes.UPDATE)) {
+
+			logger.info("Creando evento UpdateVesselEvent para: " + source.getAggregateId());
+			successfulEvent = new UpdateVesselEvent().buildFrom(source);
+		}
 
 		if (type.equals(VesselEventTypes.CREATED)) {
 

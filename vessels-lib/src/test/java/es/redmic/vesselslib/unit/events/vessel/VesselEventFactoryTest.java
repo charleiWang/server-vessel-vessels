@@ -10,6 +10,8 @@ import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.vesselslib.events.vessel.VesselEventFactory;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCancelledEvent;
@@ -20,6 +22,8 @@ import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
+import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
@@ -27,6 +31,30 @@ import es.redmic.vesselslib.unit.utils.VesselDataUtil;
 import es.redmic.vesselslib.unit.utils.VesselTypeDataUtil;
 
 public class VesselEventFactoryTest {
+
+	@Test
+	public void GetEvent_ReturnCreateVesselEnrichedEvent_IfTypeIsCreateEnriched() {
+
+		Event source = VesselDataUtil.getEnrichCreateVesselEvent();
+		CreateVesselEnrichedEvent event = (CreateVesselEnrichedEvent) VesselEventFactory.getEvent(source,
+				VesselEventTypes.CREATE_ENRICHED);
+
+		assertEquals(VesselEventTypes.CREATE_ENRICHED, event.getType());
+
+		checkMetadataFields(source, event);
+	}
+
+	@Test
+	public void GetEvent_ReturnUpdateVesselEnrichedEvent_IfTypeIsUpdateEnriched() {
+
+		Event source = VesselDataUtil.getEnrichUpdateVesselEvent();
+		UpdateVesselEnrichedEvent event = (UpdateVesselEnrichedEvent) VesselEventFactory.getEvent(source,
+				VesselEventTypes.UPDATE_ENRICHED);
+
+		assertEquals(VesselEventTypes.UPDATE_ENRICHED, event.getType());
+
+		checkMetadataFields(source, event);
+	}
 
 	@Test
 	public void GetEvent_ReturnDeleteVesselEvent_IfTypeIsDelete() {
@@ -65,6 +93,19 @@ public class VesselEventFactoryTest {
 	/////////////////////////
 
 	@Test
+	public void GetEvent_ReturnCreateVesselEvent_IfTypeIsCreate() {
+
+		Event source = VesselDataUtil.getCreateVesselEnrichedEvent();
+		CreateVesselEvent event = (CreateVesselEvent) VesselEventFactory.getEvent(source, VesselEventTypes.CREATE,
+				VesselDataUtil.getVessel());
+
+		assertEquals(VesselEventTypes.CREATE, event.getType());
+		assertNotNull(event.getVessel());
+
+		checkMetadataFields(source, event);
+	}
+
+	@Test
 	public void GetEvent_ReturnVesselCreatedEvent_IfTypeIsCreated() {
 
 		Event source = VesselDataUtil.getCreateConfirmedEvent();
@@ -72,6 +113,19 @@ public class VesselEventFactoryTest {
 				VesselDataUtil.getVessel());
 
 		assertEquals(VesselEventTypes.CREATED, event.getType());
+		assertNotNull(event.getVessel());
+
+		checkMetadataFields(source, event);
+	}
+
+	@Test
+	public void GetEvent_ReturnUpdateVesselEvent_IfTypeIsUpdate() {
+
+		Event source = VesselDataUtil.getUpdateVesselEnrichedEvent();
+		UpdateVesselEvent event = (UpdateVesselEvent) VesselEventFactory.getEvent(source, VesselEventTypes.UPDATE,
+				VesselDataUtil.getVessel());
+
+		assertEquals(VesselEventTypes.UPDATE, event.getType());
 		assertNotNull(event.getVessel());
 
 		checkMetadataFields(source, event);
