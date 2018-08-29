@@ -32,6 +32,7 @@ import es.redmic.brokerlib.alert.AlertType;
 import es.redmic.brokerlib.alert.Message;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.exception.common.ExceptionType;
+import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
@@ -54,13 +55,9 @@ import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 		"schema.registry.port=18085" })
 public class VesselPostUpdateHandlerTest extends KafkaBaseIntegrationTest {
 
-	// number of brokers.
-	private final static Integer numBrokers = 3;
-	// partitions per topic.
-	private final static Integer partitionsPerTopic = 3;
-
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(numBrokers, true, partitionsPerTopic);
+	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(KafkaEmbeddedConfig.NUM_BROKERS, true,
+			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
 
 	private static final Integer mmsi = 3333;
 

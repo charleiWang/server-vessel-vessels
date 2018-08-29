@@ -46,6 +46,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
+import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
 import es.redmic.testutils.documentation.DocumentationCommandBaseTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
@@ -71,13 +72,9 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 @KafkaListener(topics = "${broker.topic.vessel}", groupId = "test")
 public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 
-	// number of brokers.
-	private final static Integer numBrokers = 3;
-	// partitions per topic.
-	private final static Integer partitionsPerTopic = 3;
-
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(numBrokers, true, partitionsPerTopic);
+	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(KafkaEmbeddedConfig.NUM_BROKERS, true,
+			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
 
 	private final Integer mmsi = 1111;
 
