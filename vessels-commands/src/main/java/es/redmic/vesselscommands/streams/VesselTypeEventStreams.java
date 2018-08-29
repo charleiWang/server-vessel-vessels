@@ -7,8 +7,6 @@ import org.apache.kafka.streams.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 
-import com.google.common.collect.ImmutableMap;
-
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
@@ -105,9 +103,11 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 				.filter((id, event) -> (EventTypes.CHECK_DELETE.equals(event.getType())));
 
 		deleteEvents.leftJoin(aggByVesselType,
-				(deleteEvent, vesselAggByVesselType) -> getDeleteResultEvent(deleteEvent, vesselAggByVesselType));
+				(deleteEvent, vesselAggByVesselType) -> getDeleteResultEvent(deleteEvent, vesselAggByVesselType))
+				.to(topic);
 	}
 
+	@SuppressWarnings("serial")
 	private Event getDeleteResultEvent(Event deleteEvent,
 			HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent> vesselAggByVesselType) {
 
@@ -117,7 +117,11 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		} else { // elemento referenciado
 
 			return VesselTypeEventFactory.getEvent(deleteEvent, VesselTypeEventTypes.DELETE_CHECK_FAILED,
-					ExceptionType.ITEM_REFERENCED.toString(), ImmutableMap.of("id", deleteEvent.getAggregateId()));
+					ExceptionType.ITEM_REFERENCED.toString(), new HashMap<String, String>() {
+						{
+							put("id", deleteEvent.getAggregateId());
+						}
+					});
 		}
 	}
 
