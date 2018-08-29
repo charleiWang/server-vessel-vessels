@@ -1,4 +1,4 @@
-package es.redmic.vesselslib.events.vessel.create;
+package es.redmic.vesselslib.events.vessel.update;
 
 import java.util.UUID;
 
@@ -8,27 +8,28 @@ import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 
-public class EnrichCreateVesselEvent extends VesselEvent {
+public class EnrichUpdateVesselEvent extends VesselEvent {
 
 	// @formatter:off
 
 	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{"
-		+ "\"type\":\"record\",\"name\":\"EnrichCreateVesselEvent\","
-				+ "\"namespace\":\"es.redmic.vesselslib.events.vessel.create\",\"fields\":["
+		+ "\"type\":\"record\",\"name\":\"EnrichUpdateVesselEvent\","
+				+ "\"namespace\":\"es.redmic.vesselslib.events.vessel.update\",\"fields\":["
 			+ getVesselEventSchema() + ","
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
 
-	static String type = VesselEventTypes.ENRICH_CREATE;
+	static String type = VesselEventTypes.ENRICH_UPDATE;
 
-	public EnrichCreateVesselEvent() {
+	public EnrichUpdateVesselEvent() {
 		super(type);
 		setSessionId(UUID.randomUUID().toString());
 	}
 
-	public EnrichCreateVesselEvent(VesselDTO vessel) {
+	public EnrichUpdateVesselEvent(VesselDTO vessel) {
 		super(type);
 		this.setVessel(vessel);
+		setSessionId(UUID.randomUUID().toString());
 	}
 
 	@Override

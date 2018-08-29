@@ -24,6 +24,7 @@ import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
+import es.redmic.vesselslib.events.vessel.update.EnrichUpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
@@ -104,6 +105,14 @@ public abstract class VesselDataUtil {
 		event.setType(VesselEventTypes.UPDATE);
 		event.setVersion(2);
 		event.setUserId(USER);
+		event.setVessel(getVessel());
+
+		return event;
+	}
+
+	public static EnrichUpdateVesselEvent getEnrichUpdateVesselEvent() {
+
+		EnrichUpdateVesselEvent event = new EnrichUpdateVesselEvent().buildFrom(getCreateEvent());
 		event.setVessel(getVessel());
 
 		return event;
