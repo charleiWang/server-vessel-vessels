@@ -1,5 +1,7 @@
 package es.redmic.vesselslib.events.vesseltype.delete;
 
+import java.util.UUID;
+
 import org.apache.avro.Schema;
 
 import es.redmic.brokerlib.avro.common.SimpleEvent;
@@ -19,6 +21,7 @@ public class CheckDeleteVesselTypeEvent extends SimpleEvent {
 
 	public CheckDeleteVesselTypeEvent() {
 		super(type);
+		setSessionId(UUID.randomUUID().toString());
 	}
 
 	@Override
