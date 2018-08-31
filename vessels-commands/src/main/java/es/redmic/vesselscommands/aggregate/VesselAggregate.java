@@ -2,7 +2,6 @@ package es.redmic.vesselscommands.aggregate;
 
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.commandslib.aggregate.Aggregate;
-import es.redmic.exception.database.DBNotFoundException;
 import es.redmic.vesselscommands.commands.vessel.CreateVesselCommand;
 import es.redmic.vesselscommands.commands.vessel.DeleteVesselCommand;
 import es.redmic.vesselscommands.commands.vessel.UpdateVesselCommand;
@@ -12,9 +11,11 @@ import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
+import es.redmic.vesselslib.events.vessel.create.EnrichCreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
+import es.redmic.vesselslib.events.vessel.update.EnrichUpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 
 public class VesselAggregate extends Aggregate {
@@ -27,7 +28,7 @@ public class VesselAggregate extends Aggregate {
 		this.vesselStateStore = vesselStateStore;
 	}
 
-	public CreateVesselEvent process(CreateVesselCommand cmd) {
+	public VesselEvent process(CreateVesselCommand cmd) {
 
 		assert vesselStateStore != null;
 
@@ -39,13 +40,23 @@ public class VesselAggregate extends Aggregate {
 		}
 		this.setAggregateId(id);
 
-		CreateVesselEvent evt = new CreateVesselEvent(cmd.getVessel());
+		VesselEvent evt = null;
+
+		if (cmd.getVessel().getType() != null) {
+
+			logger.info("Creando evento para enriquecer Vessel");
+			evt = new EnrichCreateVesselEvent(cmd.getVessel());
+		} else {
+			logger.info("Creando evento para crear Vessel. Enriquecimiento descartado");
+			evt = new CreateVesselEvent(cmd.getVessel());
+		}
+
 		evt.setAggregateId(id);
 		evt.setVersion(1);
 		return evt;
 	}
 
-	public UpdateVesselEvent process(UpdateVesselCommand cmd) {
+	public VesselEvent process(UpdateVesselCommand cmd) {
 
 		assert vesselStateStore != null;
 
@@ -57,9 +68,19 @@ public class VesselAggregate extends Aggregate {
 
 		checkState(id, state.getType());
 
-		UpdateVesselEvent evt = new UpdateVesselEvent(cmd.getVessel());
+		VesselEvent evt = null;
+
+		if (cmd.getVessel().getType() != null) {
+
+			logger.info("Creando evento para enriquecer Vessel");
+			evt = new EnrichUpdateVesselEvent(cmd.getVessel());
+		} else {
+			logger.info("Creando evento para modificar Vessel. Enriquecimiento descartado");
+			evt = new UpdateVesselEvent(cmd.getVessel());
+		}
+
 		evt.setAggregateId(id);
-		evt.setVersion(getVersion() + 1);
+		evt.setVersion(2);
 		return evt;
 	}
 
@@ -83,21 +104,6 @@ public class VesselAggregate extends Aggregate {
 
 	public VesselDTO getVessel() {
 		return vessel;
-	}
-
-	public VesselDTO getVesselFromStateStore(VesselDTO type) {
-
-		CreateVesselCommand cmd = new CreateVesselCommand(type);
-
-		Event state = getItemFromStateStore(cmd.getVessel().getId());
-
-		if (state == null) {
-			throw new DBNotFoundException("id", cmd.getVessel().getId());
-		}
-
-		loadFromHistory(state);
-
-		return getVessel();
 	}
 
 	@Override

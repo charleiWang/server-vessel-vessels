@@ -14,11 +14,13 @@ import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
+import es.redmic.vesselslib.events.vessel.create.EnrichCreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
+import es.redmic.vesselslib.events.vessel.update.EnrichUpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
@@ -41,6 +43,15 @@ public abstract class VesselDataUtil {
 		event.setVessel(getVessel(mmsi));
 
 		return event;
+	}
+
+	public static EnrichCreateVesselEvent getEnrichCreateVesselEvent(Integer mmsi) {
+
+		EnrichCreateVesselEvent enrichCreateVesselEvent = new EnrichCreateVesselEvent().buildFrom(getCreateEvent(mmsi));
+
+		enrichCreateVesselEvent.setVessel(getVessel(mmsi));
+
+		return enrichCreateVesselEvent;
 	}
 
 	public static CreateVesselConfirmedEvent getCreateVesselConfirmedEvent(Integer mmsi) {
@@ -82,6 +93,15 @@ public abstract class VesselDataUtil {
 		event.setVessel(getVessel(mmsi));
 
 		return event;
+	}
+
+	public static EnrichUpdateVesselEvent getEnrichUpdateVesselEvent(Integer mmsi) {
+
+		EnrichUpdateVesselEvent enrichUpdateVesselEvent = new EnrichUpdateVesselEvent().buildFrom(getUpdateEvent(mmsi));
+
+		enrichUpdateVesselEvent.setVessel(getVessel(mmsi));
+
+		return enrichUpdateVesselEvent;
 	}
 
 	public static UpdateVesselConfirmedEvent getUpdateVesselConfirmedEvent(Integer mmsi) {
@@ -155,6 +175,8 @@ public abstract class VesselDataUtil {
 		vessel.setBeam(30.2);
 		vessel.setLength(230.5);
 		vessel.setCallSign("23e2");
+		vessel.setInserted(DateTime.now());
+		vessel.setUpdated(DateTime.now());
 
 		VesselTypeDTO vesselType = new VesselTypeDTO();
 		vesselType.setCode("70");

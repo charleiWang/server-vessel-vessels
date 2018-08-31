@@ -4,6 +4,7 @@ import org.joda.time.DateTime;
 
 import es.redmic.commandslib.commands.Command;
 import es.redmic.exception.databinding.FieldNotValidException;
+import es.redmic.vesselscommands.commands.vesseltype.CreateVesselTypeCommand;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 
 public class CreateVesselCommand extends Command {
@@ -27,6 +28,11 @@ public class CreateVesselCommand extends Command {
 
 		vessel.setInserted(DateTime.now());
 		vessel.setUpdated(DateTime.now());
+
+		// Se añade id generado a vesselType para poder buscarlo
+		if (vessel.getType() != null && vessel.getType().getId() == null) {
+			vessel.getType().setId(new CreateVesselTypeCommand(vessel.getType()).getVesselType().getId());
+		}
 
 		this.setVessel(vessel);
 	}

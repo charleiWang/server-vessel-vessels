@@ -52,6 +52,9 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	@Value("${broker.topic.vessel-type}")
 	private String vesselTypeTopic;
 
+	@Value("${broker.topic.vessel.type.updated}")
+	private String vesselTypeUpdatedTopic;
+
 	@Value("${broker.topic.vessels.agg.by.vesseltype}")
 	private String vesselsAggByVesselTypeTopic;
 
@@ -190,13 +193,6 @@ public class VesselTypeCommandHandler extends CommandHandler {
 		return getResult(event.getSessionId(), completableFuture);
 	}
 
-	public VesselTypeDTO getVesselType(VesselTypeDTO type) {
-
-		VesselTypeAggregate vesselTypeAggregate = new VesselTypeAggregate(vesselTypeStateStore);
-
-		return vesselTypeAggregate.getVesselTypeFromStateStore(type);
-	}
-
 	@KafkaHandler
 	private void listen(VesselTypeCreatedEvent event) {
 
@@ -211,6 +207,10 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	private void listen(VesselTypeUpdatedEvent event) {
 
 		logger.info("VesselType modificado " + event.getAggregateId());
+
+		// Envía los editados satisfactoriamente para tenerlos en cuenta en el
+		// postupdate
+		publishToKafka(event, vesselTypeUpdatedTopic);
 
 		// El evento Modificado se envía desde el stream
 

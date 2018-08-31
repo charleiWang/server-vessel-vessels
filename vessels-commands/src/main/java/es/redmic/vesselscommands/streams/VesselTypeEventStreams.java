@@ -103,12 +103,12 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 				.filter((id, event) -> (EventTypes.CHECK_DELETE.equals(event.getType())));
 
 		deleteEvents.leftJoin(aggByVesselType,
-				(deleteEvent, vesselAggByVesselType) -> getDeleteResultEvent(deleteEvent, vesselAggByVesselType))
+				(deleteEvent, vesselAggByVesselType) -> getCheckDeleteResultEvent(deleteEvent, vesselAggByVesselType))
 				.to(topic);
 	}
 
 	@SuppressWarnings("serial")
-	private Event getDeleteResultEvent(Event deleteEvent,
+	private Event getCheckDeleteResultEvent(Event deleteEvent,
 			HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent> vesselAggByVesselType) {
 
 		if (vesselAggByVesselType == null || vesselAggByVesselType.isEmpty()) { // elemento no referenciado
@@ -123,17 +123,6 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 						}
 					});
 		}
-	}
-
-	/*
-	 * Función que a partir del último evento correcto + el evento de edición
-	 * parcial + la confirmación de la vista, si todo es correcto, genera evento
-	 * updated
-	 */
-
-	@Override
-	protected void processPartialUpdatedStream(KStream<String, Event> vesselTypeEvents,
-			KStream<String, Event> updateConfirmedEvents) {
 	}
 
 	/*
@@ -178,13 +167,28 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 				eventError.getExceptionType(), eventError.getArguments());
 	}
 
+	@Override
+	protected void processEnrichCreateSteam(KStream<String, Event> events) {
+		// En este caso no hay enriquecimiento
+	}
+
+	@Override
+	protected void processEnrichUpdateSteam(KStream<String, Event> events) {
+		// En este caso no hay enriquecimiento
+	}
+
+	@Override
+	protected void processPartialUpdatedStream(KStream<String, Event> vesselTypeEvents,
+			KStream<String, Event> updateConfirmedEvents) {
+		// En este caso no hay modificaciones parciales
+	}
+
 	/*
 	 * Función para procesar modificaciones de referencias
 	 */
 
 	@Override
 	protected void processPostUpdateStream(KStream<String, Event> events) {
-
 		// En este caso no hay modificación de relaciones
 	}
 }

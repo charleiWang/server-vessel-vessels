@@ -16,6 +16,7 @@ import org.apache.kafka.streams.kstream.Produced;
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
+import es.redmic.brokerlib.avro.common.EventTypes;
 import es.redmic.brokerlib.avro.serde.hashmap.HashMapSerde;
 import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
@@ -24,9 +25,10 @@ import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventFactory;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.AggregationVesselTypeInVesselPostUpdateEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
-import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
+import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 
 public class VesselEventStreams extends EventSourcingStreams {
@@ -35,17 +37,22 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 	private String vesselsAggByVesselTypeTopic;
 
+	private String vesselTypeUpdatedTopic;
+
 	private HashMapSerde<String, AggregationVesselTypeInVesselPostUpdateEvent> hashMapSerde;
 
 	private GlobalKTable<String, HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent>> aggByVesselType;
 
+	private GlobalKTable<String, Event> vesselType;
+
 	private KStream<String, Event> vesselTypeEvents;
 
 	public VesselEventStreams(StreamConfig config, String vesselTypeTopic, String vesselsAggByVesselTypeTopic,
-			AlertService alertService) {
+			String vesselTypeUpdatedTopic, AlertService alertService) {
 		super(config, alertService);
 		this.vesselTypeTopic = vesselTypeTopic;
 		this.vesselsAggByVesselTypeTopic = vesselsAggByVesselTypeTopic;
+		this.vesselTypeUpdatedTopic = vesselTypeUpdatedTopic;
 		this.hashMapSerde = new HashMapSerde<>(schemaRegistry);
 
 		logger.info("Arrancado servicio de streaming para event sourcing de Vessel con Id: " + this.serviceId);
@@ -66,7 +73,39 @@ public class VesselEventStreams extends EventSourcingStreams {
 		aggByVesselType = builder.globalTable(vesselsAggByVesselTypeTopic,
 				Consumed.with(Serdes.String(), hashMapSerde));
 
-		vesselTypeEvents = builder.stream(vesselTypeTopic);
+		vesselType = builder.globalTable(vesselTypeTopic);
+
+		vesselTypeEvents = builder.stream(vesselTypeUpdatedTopic);
+	}
+
+	/*
+	 * Función que a partir de los eventos de tipo CreateEnrich y globalKTable de
+	 * las relaciones, enriquece el item antes de mandarlo a crear
+	 * 
+	 */
+
+	@Override
+	protected void processEnrichCreateSteam(KStream<String, Event> events) {
+
+		KStream<String, Event> enrichCreateEvents = events
+				.filter((id, event) -> (EventTypes.ENRICH_CREATE.equals(event.getType())))
+				.selectKey((k, v) -> getVesselTypeIdFromVessel(v));
+
+		enrichCreateEvents.leftJoin(vesselType, (k, v) -> k,
+				(enrichCreateEvent, vesselTypeEvent) -> getEnrichCreateResultEvent(enrichCreateEvent, vesselTypeEvent))
+				.selectKey((k, v) -> v.getAggregateId()).to(topic);
+	}
+
+	private Event getEnrichCreateResultEvent(Event enrichCreateEvents, Event vesselTypeEvent) {
+
+		CreateVesselEnrichedEvent event = (CreateVesselEnrichedEvent) VesselEventFactory.getEvent(enrichCreateEvents,
+				VesselEventTypes.CREATE_ENRICHED, ((VesselEvent) enrichCreateEvents).getVessel());
+
+		if (vesselTypeEvent != null) {
+			((VesselEvent) event).getVessel().setType(((VesselTypeEvent) vesselTypeEvent).getVesselType());
+		}
+
+		return event;
 	}
 
 	/*
@@ -88,6 +127,36 @@ public class VesselEventStreams extends EventSourcingStreams {
 		VesselDTO vessel = ((VesselEvent) requestEvent).getVessel();
 
 		return VesselEventFactory.getEvent(confirmedEvent, VesselEventTypes.CREATED, vessel);
+	}
+
+	/*
+	 * Función que a partir de los eventos de tipo UpdateEnrich y globalKTable de
+	 * las relaciones, enriquece el item antes de mandarlo a modificar
+	 * 
+	 */
+
+	@Override
+	protected void processEnrichUpdateSteam(KStream<String, Event> events) {
+
+		KStream<String, Event> enrichUpdateEvents = events
+				.filter((id, event) -> (EventTypes.ENRICH_UPDATE.equals(event.getType())))
+				.selectKey((k, v) -> getVesselTypeIdFromVessel(v));
+
+		enrichUpdateEvents.leftJoin(vesselType, (k, v) -> k,
+				(enrichUpdateEvent, vesselTypeEvent) -> getEnrichUpdateResultEvent(enrichUpdateEvent, vesselTypeEvent))
+				.selectKey((k, v) -> v.getAggregateId()).to(topic);
+	}
+
+	private Event getEnrichUpdateResultEvent(Event enrichUpdateEvents, Event vesselTypeEvent) {
+
+		UpdateVesselEnrichedEvent event = (UpdateVesselEnrichedEvent) VesselEventFactory.getEvent(enrichUpdateEvents,
+				VesselEventTypes.UPDATE_ENRICHED, ((VesselEvent) enrichUpdateEvents).getVessel());
+
+		if (vesselTypeEvent != null) {
+			((VesselEvent) event).getVessel().setType(((VesselTypeEvent) vesselTypeEvent).getVesselType());
+		}
+
+		return event;
 	}
 
 	/*
@@ -254,11 +323,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 	private void processVesselTypePostUpdate() {
 
-		// Vesseltypes modificados
-		KStream<String, Event> updateReferenceEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventTypes.UPDATED.equals(event.getType())));
-
-		KStream<String, ArrayList<UpdateVesselTypeInVesselEvent>> join = updateReferenceEvents.join(aggByVesselType,
+		KStream<String, ArrayList<UpdateVesselTypeInVesselEvent>> join = vesselTypeEvents.join(aggByVesselType,
 				(k, v) -> k,
 				(updateReferenceEvent, vesselWithReferenceEvents) -> getPostUpdateEvent(updateReferenceEvent,
 						vesselWithReferenceEvents));
@@ -270,8 +335,13 @@ public class VesselEventStreams extends EventSourcingStreams {
 	private HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent> aggregateVesselsByVesselType(String key,
 			Event value, HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent> hashMap) {
 
-		hashMap.put(value.getAggregateId(), new AggregationVesselTypeInVesselPostUpdateEvent(value.getType(),
-				((VesselEvent) value).getVessel().getType()).buildFrom(value));
+		VesselTypeDTO vesselType = ((VesselEvent) value).getVessel().getType();
+
+		if (vesselType != null) {
+
+			hashMap.put(value.getAggregateId(),
+					new AggregationVesselTypeInVesselPostUpdateEvent(value.getType(), vesselType).buildFrom(value));
+		}
 		return hashMap;
 	}
 

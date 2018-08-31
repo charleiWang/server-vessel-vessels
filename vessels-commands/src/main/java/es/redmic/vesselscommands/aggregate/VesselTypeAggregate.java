@@ -2,7 +2,6 @@ package es.redmic.vesselscommands.aggregate;
 
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.commandslib.aggregate.Aggregate;
-import es.redmic.exception.database.DBNotFoundException;
 import es.redmic.vesselscommands.commands.vesseltype.CreateVesselTypeCommand;
 import es.redmic.vesselscommands.commands.vesseltype.DeleteVesselTypeCommand;
 import es.redmic.vesselscommands.commands.vesseltype.UpdateVesselTypeCommand;
@@ -85,21 +84,6 @@ public class VesselTypeAggregate extends Aggregate {
 
 	public VesselTypeDTO getVesselType() {
 		return vesselType;
-	}
-
-	public VesselTypeDTO getVesselTypeFromStateStore(VesselTypeDTO type) {
-
-		CreateVesselTypeCommand cmd = new CreateVesselTypeCommand(type);
-
-		Event state = vesselTypeStateStore.getVesselType(cmd.getVesselType().getId());
-
-		if (state == null) {
-			throw new DBNotFoundException("id", cmd.getVesselType().getId());
-		}
-
-		loadFromHistory(state);
-
-		return getVesselType();
 	}
 
 	@Override

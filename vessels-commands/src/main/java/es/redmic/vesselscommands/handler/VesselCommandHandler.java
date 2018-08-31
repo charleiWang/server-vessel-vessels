@@ -25,8 +25,9 @@ import es.redmic.vesselscommands.streams.VesselEventStreams;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventFactory;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
+import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
-import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCancelledEvent;
@@ -34,7 +35,7 @@ import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
-import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
+import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 
 @Component
@@ -49,6 +50,9 @@ public class VesselCommandHandler extends CommandHandler {
 
 	@Value("${broker.topic.vessel}")
 	private String vesselTopic;
+
+	@Value("${broker.topic.vessel.type.updated}")
+	private String vesselTypeUpdatedTopic;
 
 	@Value("${broker.topic.vessels.agg.by.vesseltype}")
 	private String vesselsAggByVesselTypeTopic;
@@ -74,9 +78,6 @@ public class VesselCommandHandler extends CommandHandler {
 	private final String REDMIC_PROCESS = "REDMIC_PROCESS";
 
 	private VesselStateStore vesselStateStore;
-
-	@Autowired
-	VesselTypeCommandHandler vesselTypeCommandHandler;
 
 	@Autowired
 	UserService userService;
@@ -107,7 +108,7 @@ public class VesselCommandHandler extends CommandHandler {
 				config
 					.serviceId(vesselsEventsStreamId)
 					.windowsTime(streamWindowsTime)
-					.build(), vesselTypeTopic, vesselsAggByVesselTypeTopic, alertService);
+					.build(), vesselTypeTopic, vesselsAggByVesselTypeTopic, vesselTypeUpdatedTopic, alertService);
 		// @formatter:on
 	}
 
@@ -117,14 +118,8 @@ public class VesselCommandHandler extends CommandHandler {
 
 		logger.debug("Procesando CreateVesselCommand");
 
-		// Rellena el vesselType. Si es null lo descartamos
-		if (cmd.getVessel().getType() != null)
-			cmd.getVessel().setType(vesselTypeCommandHandler.getVesselType(cmd.getVessel().getType()));
-		else // TODO: enviar correo a operador de datos.
-			logger.warn("Vessel con id " + cmd.getVessel().getId() + " no tiene definido el tipo.");
-
 		// Se procesa el comando, obteniendo el evento generado
-		CreateVesselEvent event = agg.process(cmd);
+		VesselEvent event = agg.process(cmd);
 
 		// Si no se genera evento significa que no se debe aplicar
 		if (event == null) {
@@ -154,11 +149,8 @@ public class VesselCommandHandler extends CommandHandler {
 
 		VesselAggregate agg = new VesselAggregate(vesselStateStore);
 
-		// El vesselType es obligado
-		cmd.getVessel().setType(vesselTypeCommandHandler.getVesselType(cmd.getVessel().getType()));
-
 		// Se procesa el comando, obteniendo el evento generado
-		UpdateVesselEvent event = agg.process(cmd);
+		VesselEvent event = agg.process(cmd);
 
 		// Si no se genera evento significa que no se va a aplicar
 		if (event == null)
@@ -206,11 +198,10 @@ public class VesselCommandHandler extends CommandHandler {
 		return getResult(event.getSessionId(), completableFuture);
 	}
 
-	public VesselDTO getVessel(VesselDTO type) {
+	@KafkaHandler
+	private void listen(CreateVesselEnrichedEvent event) {
 
-		VesselAggregate vesselAggregate = new VesselAggregate(vesselStateStore);
-
-		return vesselAggregate.getVesselFromStateStore(type);
+		publishToKafka(VesselEventFactory.getEvent(event, VesselEventTypes.CREATE, event.getVessel()), vesselTopic);
 	}
 
 	@KafkaHandler
@@ -221,6 +212,12 @@ public class VesselCommandHandler extends CommandHandler {
 		// El evento Creado se envió desde el stream
 
 		resolveCommand(event.getSessionId());
+	}
+
+	@KafkaHandler
+	private void listen(UpdateVesselEnrichedEvent event) {
+
+		publishToKafka(VesselEventFactory.getEvent(event, VesselEventTypes.UPDATE, event.getVessel()), vesselTopic);
 	}
 
 	@KafkaHandler
