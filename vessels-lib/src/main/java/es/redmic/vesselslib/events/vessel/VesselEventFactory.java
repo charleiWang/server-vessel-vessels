@@ -38,20 +38,6 @@ public class VesselEventFactory {
 
 	public static Event getEvent(Event source, String type) {
 
-		if (type.equals(VesselEventTypes.CREATE_ENRICHED)) {
-
-			logger.info("Creando evento CreateVesselEnrichedEvent para: " + source.getAggregateId());
-
-			return new CreateVesselEnrichedEvent().buildFrom(source);
-		}
-
-		if (type.equals(VesselEventTypes.UPDATE_ENRICHED)) {
-
-			logger.info("Creando evento UpdateVesselEnrichedEvent para: " + source.getAggregateId());
-
-			return new UpdateVesselEnrichedEvent().buildFrom(source);
-		}
-
 		if (type.equals(VesselEventTypes.DELETE)) {
 
 			logger.info("Creando evento DeleteVesselEvent para: " + source.getAggregateId());
@@ -82,6 +68,20 @@ public class VesselEventFactory {
 	public static Event getEvent(Event source, String type, VesselDTO vessel) {
 
 		VesselEvent successfulEvent = null;
+
+		if (type.equals(VesselEventTypes.CREATE_ENRICHED)) {
+
+			logger.info("Creando evento CreateVesselEnrichedEvent para: " + source.getAggregateId());
+
+			successfulEvent = new CreateVesselEnrichedEvent().buildFrom(source);
+		}
+
+		if (type.equals(VesselEventTypes.UPDATE_ENRICHED)) {
+
+			logger.info("Creando evento UpdateVesselEnrichedEvent para: " + source.getAggregateId());
+
+			successfulEvent = new UpdateVesselEnrichedEvent().buildFrom(source);
+		}
 
 		if (type.equals(VesselEventTypes.CREATE)) {
 

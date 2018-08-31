@@ -9,6 +9,7 @@ import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.vesselslib.events.vessel.VesselEventFactory;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
+import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
@@ -37,10 +38,10 @@ public class VesselEventFactoryTest {
 
 		Event source = VesselDataUtil.getEnrichCreateVesselEvent();
 		CreateVesselEnrichedEvent event = (CreateVesselEnrichedEvent) VesselEventFactory.getEvent(source,
-				VesselEventTypes.CREATE_ENRICHED);
+				VesselEventTypes.CREATE_ENRICHED, ((VesselEvent) source).getVessel());
 
 		assertEquals(VesselEventTypes.CREATE_ENRICHED, event.getType());
-
+		assertNotNull(event.getVessel());
 		checkMetadataFields(source, event);
 	}
 
@@ -49,10 +50,10 @@ public class VesselEventFactoryTest {
 
 		Event source = VesselDataUtil.getEnrichUpdateVesselEvent();
 		UpdateVesselEnrichedEvent event = (UpdateVesselEnrichedEvent) VesselEventFactory.getEvent(source,
-				VesselEventTypes.UPDATE_ENRICHED);
+				VesselEventTypes.UPDATE_ENRICHED, ((VesselEvent) source).getVessel());
 
 		assertEquals(VesselEventTypes.UPDATE_ENRICHED, event.getType());
-
+		assertNotNull(event.getVessel());
 		checkMetadataFields(source, event);
 	}
 
