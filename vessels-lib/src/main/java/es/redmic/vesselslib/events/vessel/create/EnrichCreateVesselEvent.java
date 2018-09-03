@@ -29,6 +29,7 @@ public class EnrichCreateVesselEvent extends VesselEvent {
 	public EnrichCreateVesselEvent(VesselDTO vessel) {
 		super(type);
 		this.setVessel(vessel);
+		setSessionId(UUID.randomUUID().toString());
 	}
 
 	@Override
