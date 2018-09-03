@@ -110,23 +110,23 @@ public class VesselPostUpdateHandlerTest extends KafkaBaseIntegrationTest {
 		// Envía created para que genere un evento postUpdate y lo saca de la cola
 		VesselCreatedEvent vesselCreatedEvent = VesselDataUtil.getVesselCreatedEvent(mmsi + 7);
 		kafkaTemplate.send(VESSEL_TOPIC, vesselCreatedEvent.getAggregateId(), vesselCreatedEvent);
-		Thread.sleep(2000);
+		Thread.sleep(3000);
 
 		// Envía created para que genere un evento postUpdate y lo saca de la cola
 		VesselCreatedEvent vesselCreatedEvent2 = VesselDataUtil.getVesselCreatedEvent(mmsi + 8);
 		kafkaTemplate.send(VESSEL_TOPIC, vesselCreatedEvent2.getAggregateId(), vesselCreatedEvent2);
-		Thread.sleep(2000);
+		Thread.sleep(3000);
 
 		// Envía created con vesselType actualizado para comprobar que no genera evento
 		VesselCreatedEvent vesselCreatedEvent3 = VesselDataUtil.getVesselCreatedEvent(mmsi + 9);
 		vesselCreatedEvent3.getVessel().setType(vesselTypeUpdatedEvent.getVesselType());
 		kafkaTemplate.send(VESSEL_TOPIC, vesselCreatedEvent3.getAggregateId(), vesselCreatedEvent3);
-		Thread.sleep(2000);
+		Thread.sleep(3000);
 
 		// Envía create para simular uno a medias en el stream y lo saca de la cola
 		CreateVesselEvent createVesselEvent = VesselDataUtil.getCreateEvent(mmsi + 10);
 		kafkaTemplate.send(VESSEL_TOPIC, createVesselEvent.getAggregateId(), createVesselEvent);
-		Thread.sleep(2000);
+		Thread.sleep(3000);
 
 		// Envía evento de vesselType actualizado para que genere los eventos de
 		// postUpdate
