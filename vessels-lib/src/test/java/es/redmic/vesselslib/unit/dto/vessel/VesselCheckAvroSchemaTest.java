@@ -1,4 +1,4 @@
-package es.redmic.vesselslib.unit.dto;
+package es.redmic.vesselslib.unit.dto.vessel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

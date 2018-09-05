@@ -1,4 +1,4 @@
-package es.redmic.vesselslib.unit.dto;
+package es.redmic.vesselslib.unit.dto.vessel;
 
 import org.junit.Before;
 import org.junit.Test;
