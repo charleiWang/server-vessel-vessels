@@ -10,7 +10,7 @@ public class CheckDeleteVesselTrackingEvent extends SimpleEvent {
 	// @formatter:off
 
 	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{"
-		+ "\"type\":\"record\",\"name\":\"CheckDeleteTrackingVesselEvent\","
+		+ "\"type\":\"record\",\"name\":\"CheckDeleteVesselTrackingEvent\","
 				+ "\"namespace\":\"es.redmic.vesselslib.events.vesseltracking.delete\",\"fields\":["
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on

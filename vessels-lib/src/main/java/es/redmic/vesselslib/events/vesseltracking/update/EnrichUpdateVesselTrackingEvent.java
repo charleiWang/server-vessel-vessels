@@ -14,7 +14,7 @@ public class EnrichUpdateVesselTrackingEvent extends VesselTrackingEvent {
 
 	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{"
 		+ "\"type\":\"record\",\"name\":\"EnrichUpdateVesselTrackingEvent\","
-				+ "\"namespace\":\"es.redmic.vesselTrackingslib.events.vesseltracking.update\",\"fields\":["
+				+ "\"namespace\":\"es.redmic.vesselslib.events.vesseltracking.update\",\"fields\":["
 			+ getVesselTrackingEventSchema() + ","
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
