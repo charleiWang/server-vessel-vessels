@@ -2,6 +2,7 @@ package es.redmic.vesselslib.unit.utils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joda.time.DateTime;
@@ -41,6 +42,7 @@ import es.redmic.vesselslib.events.vesseltracking.update.VesselTrackingUpdatedEv
 public abstract class VesselTrackingDataUtil {
 
 	public final static String PREFIX = "vesseltracking-mmsi-tstamp-", MMSI = "1234", USER = "1";
+	private static final long TSTAMP = new DateTime().getMillis();
 
 	// create
 
@@ -253,7 +255,7 @@ public abstract class VesselTrackingDataUtil {
 		VesselTrackingDTO vesselTracking = new VesselTrackingDTO();
 
 		VesselDTO vessel = new VesselDTO();
-		vessel.setId(PREFIX + MMSI);
+		vessel.setId(VesselDataUtil.PREFIX + MMSI);
 		vessel.setMmsi(Integer.valueOf(MMSI));
 		vessel.setName("Avatar");
 		vessel.setImo(1234);
@@ -269,6 +271,9 @@ public abstract class VesselTrackingDataUtil {
 		vesselType.setName("Cargo, all ships of this type");
 		vesselType.setName_en("Cargo, all ships of this type");
 		vessel.setType(vesselType);
+
+		vesselTracking.setId(PREFIX + MMSI + TSTAMP);
+		vesselTracking.setUuid(UUID.randomUUID().toString());
 
 		Point geometry = JTSFactoryFinder.getGeometryFactory().createPoint(new Coordinate(44.56433, 37.94388));
 		vesselTracking.setGeometry(geometry);
