@@ -19,7 +19,7 @@ public class VesselTrackingDTO extends FeatureDTO<VesselTrackingPropertiesDTO, P
 	@JsonIgnore
 	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse(
 			"{\"type\":\"record\",\"name\":\"VesselTrackingDTO\",\"namespace\":\"es.redmic.vesselslib.dto.tracking\",\"fields\":["
-				+ "{\"name\":\"uuid\",\"type\":[\"string\", \"null\"]},"
+				+ "{\"name\":\"uuid\",\"type\": \"string\"},"
 				+ "{\"name\":\"type\", \"type\": {"
 					+ "\"namespace\":\"es.redmic.brokerlib.avro.geodata.common\",\"type\":\"enum\",\"name\":\"GeoJSONFeatureType\"," + 
 						"\"symbols\":[\"FEATURE\"]}},"
