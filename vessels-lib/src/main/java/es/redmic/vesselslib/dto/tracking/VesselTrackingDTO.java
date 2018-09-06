@@ -1,8 +1,12 @@
 package es.redmic.vesselslib.dto.tracking;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import org.apache.avro.Schema;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vividsolutions.jts.geom.Point;
 
 import es.redmic.brokerlib.avro.geodata.common.FeatureDTO;
@@ -13,7 +17,16 @@ public class VesselTrackingDTO extends FeatureDTO<VesselTrackingPropertiesDTO, P
 	// @formatter:off
 
 	@JsonIgnore
-	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("");
+	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse(
+			"{\"type\":\"record\",\"name\":\"VesselTrackingDTO\",\"namespace\":\"es.redmic.vesselslib.dto.tracking\",\"fields\":["
+				+ "{\"name\":\"uuid\",\"type\":[\"string\", \"null\"]},"
+				+ "{\"name\":\"type\", \"type\": {"
+					+ "\"namespace\":\"es.redmic.brokerlib.avro.geodata.common\",\"type\":\"enum\",\"name\":\"GeoJSONFeatureType\"," + 
+						"\"symbols\":[\"FEATURE\"]}},"
+				+ "{\"name\":\"properties\",\"type\":" + VesselTrackingPropertiesDTO.SCHEMA$.toString() + "},"
+				+ "{\"name\":\"geometry\",\"type\":[\"bytes\", \"null\"]},"
+				+ "{\"name\":\"id\",\"type\":\"string\"}"
+			+ "]}");
 	
 	// @formatter:on
 
@@ -29,14 +42,54 @@ public class VesselTrackingDTO extends FeatureDTO<VesselTrackingPropertiesDTO, P
 
 	@Override
 	public Object get(int field) {
-		// TODO Auto-generated method stub
-		return null;
+		switch (field) {
+		case 0:
+			return getUuid();
+		case 1:
+			return getType();
+		case 2:
+			return getProperties();
+		case 3:
+			try {
+				return ByteBuffer.wrap(mapper.writeValueAsBytes(getGeometry()));
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+				return null;
+			}
+		case 4:
+			return getId();
+		default:
+			throw new org.apache.avro.AvroRuntimeException("Bad index");
+		}
 	}
 
 	@Override
 	public void put(int field, Object value) {
-		// TODO Auto-generated method stub
-
+		switch (field) {
+		case 0:
+			setUuid(value != null ? value.toString() : null);
+			break;
+		case 1:
+			if (value != null) {
+				setType(GeoJSONFeatureType.fromString(value.toString()));
+			}
+			break;
+		case 2:
+			setProperties((VesselTrackingPropertiesDTO) value);
+			break;
+		case 3:
+			try {
+				setGeometry(mapper.readValue(((ByteBuffer) value).array(), Point.class));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			break;
+		case 4:
+			setId(value != null ? value.toString() : null);
+			break;
+		default:
+			throw new org.apache.avro.AvroRuntimeException("Bad index");
+		}
 	}
 
 }
