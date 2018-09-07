@@ -7,6 +7,17 @@ public class KafkaEmbeddedConfig {
 	// partitions per topic.
 	public final static Integer PARTITIONS_PER_TOPIC = 3;
 
-	public final static String[] TOPICS_NAME = new String[] { "vessels-agg-by-vessel-type", "vessel-type", "vessel",
-			"realtime.tracking.vessels", "vessel-type-updated" };
+	// @formatter:off
+ 
+	public final static String[] TOPICS_NAME = new String[] { 
+		"vessels-agg-by-vessel-type",
+		"vessel-type", "vessel",
+		"realtime.tracking.vessels",
+		"vessel-type-updated",
+		"tracking-agg-by-vessel",
+		"vessel-updated",
+		"vessel-tracking"
+	};
+	
+	// @formatter:on
 }
