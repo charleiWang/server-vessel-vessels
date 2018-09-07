@@ -53,9 +53,6 @@ public class CreateVesselFromTrackingTest extends KafkaBaseIntegrationTest {
 	@Value("${broker.topic.realtime.tracking.vessels}")
 	String REALTIME_TRACKING_VESSELS_TOPIC;
 
-	@Value("${broker.topic.vessel-type}")
-	private String VESSEL_TYPE_TOPIC;
-
 	@ClassRule
 	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(KafkaEmbeddedConfig.NUM_BROKERS, true,
 			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
