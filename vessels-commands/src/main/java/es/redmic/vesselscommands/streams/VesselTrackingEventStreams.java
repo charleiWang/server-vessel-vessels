@@ -91,7 +91,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 				.selectKey((k, v) -> getVesselIdFromVesselTracking(v));
 
 		enrichCreateEvents
-				.leftJoin(vessel, (k, v) -> k,
+				.join(vessel, (k, v) -> k,
 						(enrichCreateEvent, vesselEvent) -> getEnrichCreateResultEvent(enrichCreateEvent, vesselEvent))
 				.selectKey((k, v) -> v.getAggregateId()).to(topic);
 	}
