@@ -20,7 +20,6 @@ import es.redmic.vesselscommands.commands.vesseltracking.UpdateVesselTrackingCom
 import es.redmic.vesselscommands.handler.VesselTrackingCommandHandler;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingPropertiesDTO;
-import es.redmic.vesselslib.dto.vessel.VesselDTO;
 
 @Service
 public class VesselTrackingCommandService implements CommandGeoServiceItfc<VesselTrackingDTO> {
@@ -86,7 +85,7 @@ public class VesselTrackingCommandService implements CommandGeoServiceItfc<Vesse
 			throw new FieldNotValidException("activityId", requestId);
 	}
 
-	private VesselTrackingDTO convertTrackToVesselTracking(AISTrackingDTO aisTracking) {
+	public static VesselTrackingDTO convertTrackToVesselTracking(AISTrackingDTO aisTracking) {
 
 		if (aisTracking.getMmsi() == null)
 			throw new FieldNotValidException("mmsi", "null");
@@ -105,13 +104,7 @@ public class VesselTrackingCommandService implements CommandGeoServiceItfc<Vesse
 
 		VesselTrackingPropertiesDTO properties = new VesselTrackingPropertiesDTO();
 
-		// TODO: asignar una actividad para este tipo de datos?
-		// properties.setActivityId(activityId);
-
-		VesselDTO vessel = new VesselDTO();
-		vessel.setMmsi(aisTracking.getMmsi());
-		vessel.setImo(aisTracking.getImo());
-		properties.setVessel(vessel);
+		properties.setVessel(VesselCommandService.convertTrackToVessel(aisTracking));
 
 		properties.setDate(aisTracking.getTstamp());
 
