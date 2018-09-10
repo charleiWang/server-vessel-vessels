@@ -16,14 +16,20 @@ import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingPropertiesDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
-import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
+import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
+import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.EnrichCreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.VesselTrackingCreatedEvent;
+import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
+import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
+import es.redmic.vesselslib.events.vesseltracking.update.EnrichUpdateVesselTrackingEvent;
+import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEvent;
+import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.VesselTrackingUpdatedEvent;
 import es.redmic.vesselslib.unit.utils.VesselDataUtil;
 
@@ -31,26 +37,24 @@ public abstract class VesselTrackingDataUtil {
 
 	public final static String PREFIX = "vesseltracking-mmsi-tstamp-", USER = "1";
 
-	public static CreateVesselTrackingEvent getCreateEvent(Integer MMSI) {
-
-		String TSTAMP = String.valueOf(new DateTime().getMillis());
+	public static CreateVesselTrackingEvent getCreateEvent(Integer mmsi, String tstamp) {
 
 		CreateVesselTrackingEvent event = new CreateVesselTrackingEvent();
-		event.setAggregateId(PREFIX + MMSI + TSTAMP);
+		event.setAggregateId(PREFIX + mmsi + tstamp);
 		event.setDate(DateTime.now());
 		event.setId(UUID.randomUUID().toString());
 		event.setType(VesselTrackingEventTypes.CREATE);
 		event.setVersion(1);
 		event.setUserId(USER);
 		event.setSessionId("sessionIdA");
-		event.setVesselTracking(getVesselTracking(MMSI, TSTAMP));
+		event.setVesselTracking(getVesselTracking(mmsi, tstamp));
 
 		return event;
 	}
 
-	public static EnrichCreateVesselTrackingEvent getEnrichCreateVesselTrackingEvent(Integer mmsi) {
+	public static EnrichCreateVesselTrackingEvent getEnrichCreateVesselTrackingEvent(Integer mmsi, String tstamp) {
 
-		CreateVesselTrackingEvent createEvent = getCreateEvent(mmsi);
+		CreateVesselTrackingEvent createEvent = getCreateEvent(mmsi, tstamp);
 
 		EnrichCreateVesselTrackingEvent event = new EnrichCreateVesselTrackingEvent().buildFrom(createEvent);
 		event.setVesselTracking(createEvent.getVesselTracking());
@@ -58,91 +62,140 @@ public abstract class VesselTrackingDataUtil {
 		return event;
 	}
 
-	public static VesselTrackingCreatedEvent getCreateVesselTrackingEvent(Integer mmsi) {
+	public static VesselTrackingCreatedEvent getCreateVesselTrackingEvent(Integer mmsi, String tstamp) {
 
-		CreateVesselTrackingEvent createEvent = getCreateEvent(mmsi);
-
-		VesselTrackingCreatedEvent event = new VesselTrackingCreatedEvent().buildFrom(createEvent);
-		event.setVesselTracking(createEvent.getVesselTracking());
-		return event;
-	}
-
-	public static VesselTrackingCreatedEvent getVesselTrackingCreatedEvent(Integer mmsi) {
-
-		CreateVesselTrackingEvent createEvent = getCreateEvent(mmsi);
+		CreateVesselTrackingEvent createEvent = getCreateEvent(mmsi, tstamp);
 
 		VesselTrackingCreatedEvent event = new VesselTrackingCreatedEvent().buildFrom(createEvent);
 		event.setVesselTracking(createEvent.getVesselTracking());
 		return event;
 	}
 
-	public static CreateVesselFailedEvent getCreateVesselFailedEvent(Integer mmsi) {
+	public static CreateVesselTrackingConfirmedEvent getCreateVesselTrackingConfirmedEvent(Integer mmsi,
+			String tstamp) {
 
-		CreateVesselFailedEvent createVesselFailedEvent = new CreateVesselFailedEvent().buildFrom(getCreateEvent(mmsi));
+		return new CreateVesselTrackingConfirmedEvent().buildFrom(getCreateEvent(mmsi, tstamp));
+	}
 
-		createVesselFailedEvent.setExceptionType(ExceptionType.ITEM_ALREADY_EXIST_EXCEPTION.name());
+	public static VesselTrackingCreatedEvent getVesselTrackingCreatedEvent(Integer mmsi, String tstamp) {
+
+		CreateVesselTrackingEvent createEvent = getCreateEvent(mmsi, tstamp);
+
+		VesselTrackingCreatedEvent event = new VesselTrackingCreatedEvent().buildFrom(createEvent);
+		event.setVesselTracking(createEvent.getVesselTracking());
+		return event;
+	}
+
+	public static CreateVesselTrackingFailedEvent getCreateVesselTrackingFailedEvent(Integer mmsi, String tstamp) {
+
+		CreateVesselTrackingFailedEvent createVesselTrackingFailedEvent = new CreateVesselTrackingFailedEvent()
+				.buildFrom(getCreateEvent(mmsi, tstamp));
+
+		createVesselTrackingFailedEvent.setExceptionType(ExceptionType.ITEM_ALREADY_EXIST_EXCEPTION.name());
 		Map<String, String> arguments = new HashMap<>();
 		arguments.put("A", "B");
-		createVesselFailedEvent.setArguments(arguments);
+		createVesselTrackingFailedEvent.setArguments(arguments);
 
-		return createVesselFailedEvent;
+		return createVesselTrackingFailedEvent;
 	}
 
 	// update
 
-	public static UpdateVesselTrackingEvent getUpdateEvent(Integer MMSI) {
-
-		String TSTAMP = String.valueOf(new DateTime().getMillis());
+	public static UpdateVesselTrackingEvent getUpdateEvent(Integer mmsi, String tstamp) {
 
 		UpdateVesselTrackingEvent event = new UpdateVesselTrackingEvent();
-		event.setAggregateId(PREFIX + MMSI + TSTAMP);
+		event.setAggregateId(PREFIX + mmsi + tstamp);
 		event.setDate(DateTime.now());
 		event.setId(UUID.randomUUID().toString());
 		event.setType(VesselTrackingEventTypes.UPDATE);
 		event.setVersion(2);
 		event.setUserId(USER);
 		event.setSessionId("sessionIdB");
-		event.setVesselTracking(getVesselTracking(MMSI, TSTAMP));
+		event.setVesselTracking(getVesselTracking(mmsi, tstamp));
 
 		return event;
 	}
 
-	public static VesselTrackingUpdatedEvent getVesselTrackingUpdatedEvent(Integer mmsi) {
+	public static EnrichUpdateVesselTrackingEvent getEnrichUpdateVesselTrackingEvent(Integer mmsi, String tstamp) {
 
-		UpdateVesselTrackingEvent updateEvent = getUpdateEvent(mmsi);
+		UpdateVesselTrackingEvent updateEvent = getUpdateEvent(mmsi, tstamp);
+
+		EnrichUpdateVesselTrackingEvent event = new EnrichUpdateVesselTrackingEvent().buildFrom(updateEvent);
+		event.setVesselTracking(updateEvent.getVesselTracking());
+		return event;
+
+	}
+
+	public static UpdateVesselTrackingConfirmedEvent getUpdateVesselTrackingConfirmedEvent(Integer mmsi,
+			String tstamp) {
+		return new UpdateVesselTrackingConfirmedEvent().buildFrom(getUpdateEvent(mmsi, tstamp));
+	}
+
+	public static VesselTrackingUpdatedEvent getVesselTrackingUpdatedEvent(Integer mmsi, String tstamp) {
+
+		UpdateVesselTrackingEvent updateEvent = getUpdateEvent(mmsi, tstamp);
 
 		VesselTrackingUpdatedEvent event = new VesselTrackingUpdatedEvent().buildFrom(updateEvent);
 		event.setVesselTracking(updateEvent.getVesselTracking());
 		return event;
 	}
 
+	public static UpdateVesselTrackingFailedEvent getUpdateVesselTrackingFailedEvent(Integer mmsi, String tstamp) {
+
+		UpdateVesselTrackingFailedEvent event = new UpdateVesselTrackingFailedEvent()
+				.buildFrom(getUpdateEvent(mmsi, tstamp));
+
+		event.setExceptionType(ExceptionType.ITEM_NOT_FOUND.name());
+		Map<String, String> arguments = new HashMap<>();
+		arguments.put("A", "B");
+		event.setArguments(arguments);
+
+		return event;
+	}
+
 	// delete
 
-	public static DeleteVesselTrackingEvent getDeleteEvent(Integer MMSI) {
-
-		String TSTAMP = String.valueOf(new DateTime().getMillis());
+	public static DeleteVesselTrackingEvent getDeleteEvent(Integer mmsi, String tstamp) {
 
 		DeleteVesselTrackingEvent event = new DeleteVesselTrackingEvent();
-		event.setAggregateId(PREFIX + MMSI + TSTAMP);
+		event.setAggregateId(PREFIX + mmsi + tstamp);
 		event.setType(VesselTrackingEventTypes.DELETE);
 		event.setVersion(3);
 		event.setUserId(USER);
 		return event;
 	}
 
-	public static VesselTrackingDeletedEvent getVesselTrackingDeletedEvent(Integer MMSI) {
+	public static DeleteVesselTrackingConfirmedEvent getDeleteVesselTrackingConfirmedEvent(Integer mmsi,
+			String tstamp) {
 
-		VesselTrackingDeletedEvent event = new VesselTrackingDeletedEvent().buildFrom(getDeleteEvent(MMSI));
+		return new DeleteVesselTrackingConfirmedEvent().buildFrom(getDeleteEvent(mmsi, tstamp));
+	}
+
+	public static VesselTrackingDeletedEvent getVesselTrackingDeletedEvent(Integer mmsi, String tstamp) {
+
+		VesselTrackingDeletedEvent event = new VesselTrackingDeletedEvent().buildFrom(getDeleteEvent(mmsi, tstamp));
 		return event;
 	}
 
-	public static VesselTrackingDTO getVesselTracking(Integer MMSI, String TSTAMP) {
+	public static DeleteVesselTrackingFailedEvent getDeleteVesselTrackingFailedEvent(Integer mmsi, String tstamp) {
+
+		DeleteVesselTrackingFailedEvent event = new DeleteVesselTrackingFailedEvent()
+				.buildFrom(getDeleteEvent(mmsi, tstamp));
+
+		event.setExceptionType(ExceptionType.DELETE_ITEM_EXCEPTION.name());
+		Map<String, String> arguments = new HashMap<>();
+		// arguments.put("A", "B");
+		event.setArguments(arguments);
+		return event;
+	}
+
+	public static VesselTrackingDTO getVesselTracking(Integer mmsi, String tstamp) {
 
 		VesselTrackingDTO vesselTracking = new VesselTrackingDTO();
 
 		VesselDTO vessel = new VesselDTO();
-		vessel.setId(VesselDataUtil.PREFIX + MMSI);
-		vessel.setMmsi(Integer.valueOf(MMSI));
+		vessel.setId(VesselDataUtil.PREFIX + mmsi);
+		vessel.setMmsi(Integer.valueOf(mmsi));
 		vessel.setName("Avatar");
 		vessel.setImo(1234);
 		vessel.setBeam(30.2);
@@ -158,7 +211,7 @@ public abstract class VesselTrackingDataUtil {
 		vesselType.setName_en("Cargo, all ships of this type");
 		vessel.setType(vesselType);
 
-		vesselTracking.setId(PREFIX + MMSI + TSTAMP);
+		vesselTracking.setId(PREFIX + mmsi + tstamp);
 		vesselTracking.setUuid(UUID.randomUUID().toString());
 
 		Point geometry = JTSFactoryFinder.getGeometryFactory().createPoint(new Coordinate(44.56433, 37.94388));

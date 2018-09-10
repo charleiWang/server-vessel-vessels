@@ -47,13 +47,10 @@ import org.springframework.util.concurrent.ListenableFuture;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
-import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
 import es.redmic.testutils.documentation.DocumentationCommandBaseTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.handler.VesselCommandHandler;
-import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
 import es.redmic.vesselscommands.statestore.VesselStateStore;
-import es.redmic.vesselscommands.statestore.VesselTypeStateStore;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
@@ -86,13 +83,8 @@ public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 
 	VesselStateStore vesselsStateStore;
 
-	VesselTypeStateStore vesselTypeStateStore;
-
 	@Autowired
 	VesselCommandHandler vesselCommandHandler;
-
-	@Autowired
-	VesselTypeCommandHandler vesselTypeCommandHandler;
 
 	@Autowired
 	private KafkaTemplate<String, Event> kafkaTemplate;
@@ -123,13 +115,6 @@ public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 		vesselsStateStore = Mockito.mock(VesselStateStore.class);
 
 		Whitebox.setInternalState(vesselCommandHandler, "vesselStateStore", vesselsStateStore);
-
-		vesselTypeStateStore = Mockito.mock(VesselTypeStateStore.class);
-
-		Whitebox.setInternalState(vesselTypeCommandHandler, "vesselTypeStateStore", vesselTypeStateStore);
-
-		when(vesselTypeStateStore.getVesselType(VesselTypeDataUtil.PREFIX + "70"))
-				.thenReturn(VesselTypeDataUtil.getCreateEvent("70"));
 
 		// @formatter:off
 

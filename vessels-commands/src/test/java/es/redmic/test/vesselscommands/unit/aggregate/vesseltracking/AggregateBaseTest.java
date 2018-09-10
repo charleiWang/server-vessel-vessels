@@ -23,6 +23,8 @@ public abstract class AggregateBaseTest {
 
 	Integer mmsi = 1234;
 
+	String tstamp = String.valueOf(new DateTime().getMillis());
+
 	@Before
 	public void setUp() {
 
@@ -33,32 +35,32 @@ public abstract class AggregateBaseTest {
 
 	protected CreateVesselTrackingEvent getCreateVesselTrackingEvent() {
 
-		return VesselTrackingDataUtil.getCreateEvent(mmsi);
+		return VesselTrackingDataUtil.getCreateEvent(mmsi, tstamp);
 	}
 
 	protected VesselTrackingCreatedEvent getVesselTrackingCreatedEvent() {
 
-		return VesselTrackingDataUtil.getVesselTrackingCreatedEvent(mmsi);
+		return VesselTrackingDataUtil.getVesselTrackingCreatedEvent(mmsi, tstamp);
 	}
 
 	protected UpdateVesselTrackingEvent getUpdateVesselTrackingEvent() {
 
-		return VesselTrackingDataUtil.getUpdateEvent(mmsi);
+		return VesselTrackingDataUtil.getUpdateEvent(mmsi, tstamp);
 	}
 
 	protected VesselTrackingUpdatedEvent getVesselTrackingUpdatedEvent() {
 
-		return VesselTrackingDataUtil.getVesselTrackingUpdatedEvent(mmsi);
+		return VesselTrackingDataUtil.getVesselTrackingUpdatedEvent(mmsi, tstamp);
 	}
 
 	protected DeleteVesselTrackingEvent getDeleteVesselTrackingEvent() {
 
-		return VesselTrackingDataUtil.getDeleteEvent(mmsi);
+		return VesselTrackingDataUtil.getDeleteEvent(mmsi, tstamp);
 	}
 
 	protected VesselTrackingDeletedEvent getVesselTrackingDeletedEvent() {
 
-		return VesselTrackingDataUtil.getVesselTrackingDeletedEvent(mmsi);
+		return VesselTrackingDataUtil.getVesselTrackingDeletedEvent(mmsi, tstamp);
 	}
 
 	protected VesselTrackingDTO getVesselTracking() {
