@@ -28,7 +28,7 @@ public class CreateVesselTrackingCommand extends Command {
 			vesselTracking.getProperties().getVessel().setId(new CreateVesselCommand(vessel).getVessel().getId());
 		}
 
-		if (vesselTracking.getProperties().getVessel().getMmsi() == null)
+		if (vessel.getMmsi() == null)
 			throw new FieldNotValidException("mmsi", "null");
 
 		if (vesselTracking.getProperties().getDate() == null)
