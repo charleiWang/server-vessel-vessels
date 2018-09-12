@@ -195,7 +195,7 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 				agg.getVesselTracking());
 
 		// Emite evento para enviar a kafka
-		publishToKafka(event, vesselTopic);
+		publishToKafka(event, vesselTrackingTopic);
 
 		// Obtiene el resultado cuando se resuelva la espera
 		return getResult(event.getSessionId(), completableFuture);
