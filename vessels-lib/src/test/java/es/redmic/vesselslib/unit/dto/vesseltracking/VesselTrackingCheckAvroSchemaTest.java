@@ -1,9 +1,14 @@
 package es.redmic.vesselslib.unit.dto.vesseltracking;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.json.JSONException;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import com.bedatadriven.jackson.datatype.jts.JtsModule;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.unit.utils.VesselAvroBaseTest;
@@ -11,8 +16,11 @@ import es.redmic.vesselslib.unit.utils.VesselTrackingDataUtil;
 
 public class VesselTrackingCheckAvroSchemaTest extends VesselAvroBaseTest {
 
+	ObjectMapper mapper = new ObjectMapper().registerModule(new JtsModule());
+
 	@Test
-	public void serializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect() {
+	public void serializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect()
+			throws JsonProcessingException, JSONException {
 
 		VesselTrackingDTO dto = VesselTrackingDataUtil.getVesselTracking();
 
@@ -21,7 +29,7 @@ public class VesselTrackingCheckAvroSchemaTest extends VesselAvroBaseTest {
 		assertTrue("El objeto obtenido debe ser una instancia de VesselTrackingDTO",
 				VesselTrackingDTO.class.isInstance(result));
 
-		assertEquals(result, dto);
+		JSONAssert.assertEquals(mapper.writeValueAsString(result), mapper.writeValueAsString(dto), false);
 
 	}
 }

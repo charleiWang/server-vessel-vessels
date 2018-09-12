@@ -24,14 +24,6 @@ public class VesselTrackingCheckDTOValidationTest extends DTOBaseTest<VesselTrac
 	}
 
 	@Test
-	public void validationDTO_ReturnNotNullError_IfUUIDIsNull() {
-
-		dto.setUuid(null);
-
-		checkDTOHasError(dto, NOT_NULL_MESSAGE_TEMPLATE);
-	}
-
-	@Test
 	public void validationDTO_ReturnNotNullError_IfGeometryIsNull() {
 
 		dto.setGeometry(null);
