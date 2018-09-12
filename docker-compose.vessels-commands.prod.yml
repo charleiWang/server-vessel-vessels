@@ -2,8 +2,6 @@ version: '3.5'
 
 services:
   vessels-commands:
-    networks:
-      - traefik-net
     deploy:
       mode: replicated
       replicas: 1
@@ -16,13 +14,14 @@ services:
         constraints:
           - node.role == worker
       restart_policy:
-        condition: on-failure
         delay: 1m
         window: 3m
-
-networks:
-  traefik-net:
-    external: true
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          memory: 820M
 
 volumes:
   commands-vol:

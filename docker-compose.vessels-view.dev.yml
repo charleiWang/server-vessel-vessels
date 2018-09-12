@@ -2,7 +2,24 @@ version: '3.5'
 
 services:
   vessels-view:
-    container_name: ${UNIT_NAME}-view
-    restart: on-failure:3
     ports:
-      - ${VIEW_PORT}:${VIEW_PORT}
+      - target: ${VIEW_PORT}
+        published: ${VIEW_PORT}
+        mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        traefik.port: "${VIEW_PORT}"
+        traefik.docker.network: traefik-net
+        traefik.frontend.rule: PathPrefix:/api/${UNIT_NAME}/view
+        traefik.backend: ${UNIT_NAME}-view
+      restart_policy:
+        delay: 1m
+        window: 3m
+      resources:
+        limits:
+          cpus: '1'
+          memory: 768M
+        reservations:
+          memory: 615M
