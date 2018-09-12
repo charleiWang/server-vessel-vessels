@@ -6,6 +6,9 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
+import com.bedatadriven.jackson.datatype.jts.JtsModule;
+import com.fasterxml.jackson.databind.Module;
+
 import es.redmic.restlib.config.ResourceBundleMessageSource;
 
 @SpringBootApplication
@@ -21,5 +24,10 @@ public class VesselsViewApplication {
 	public MessageSource messageSource() {
 
 		return new ResourceBundleMessageSource();
+	}
+
+	@Bean
+	public Module jtsModule() {
+		return new JtsModule();
 	}
 }
