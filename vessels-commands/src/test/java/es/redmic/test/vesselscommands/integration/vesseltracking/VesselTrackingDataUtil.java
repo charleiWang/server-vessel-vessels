@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
@@ -222,7 +223,7 @@ public abstract class VesselTrackingDataUtil {
 
 		properties.setActivityId("22");
 		properties.setVessel(vessel);
-		properties.setDate(DateTime.now());
+		properties.setDate(new DateTime(DateTimeZone.UTC).toDateTimeISO());
 
 		properties.setCog(23.3);
 		properties.setSog(23.3);
