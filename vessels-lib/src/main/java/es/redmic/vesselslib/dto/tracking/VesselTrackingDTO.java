@@ -21,7 +21,7 @@ public class VesselTrackingDTO extends FeatureDTO<VesselTrackingPropertiesDTO, P
 			"{\"type\":\"record\",\"name\":\"VesselTrackingDTO\",\"namespace\":\"es.redmic.vesselslib.dto.tracking\",\"fields\":["
 				+ "{\"name\":\"uuid\",\"type\": \"string\"},"
 				+ "{\"name\":\"type\", \"type\": {"
-					+ "\"namespace\":\"es.redmic.brokerlib.avro.geodata.common\",\"type\":\"enum\",\"name\":\"GeoJSONFeatureType\"," + 
+					+ "\"type\":\"enum\",\"name\":\"GeoJSONFeatureType\"," + 
 						"\"symbols\":[\"FEATURE\"]}},"
 				+ "{\"name\":\"properties\",\"type\":" + VesselTrackingPropertiesDTO.SCHEMA$.toString() + "},"
 				+ "{\"name\":\"geometry\",\"type\":[\"bytes\", \"null\"]},"
@@ -35,11 +35,13 @@ public class VesselTrackingDTO extends FeatureDTO<VesselTrackingPropertiesDTO, P
 		this.setType(GeoJSONFeatureType.FEATURE);
 	}
 
+	@JsonIgnore
 	@Override
 	public Schema getSchema() {
 		return SCHEMA$;
 	}
 
+	@JsonIgnore
 	@Override
 	public Object get(int field) {
 		switch (field) {
@@ -63,6 +65,7 @@ public class VesselTrackingDTO extends FeatureDTO<VesselTrackingPropertiesDTO, P
 		}
 	}
 
+	@JsonIgnore
 	@Override
 	public void put(int field, Object value) {
 		switch (field) {
