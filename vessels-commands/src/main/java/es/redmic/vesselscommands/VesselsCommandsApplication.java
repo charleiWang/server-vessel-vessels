@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.bedatadriven.jackson.datatype.jts.JtsModule;
+import com.fasterxml.jackson.databind.Module;
+
 import es.redmic.commandslib.config.GenerateJsonSchemaScanBean;
 import es.redmic.restlib.config.ResourceBundleMessageSource;
 
@@ -29,5 +32,10 @@ public class VesselsCommandsApplication {
 	@Bean
 	public GenerateJsonSchemaScanBean generateSchemaScanBean() {
 		return new GenerateJsonSchemaScanBean();
+	}
+
+	@Bean
+	public Module jtsModule() {
+		return new JtsModule();
 	}
 }
