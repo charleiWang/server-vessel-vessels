@@ -40,7 +40,7 @@ public abstract class VesselTrackingDataUtil {
 	public static CreateVesselTrackingEvent getCreateEvent(Integer mmsi, String tstamp) {
 
 		CreateVesselTrackingEvent event = new CreateVesselTrackingEvent();
-		event.setAggregateId(PREFIX + mmsi + tstamp);
+		event.setAggregateId(PREFIX + mmsi + "-" + tstamp);
 		event.setDate(DateTime.now());
 		event.setId(UUID.randomUUID().toString());
 		event.setType(VesselTrackingEventTypes.CREATE);
@@ -104,7 +104,7 @@ public abstract class VesselTrackingDataUtil {
 	public static UpdateVesselTrackingEvent getUpdateEvent(Integer mmsi, String tstamp) {
 
 		UpdateVesselTrackingEvent event = new UpdateVesselTrackingEvent();
-		event.setAggregateId(PREFIX + mmsi + tstamp);
+		event.setAggregateId(PREFIX + mmsi + "-" + tstamp);
 		event.setDate(DateTime.now());
 		event.setId(UUID.randomUUID().toString());
 		event.setType(VesselTrackingEventTypes.UPDATE);
@@ -158,7 +158,7 @@ public abstract class VesselTrackingDataUtil {
 	public static DeleteVesselTrackingEvent getDeleteEvent(Integer mmsi, String tstamp) {
 
 		DeleteVesselTrackingEvent event = new DeleteVesselTrackingEvent();
-		event.setAggregateId(PREFIX + mmsi + tstamp);
+		event.setAggregateId(PREFIX + mmsi + "-" + tstamp);
 		event.setType(VesselTrackingEventTypes.DELETE);
 		event.setVersion(3);
 		event.setUserId(USER);
@@ -211,7 +211,7 @@ public abstract class VesselTrackingDataUtil {
 		vesselType.setName_en("Cargo, all ships of this type");
 		vessel.setType(vesselType);
 
-		vesselTracking.setId(PREFIX + mmsi + tstamp);
+		vesselTracking.setId(PREFIX + mmsi + "-" + tstamp);
 		vesselTracking.setUuid(UUID.randomUUID().toString());
 
 		Point geometry = JTSFactoryFinder.getGeometryFactory().createPoint(new Coordinate(44.56433, 37.94388));
