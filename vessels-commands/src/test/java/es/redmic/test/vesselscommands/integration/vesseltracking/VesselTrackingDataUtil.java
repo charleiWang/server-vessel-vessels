@@ -12,6 +12,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 
 import es.redmic.exception.common.ExceptionType;
+import es.redmic.test.vesselscommands.integration.vessel.VesselDataUtil;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingPropertiesDTO;
@@ -32,7 +33,6 @@ import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingCon
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.VesselTrackingUpdatedEvent;
-import es.redmic.vesselslib.unit.utils.VesselDataUtil;
 
 public abstract class VesselTrackingDataUtil {
 
