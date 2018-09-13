@@ -48,7 +48,7 @@ import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEve
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "test")
+@KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "testCreateVesselTrackingFromAISTest")
 public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 
 	@Value("${broker.topic.realtime.tracking.vessels}")
@@ -113,7 +113,7 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 				.send(REALTIME_TRACKING_VESSELS_TOPIC, dto.getMmsi().toString(), dto);
 		future.addCallback(new SendListener());
 
-		VesselTrackingDTO vesselTracking = (VesselTrackingDTO) blockingQueue.poll(120, TimeUnit.SECONDS);
+		VesselTrackingDTO vesselTracking = (VesselTrackingDTO) blockingQueue.poll(60, TimeUnit.SECONDS);
 		assertNotNull(vesselTracking);
 
 		assertTrue(vesselTracking.getProperties().getDate().isEqual(dto.getTstamp()));
@@ -137,6 +137,8 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 
 	@KafkaListener(topics = "${broker.topic.vessel}", groupId = "test")
 	public void listen(Event event) {
+
+		vesselCreatedEvent.setSessionId(event.getSessionId());
 
 		if (event.getType().equals(VesselEventTypes.CREATE)) {
 			ListenableFuture<SendResult<String, Event>> futureCreatedEvent = kafkaTemplateEvent.send(VESSEL_TOPIC,

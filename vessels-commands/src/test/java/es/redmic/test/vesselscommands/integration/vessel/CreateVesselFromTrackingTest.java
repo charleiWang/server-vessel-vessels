@@ -89,7 +89,7 @@ public class CreateVesselFromTrackingTest extends KafkaBaseIntegrationTest {
 				.send(REALTIME_TRACKING_VESSELS_TOPIC, "vessel-mmsi-" + dto.getMmsi(), dto);
 		future.addCallback(new SendListener());
 
-		VesselDTO vessel = (VesselDTO) blockingQueue.poll(30, TimeUnit.SECONDS);
+		VesselDTO vessel = (VesselDTO) blockingQueue.poll(60, TimeUnit.SECONDS);
 		assertNotNull(vessel);
 		assertEquals(vessel.getMmsi(), dto.getMmsi());
 		assertEquals(vessel.getName(), dto.getName());
