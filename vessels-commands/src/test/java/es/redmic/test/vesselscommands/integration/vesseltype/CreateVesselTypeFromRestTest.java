@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -47,6 +48,7 @@ import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
 import es.redmic.testutils.documentation.DocumentationCommandBaseTest;
+import es.redmic.testutils.utils.JsonToBeanTestUtil;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
 import es.redmic.vesselscommands.statestore.VesselTypeStateStore;
@@ -225,8 +227,12 @@ public class CreateVesselTypeFromRestTest extends DocumentationCommandBaseTest {
 		assertEquals(event.getAggregateId(), expectedEvent.getAggregateId());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void getEditSchema_Return200_WhenSchemaIsAvailable() throws Exception {
+
+		Map<String, Object> schemaExpected = (Map<String, Object>) JsonToBeanTestUtil
+				.getBean("/data/schemas/vesseltypeschema.json", Map.class);
 
 		// @formatter:off
 		
@@ -234,10 +240,7 @@ public class CreateVesselTypeFromRestTest extends DocumentationCommandBaseTest {
 				.header("Authorization", "Bearer " + getTokenOAGUser())
 				.accept(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.title", is("Vessel Type DTO")))
-			.andExpect(jsonPath("$.properties", notNullValue()))
-			.andExpect(jsonPath("$.properties.id", notNullValue()));
-			// TODO: aumentar el nivel de checkeo
+			.andExpect(jsonPath("$", is(schemaExpected)));
 		// @formatter:on
 	}
 
