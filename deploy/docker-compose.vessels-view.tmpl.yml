@@ -5,16 +5,17 @@ services:
     image: ${IMAGE_NAME}:${IMAGE_TAG:-latest}
     environment:
       - VIEW_PORT
-      - SERVICE
       - SPRING_PROFILES_ACTIVE
       - OAUTH_CLIENT_ID
       - OAUTH_CLIENT_SECRET
-      - JAVA_OPTS=-Xmx512m -Xss512m
       - ELASTIC_XPACKSECURITYUSER
+      - MICROSERVICE_NAME=${UNIT_NAME}-view
+      - JAVA_OPTS=-XX:MaxRAMFraction=1
     networks:
       - elastic-net
       - kafka-net
       - redmic-net
+      - traefik-net
     healthcheck:
       test: wget --spider -S -t 3 http://localhost:${VIEW_PORT}/api/${UNIT_NAME}/view/actuator/health
       interval: 30s
@@ -25,7 +26,12 @@ services:
 networks:
   elastic-net:
     external: true
+
   kafka-net:
     external: true
+
   redmic-net:
+    external: true
+
+  traefik-net:
     external: true
