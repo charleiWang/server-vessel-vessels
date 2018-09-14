@@ -53,7 +53,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 		this.vesselTopic = vesselTopic;
 		this.vesselTrackingAggByVesselTopic = vesselTrackingAggByVesselTopic;
 		this.vesselUpdatedTopic = vesselUpdatedTopic;
-		this.hashMapSerde = new HashMapSerde<>(schemaRegistry);
+		this.hashMapSerde = new HashMapSerde<String, AggregationVesselInVesselTrackingPostUpdateEvent>(schemaRegistry);
 
 		logger.info("Arrancado servicio de streaming para event sourcing de Vessel tracking con Id: " + this.serviceId);
 		init();
