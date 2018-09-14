@@ -2,8 +2,8 @@ package es.redmic.vesselslib.events.vesseltype.update;
 
 import org.apache.avro.Schema;
 
-import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vesseltype.VesselTypeEventType;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeCancelledEvent;
 
 public class UpdateVesselTypeCancelledEvent extends VesselTypeCancelledEvent {
@@ -18,14 +18,14 @@ public class UpdateVesselTypeCancelledEvent extends VesselTypeCancelledEvent {
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
 
-	static VesselTypeEventType type = VesselTypeEventType.UPDATE_VESSELTYPE_CANCELLED;
+	static String type = VesselTypeEventTypes.UPDATE_CANCELLED;
 
 	public UpdateVesselTypeCancelledEvent() {
-		super(type.name());
+		super(type);
 	}
 
 	public UpdateVesselTypeCancelledEvent(VesselTypeDTO vesselType) {
-		super(type.name());
+		super(type);
 		this.setVesselType(vesselType);
 	}
 

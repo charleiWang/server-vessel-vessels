@@ -13,8 +13,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import es.redmic.vesselslib.dto.VesselDTO;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 public class VesselIdValidationTest {
 

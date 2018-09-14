@@ -11,7 +11,7 @@ import org.springframework.stereotype.Controller;
 import es.redmic.brokerlib.avro.geodata.tracking.vessels.AISTrackingDTO;
 import es.redmic.commandslib.controller.CommandController;
 import es.redmic.vesselscommands.service.VesselCommandService;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 
 @Controller
 public class VesselController extends CommandController<VesselDTO> {

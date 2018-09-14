@@ -1,12 +1,13 @@
 package es.redmic.vesselslib.events.vessel.common;
 
+import org.apache.avro.Schema;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import es.redmic.brokerlib.avro.common.Event;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 
 public abstract class VesselEvent extends Event {
 
@@ -24,6 +25,7 @@ public abstract class VesselEvent extends Event {
 		this.vessel = vessel;
 	}
 
+	@JsonIgnore
 	@Override
 	public Object get(int field$) {
 		switch (field$) {
@@ -48,11 +50,12 @@ public abstract class VesselEvent extends Event {
 		}
 	}
 
+	@JsonIgnore
 	@Override
 	public void put(int field$, Object value$) {
 		switch (field$) {
 		case 0:
-			vessel = (es.redmic.vesselslib.dto.VesselDTO) value$;
+			vessel = (es.redmic.vesselslib.dto.vessel.VesselDTO) value$;
 			break;
 		case 1:
 			setAggregateId(value$.toString());
@@ -82,22 +85,13 @@ public abstract class VesselEvent extends Event {
 
 	@JsonIgnore
 	public static String getVesselEventSchema() {
-		// @formatter:off
-		return "{\"name\":\"vessel\",\"type\":{\"type\":\"record\",\"name\":\"VesselDTO\","
-				+ "\"namespace\":\"es.redmic.vesselslib.dto\",\"fields\":["
-					+ "{\"name\":\"mmsi\",\"type\":\"int\"},"
-					+ "{\"name\":\"imo\",\"type\":[\"int\", \"null\"]},"
-					+ "{\"name\":\"type\",\"type\":[{ \"name\":\"VesselTypeDTO\", \"type\":\"record\","
-							+ "\"namespace\":\"es.redmic.vesselslib.dto\",\"fields\":["
-						+ "{\"name\":\"code\",\"type\":\"string\"},"
-						+ "{\"name\":\"name\",\"type\":\"string\"},"
-						+ "{\"name\":\"name_en\",\"type\":\"string\"},"
-						+ "{\"name\":\"id\",\"type\":\"string\"}]}, \"null\"]},"
-					+ "{\"name\":\"name\",\"type\":[\"string\", \"null\"]},"
-					+ "{\"name\":\"callSign\",\"type\":[\"string\", \"null\"]},"
-					+ "{\"name\":\"length\",\"type\":[\"double\", \"null\"]},"
-					+ "{\"name\":\"beam\",\"type\":[\"double\", \"null\"]},"
-					+ "{\"name\":\"id\",\"type\":\"string\"}]}}";
-		// @formatter:on
+
+		return "{\"name\":\"vessel\", \"type\": " + VesselDTO.SCHEMA$.toString() + "}";
+	}
+
+	@JsonIgnore
+	@Override
+	public Schema getSchema() {
+		return null;
 	}
 }

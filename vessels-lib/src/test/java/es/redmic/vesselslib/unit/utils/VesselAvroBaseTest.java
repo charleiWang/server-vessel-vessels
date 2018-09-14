@@ -3,8 +3,6 @@ package es.redmic.vesselslib.unit.utils;
 import java.util.HashMap;
 import java.util.Properties;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
@@ -18,8 +16,6 @@ public abstract class VesselAvroBaseTest {
 	protected KafkaAvroSerializer avroSerializer;
 
 	protected KafkaAvroDeserializer avroDeserializer;
-
-	ObjectMapper objectMapper = new ObjectMapper();
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public VesselAvroBaseTest() {

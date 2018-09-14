@@ -2,8 +2,8 @@ package es.redmic.vesselslib.events.vessel.delete;
 
 import org.apache.avro.Schema;
 
-import es.redmic.vesselslib.dto.VesselDTO;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselCancelledEvent;
 
 public class DeleteVesselCancelledEvent extends VesselCancelledEvent {
@@ -18,14 +18,14 @@ public class DeleteVesselCancelledEvent extends VesselCancelledEvent {
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
 
-	static VesselEventType type = VesselEventType.DELETE_VESSEL_CANCELLED;
+	static String type = VesselEventTypes.DELETE_CANCELLED;
 
 	public DeleteVesselCancelledEvent() {
-		super(type.name());
+		super(type);
 	}
 
 	public DeleteVesselCancelledEvent(VesselDTO vessel) {
-		super(type.name());
+		super(type);
 		this.setVessel(vessel);
 	}
 

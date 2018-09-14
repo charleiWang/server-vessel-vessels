@@ -1,195 +1,194 @@
 package es.redmic.vesselscommands.streams;
 
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
 
-import org.apache.kafka.streams.kstream.JoinWindows;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
-import es.redmic.commandslib.statestore.StreamConfig;
-import es.redmic.commandslib.streams.EventStreams;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vesseltype.VesselTypeEventType;
+import es.redmic.brokerlib.avro.common.EventTypes;
+import es.redmic.brokerlib.avro.serde.hashmap.HashMapSerde;
+import es.redmic.commandslib.exceptions.ExceptionType;
+import es.redmic.commandslib.streaming.common.StreamConfig;
+import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.AggregationVesselTypeInVesselPostUpdateEvent;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventFactory;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
-import es.redmic.vesselslib.events.vesseltype.create.VesselTypeCreatedEvent;
-import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeCancelledEvent;
-import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeCancelledEvent;
-import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 
-public class VesselTypeEventStreams extends EventStreams {
+public class VesselTypeEventStreams extends EventSourcingStreams {
 
-	private AlertService alertService;
+	private String vesselsAggByVesselTypeTopic;
 
-	public VesselTypeEventStreams(StreamConfig config, AlertService alertService) {
-		super(config);
-		this.alertService = alertService;
-		logger.info("Arrancado servicio de compensación de errores de edición de VesselType con Id: " + this.serviceId);
+	private HashMapSerde<String, AggregationVesselTypeInVesselPostUpdateEvent> hashMapSerde;
+
+	private KTable<String, HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent>> aggByVesselType;
+
+	public VesselTypeEventStreams(StreamConfig config, String vesselsAggByVesselTypeTopic, AlertService alertService) {
+		super(config, alertService);
+		this.vesselsAggByVesselTypeTopic = vesselsAggByVesselTypeTopic;
+		this.hashMapSerde = new HashMapSerde<>(schemaRegistry);
+		logger.info("Arrancado servicio de streaming para event sourcing de VesselType con Id: " + this.serviceId);
 		init();
 	}
 
+	/*
+	 * Crea KTable de vessels agregados por vesseltype
+	 * 
+	 * @see es.redmic.commandslib.streaming.streams.EventSourcingStreams#
+	 * createExtraStreams()
+	 */
+
 	@Override
-	protected void processCreatedStream(KStream<String, Event> vesselTypeEvents) {
-
-		// Stream filtrado por eventos de confirmación al crear
-		KStream<String, Event> createConfirmedEvents = vesselTypeEvents.filter(
-				(id, event) -> (VesselTypeEventType.CREATE_VESSELTYPE_CONFIRMED.toString().equals(event.getType())));
-
-		// Stream filtrado por eventos de petición de crear
-		KStream<String, Event> createRequestEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventType.CREATE_VESSELTYPE.toString().equals(event.getType())));
-
-		// Join por id, mandando a kafka el evento de éxito
-		createConfirmedEvents.join(createRequestEvents,
-				(confirmedEvent, requestEvent) -> getCreatedEvent(confirmedEvent, requestEvent),
-				JoinWindows.of(TimeUnit.SECONDS.toMillis(60))).to(topic);
+	protected void createExtraStreams() {
+		aggByVesselType = builder.table(vesselsAggByVesselTypeTopic, Consumed.with(Serdes.String(), hashMapSerde));
 	}
 
-	private Event getCreatedEvent(Event confirmedEvent, Event requestEvent) {
+	/*
+	 * Función que apartir del evento de confirmación de la vista y del evento
+	 * create (petición de creación), si todo es correcto, genera evento created
+	 */
 
-		logger.debug("Creando evento de creado exitoso");
+	@Override
+	protected Event getCreatedEvent(Event confirmedEvent, Event requestEvent) {
+
+		assert requestEvent.getType().equals(VesselTypeEventTypes.CREATE);
+
+		assert confirmedEvent.getType().equals(VesselTypeEventTypes.CREATE_CONFIRMED);
 
 		if (!isSameSession(confirmedEvent, requestEvent)) {
-			String message = "Recibido evento de petición con id de sessión diferente al evento de confirmación para item "
-					+ confirmedEvent.getAggregateId();
-			logger.error(message);
-			alertService.errorAlert(confirmedEvent.getAggregateId(), message);
-			return null;
-		}
-
-		if (!(requestEvent.getType().equals(VesselTypeEventType.CREATE_VESSELTYPE.name()))) {
-			logger.error("Se esperaba un evento de petición de tipo CREATE para VesselType.");
 			return null;
 		}
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) requestEvent).getVesselType();
 
-		if (confirmedEvent.getType().equals(VesselTypeEventType.CREATE_VESSELTYPE_CONFIRMED.name())) {
-
-			logger.info("Enviando evento VesselTypeCreatedEvent para: " + confirmedEvent.getAggregateId());
-
-			VesselTypeCreatedEvent successfulEvent = new VesselTypeCreatedEvent().buildFrom(confirmedEvent);
-			successfulEvent.setVesselType(vesselType);
-			return successfulEvent;
-		} else {
-			logger.error("Se esperaba un evento de confirmación de tipo CREATE para VesselType.");
-			return null;
-		}
+		return VesselTypeEventFactory.getEvent(confirmedEvent, VesselTypeEventTypes.CREATED, vesselType);
 	}
+
+	/*
+	 * Función que apartir del evento de confirmación de la vista y del evento
+	 * update (petición de modificación), si todo es correcto, genera evento updated
+	 */
 
 	@Override
-	protected void processUpdatedStream(KStream<String, Event> vesselTypeEvents) {
+	protected Event getUpdatedEvent(Event confirmedEvent, Event requestEvent) {
 
-		// Stream filtrado por eventos de confirmación al modificar
-		KStream<String, Event> updateConfirmedEvents = vesselTypeEvents.filter(
-				(id, event) -> (VesselTypeEventType.UPDATE_VESSELTYPE_CONFIRMED.toString().equals(event.getType())));
+		assert requestEvent.getType().equals(VesselTypeEventTypes.UPDATE);
 
-		// Stream filtrado por eventos de petición de modificar
-		KStream<String, Event> updateRequestEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventType.UPDATE_VESSELTYPE.toString().equals(event.getType())));
-
-		// Join por id, mandando a kafka el evento de éxito
-		updateConfirmedEvents.join(updateRequestEvents,
-				(confirmedEvent, requestEvent) -> getUpdatedEvent(confirmedEvent, requestEvent),
-				JoinWindows.of(TimeUnit.SECONDS.toMillis(60))).to(topic);
-	}
-
-	private Event getUpdatedEvent(Event confirmedEvent, Event requestEvent) {
-
-		logger.debug("Creando evento de modificado exitoso para VesselType");
+		assert confirmedEvent.getType().equals(VesselTypeEventTypes.UPDATE_CONFIRMED);
 
 		if (!isSameSession(confirmedEvent, requestEvent)) {
-			String message = "Recibido evento de petición con id de sessión diferente al evento de confirmación para item "
-					+ confirmedEvent.getAggregateId();
-			logger.error(message);
-			alertService.errorAlert(confirmedEvent.getAggregateId(), message);
-			return null;
-		}
-
-		if (!(requestEvent.getType().equals(VesselTypeEventType.UPDATE_VESSELTYPE.name()))) {
-			logger.error("Se esperaba un evento de petición de UPDATE para VesselType.");
 			return null;
 		}
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) requestEvent).getVesselType();
 
-		if (confirmedEvent.getType().equals(VesselTypeEventType.UPDATE_VESSELTYPE_CONFIRMED.name())) {
-
-			logger.info("Enviando evento VesselTypeUpdatedEvent para: " + confirmedEvent.getAggregateId());
-
-			VesselTypeUpdatedEvent successfulEvent = new VesselTypeUpdatedEvent().buildFrom(confirmedEvent);
-			successfulEvent.setVesselType(vesselType);
-			return successfulEvent;
-		} else {
-			logger.error("Se esperaba un evento de confirmación de tipo UPDATE para VesselType.");
-			return null;
-		}
+		return VesselTypeEventFactory.getEvent(requestEvent, VesselTypeEventTypes.UPDATED, vesselType);
 	}
+
+	/*
+	 * Comprueba si vesselType está referenciado en vessel para cancelar el borrado
+	 */
 
 	@Override
-	protected void processFailedChangeStream(KStream<String, Event> vesselTypeEvents) {
+	protected void processDeleteStream(KStream<String, Event> events) {
 
-		// Stream filtrado por eventos de fallo al modificar y borrar
-		KStream<String, Event> failedEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventType.UPDATE_VESSELTYPE_FAILED.toString().equals(event.getType())
-						|| VesselTypeEventType.DELETE_VESSELTYPE_FAILED.toString().equals(event.getType())));
+		// Stream filtrado por eventos de borrado
+		KStream<String, Event> deleteEvents = events
+				.filter((id, event) -> (EventTypes.CHECK_DELETE.equals(event.getType())));
 
-		// Stream filtrado por eventos de creaciones y modificaciones correctos (solo el
-		// último que se produzca por id)
-
-		KStream<String, Event> successEvents = vesselTypeEvents
-				.filter((id, event) -> (VesselTypeEventType.VESSELTYPE_CREATED.toString().equals(event.getType())
-						|| VesselTypeEventType.VESSELTYPE_UPDATED.toString().equals(event.getType())));
-
-		KTable<String, Event> successEventsTable = successEvents.groupByKey().reduce((aggValue, newValue) -> newValue);
-
-		// Join por id, mandando a kafka el evento de compensación
-		failedEvents.join(successEventsTable,
-				(failedEvent, lastSuccessEvent) -> getCancelledEvent(failedEvent, lastSuccessEvent)).to(topic);
+		deleteEvents.leftJoin(aggByVesselType,
+				(deleteEvent, vesselAggByVesselType) -> getCheckDeleteResultEvent(deleteEvent, vesselAggByVesselType))
+				.to(topic);
 	}
 
-	private Event getCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
+	@SuppressWarnings("serial")
+	private Event getCheckDeleteResultEvent(Event deleteEvent,
+			HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent> vesselAggByVesselType) {
 
-		logger.debug("Creando evento de cancelación");
+		if (vesselAggByVesselType == null || vesselAggByVesselType.isEmpty()) { // elemento no referenciado
 
-		if (!(lastSuccessEvent.getType().equals(VesselTypeEventType.VESSELTYPE_CREATED.name())
-				|| lastSuccessEvent.getType().equals(VesselTypeEventType.VESSELTYPE_UPDATED.name()))) {
-			logger.error("Se esperaba un evento satisfactorio de tipo CREATED o UPDATED.");
-			return null;
+			return VesselTypeEventFactory.getEvent(deleteEvent, VesselTypeEventTypes.DELETE_CHECKED);
+		} else { // elemento referenciado
+
+			return VesselTypeEventFactory.getEvent(deleteEvent, VesselTypeEventTypes.DELETE_CHECK_FAILED,
+					ExceptionType.ITEM_REFERENCED.toString(), new HashMap<String, String>() {
+						{
+							put("id", deleteEvent.getAggregateId());
+						}
+					});
 		}
+	}
+
+	/*
+	 * Función que a partir del evento fallido y el último evento correcto, genera
+	 * evento UpdateCancelled
+	 */
+
+	@Override
+	protected Event getUpdateCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
+
+		assert failedEvent.getType().equals(VesselTypeEventTypes.UPDATE_FAILED);
+
+		assert lastSuccessEvent.getType().equals(VesselTypeEventTypes.CREATED)
+				|| lastSuccessEvent.getType().equals(VesselTypeEventTypes.UPDATED);
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
 
 		EventError eventError = (EventError) failedEvent;
 
-		if (failedEvent.getType().equals(VesselTypeEventType.UPDATE_VESSELTYPE_FAILED.name())) {
+		return VesselTypeEventFactory.getEvent(failedEvent, VesselTypeEventTypes.UPDATE_CANCELLED, vesselType,
+				eventError.getExceptionType(), eventError.getArguments());
+	}
 
-			logger.info("Enviando evento UpdateVesselTypeCancelledEvent para: " + failedEvent.getAggregateId());
+	/*
+	 * Función que a partir del evento fallido y el último evento correcto, genera
+	 * evento DeleteFailed
+	 */
 
-			UpdateVesselTypeCancelledEvent cancelledEvent = new UpdateVesselTypeCancelledEvent().buildFrom(failedEvent);
-			cancelledEvent.setVesselType(vesselType);
-			cancelledEvent.setExceptionType(eventError.getExceptionType());
-			cancelledEvent.setArguments(eventError.getArguments());
-			return cancelledEvent;
+	@Override
+	protected Event getDeleteCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		} else if (failedEvent.getType().equals(VesselTypeEventType.DELETE_VESSELTYPE_FAILED.name())) {
+		assert failedEvent.getType().equals(VesselTypeEventTypes.DELETE_FAILED);
 
-			logger.info("Enviar evento DeleteVesselTypeCancelledEvent para: " + failedEvent.getAggregateId());
+		assert lastSuccessEvent.getType().equals(VesselTypeEventTypes.CREATED)
+				|| lastSuccessEvent.getType().equals(VesselTypeEventTypes.UPDATED);
 
-			DeleteVesselTypeCancelledEvent cancelledEvent = new DeleteVesselTypeCancelledEvent().buildFrom(failedEvent);
-			cancelledEvent.setVesselType(vesselType);
-			cancelledEvent.setExceptionType(eventError.getExceptionType());
-			cancelledEvent.setArguments(eventError.getArguments());
-			return cancelledEvent;
-		} else {
-			logger.error("Se esperaba un evento fallido de tipo UPDATE o DELETE para VesselType.");
-			return null;
-		}
+		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
+
+		EventError eventError = (EventError) failedEvent;
+
+		return VesselTypeEventFactory.getEvent(failedEvent, VesselTypeEventTypes.DELETE_CANCELLED, vesselType,
+				eventError.getExceptionType(), eventError.getArguments());
 	}
 
 	@Override
+	protected void processEnrichCreateSteam(KStream<String, Event> events) {
+		// En este caso no hay enriquecimiento
+	}
+
+	@Override
+	protected void processEnrichUpdateSteam(KStream<String, Event> events) {
+		// En este caso no hay enriquecimiento
+	}
+
+	@Override
+	protected void processPartialUpdatedStream(KStream<String, Event> vesselTypeEvents,
+			KStream<String, Event> updateConfirmedEvents) {
+		// En este caso no hay modificaciones parciales
+	}
+
+	/*
+	 * Función para procesar modificaciones de referencias
+	 */
+
+	@Override
 	protected void processPostUpdateStream(KStream<String, Event> events) {
+		// En este caso no hay modificación de relaciones
 	}
 }

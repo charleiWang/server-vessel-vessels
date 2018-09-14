@@ -11,9 +11,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,10 @@ import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -30,16 +37,17 @@ import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.exception.data.ItemNotFoundException;
 import es.redmic.models.es.data.common.model.DataHitWrapper;
-import es.redmic.test.vesselsview.integration.common.CommonIntegrationTest;
-import es.redmic.vesselslib.dto.VesselDTO;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
+import es.redmic.testutils.documentation.DocumentationViewBaseTest;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
+import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
@@ -51,7 +59,10 @@ import es.redmic.viewlib.config.MapperScanBeanItfc;
 @SpringBootTest(classes = { VesselsViewApplication.class })
 @RunWith(SpringJUnit4ClassRunner.class)
 @KafkaListener(topics = "${broker.topic.vessel}", groupId = "test")
-public class VesselEventHandlerTest extends CommonIntegrationTest {
+@TestPropertySource(properties = { "schema.registry.port=18083" })
+@DirtiesContext
+@ActiveProfiles("test")
+public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 
 	private final String USER_ID = "1";
 
@@ -69,12 +80,22 @@ public class VesselEventHandlerTest extends CommonIntegrationTest {
 	@Autowired
 	VesselESRepository repository;
 
+	@ClassRule
+	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1);
+
+	@PostConstruct
+	public void CreateVesselFromRestTestPostConstruct() throws Exception {
+
+		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+	}
+
 	@BeforeClass
 	public static void setup() {
 
 		blockingQueue = new LinkedBlockingDeque<>();
 	}
 
+	@Override
 	@Before
 	public void setUp() {
 	}
@@ -99,7 +120,7 @@ public class VesselEventHandlerTest extends CommonIntegrationTest {
 		repository.delete(event.getVessel().getId());
 
 		assertNotNull(confirm);
-		assertEquals(VesselEventType.CREATE_VESSEL_CONFIRMED.toString(), confirm.getType());
+		assertEquals(VesselEventTypes.CREATE_CONFIRMED, confirm.getType());
 
 		Vessel vessel = (Vessel) item.get_source();
 		assertEquals(vessel.getId(), event.getAggregateId());
@@ -127,12 +148,43 @@ public class VesselEventHandlerTest extends CommonIntegrationTest {
 		repository.delete(event.getVessel().getId());
 
 		assertNotNull(confirm);
-		assertEquals(VesselEventType.UPDATE_VESSEL_CONFIRMED.toString(), confirm.getType());
+		assertEquals(VesselEventTypes.UPDATE_CONFIRMED.toString(), confirm.getType());
 
 		Vessel vessel = (Vessel) item.get_source();
 		assertEquals(vessel.getId(), event.getAggregateId());
 		assertEquals(vessel.getMmsi(), event.getVessel().getMmsi());
 		assertEquals(vessel.getName(), event.getVessel().getName());
+	}
+
+	@Test
+	public void sendUpdateVesselTypeInVesselEvent_UpdateItem_IfEventIsOk() throws Exception {
+
+		UpdateVesselEvent event = getUpdateVesselEvent();
+
+		repository.save(mapper.getMapperFacade().map(event.getVessel(), Vessel.class));
+
+		UpdateVesselTypeInVesselEvent updateEvent = getUpdateVesselTypeInVesselEvent();
+
+		ListenableFuture<SendResult<String, Event>> future = kafkaTemplate.send(VESSEL_TOPIC,
+				updateEvent.getAggregateId(), updateEvent);
+		future.addCallback(new SendListener());
+
+		Event confirm = (Event) blockingQueue.poll(50, TimeUnit.SECONDS);
+
+		DataHitWrapper<?> item = repository.findById(event.getAggregateId());
+		assertNotNull(item.get_source());
+
+		// Se restablece el estado de la vista
+		repository.delete(event.getVessel().getId());
+
+		assertNotNull(confirm);
+		assertEquals(VesselEventTypes.UPDATE_CONFIRMED.toString(), confirm.getType());
+
+		Vessel vessel = (Vessel) item.get_source();
+		assertEquals(vessel.getId(), event.getAggregateId());
+		assertEquals(vessel.getMmsi(), event.getVessel().getMmsi());
+		assertEquals(vessel.getName(), event.getVessel().getName());
+		assertEquals(vessel.getType().getName(), updateEvent.getVesselType().getName());
 	}
 
 	@Test(expected = ItemNotFoundException.class)
@@ -148,7 +200,7 @@ public class VesselEventHandlerTest extends CommonIntegrationTest {
 
 		Event confirm = (Event) blockingQueue.poll(50, TimeUnit.SECONDS);
 		assertNotNull(confirm);
-		assertEquals(VesselEventType.DELETE_VESSEL_CONFIRMED.toString(), confirm.getType());
+		assertEquals(VesselEventTypes.DELETE_CONFIRMED.toString(), confirm.getType());
 
 		DataHitWrapper<?> item = repository.findById(event.getAggregateId());
 		assertNull(item.get_source());
@@ -171,7 +223,7 @@ public class VesselEventHandlerTest extends CommonIntegrationTest {
 		repository.delete(event.getVessel().getId());
 
 		assertNotNull(fail);
-		assertEquals(VesselEventType.CREATE_VESSEL_FAILED.toString(), fail.getType());
+		assertEquals(VesselEventTypes.CREATE_FAILED.toString(), fail.getType());
 		CreateVesselFailedEvent createVesselFailedEvent = (CreateVesselFailedEvent) fail;
 
 		Map<String, String> arguments = createVesselFailedEvent.getArguments();
@@ -223,7 +275,7 @@ public class VesselEventHandlerTest extends CommonIntegrationTest {
 		repository.delete(conflict.getId());
 
 		assertNotNull(fail);
-		assertEquals(VesselEventType.UPDATE_VESSEL_FAILED.toString(), fail.getType());
+		assertEquals(VesselEventTypes.UPDATE_FAILED.toString(), fail.getType());
 
 		UpdateVesselFailedEvent createVesselFailedEvent = (UpdateVesselFailedEvent) fail;
 
@@ -308,7 +360,7 @@ public class VesselEventHandlerTest extends CommonIntegrationTest {
 		CreateVesselEvent createdEvent = new CreateVesselEvent();
 		createdEvent.setId(UUID.randomUUID().toString());
 		createdEvent.setDate(DateTime.now());
-		createdEvent.setType(VesselEventType.CREATE_VESSEL.name());
+		createdEvent.setType(VesselEventTypes.CREATE);
 		createdEvent.setVessel(getVessel());
 		createdEvent.setAggregateId(createdEvent.getVessel().getId());
 		createdEvent.setVersion(1);
@@ -322,7 +374,7 @@ public class VesselEventHandlerTest extends CommonIntegrationTest {
 		UpdateVesselEvent updatedEvent = new UpdateVesselEvent();
 		updatedEvent.setId(UUID.randomUUID().toString());
 		updatedEvent.setDate(DateTime.now());
-		updatedEvent.setType(VesselEventType.UPDATE_VESSEL.name());
+		updatedEvent.setType(VesselEventTypes.UPDATE);
 		VesselDTO vessel = getVessel();
 		vessel.setName(vessel.getName() + "2");
 		updatedEvent.setVessel(vessel);
@@ -333,12 +385,27 @@ public class VesselEventHandlerTest extends CommonIntegrationTest {
 		return updatedEvent;
 	}
 
+	protected UpdateVesselTypeInVesselEvent getUpdateVesselTypeInVesselEvent() {
+
+		UpdateVesselTypeInVesselEvent event = new UpdateVesselTypeInVesselEvent().buildFrom(getUpdateVesselEvent());
+
+		VesselDTO vessel = getVessel();
+		vessel.getType().setName("Nombre cambiado");
+		event.setVesselType(vessel.getType());
+		event.setAggregateId(vessel.getId());
+		event.setVersion(3);
+		event.setSessionId(UUID.randomUUID().toString());
+		event.setUserId(USER_ID);
+
+		return event;
+	}
+
 	protected DeleteVesselEvent getDeleteVesselEvent() {
 
 		DeleteVesselEvent deletedEvent = new DeleteVesselEvent();
 		deletedEvent.setId(UUID.randomUUID().toString());
 		deletedEvent.setDate(DateTime.now());
-		deletedEvent.setType(VesselEventType.DELETE_VESSEL.name());
+		deletedEvent.setType(VesselEventTypes.DELETE);
 		deletedEvent.setAggregateId(getVessel().getId());
 		deletedEvent.setVersion(3);
 		deletedEvent.setSessionId(UUID.randomUUID().toString());

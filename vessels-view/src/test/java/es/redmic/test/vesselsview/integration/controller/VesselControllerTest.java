@@ -11,20 +11,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Arrays;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
+
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import es.redmic.models.es.common.query.dto.MetadataQueryDTO;
 import es.redmic.models.es.common.query.dto.MgetDTO;
-import es.redmic.test.vesselsview.integration.common.CommonIntegrationTest;
+import es.redmic.testutils.documentation.DocumentationViewBaseTest;
 import es.redmic.vesselsview.VesselsViewApplication;
 import es.redmic.vesselsview.model.Vessel;
 import es.redmic.vesselsview.model.VesselType;
@@ -32,7 +38,9 @@ import es.redmic.vesselsview.repository.VesselESRepository;
 
 @SpringBootTest(classes = { VesselsViewApplication.class })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class VesselControllerTest extends CommonIntegrationTest {
+@TestPropertySource(properties = { "schema.registry.port=18081" })
+@DirtiesContext
+public class VesselControllerTest extends DocumentationViewBaseTest {
 
 	@Value("${documentation.VESSEL_HOST}")
 	private String VESSEL_HOST;
@@ -42,6 +50,16 @@ public class VesselControllerTest extends CommonIntegrationTest {
 
 	Vessel vessel = new Vessel();
 
+	@ClassRule
+	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1);
+
+	@PostConstruct
+	public void CreateVesselFromRestTestPostConstruct() throws Exception {
+
+		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+	}
+
+	@Override
 	@Before
 	public void setUp() {
 

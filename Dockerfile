@@ -1,12 +1,8 @@
-FROM redmic/redmic-server
+ARG PARENT_IMAGE_NAME
+ARG PARENT_IMAGE_TAG
 
-ENV SERVICE=undefined-service
+FROM ${PARENT_IMAGE_NAME}:${PARENT_IMAGE_TAG}
 
 COPY /*/dist/*.jar ./
 
-EXPOSE 8091 8092
-
-ENTRYPOINT java $JAVA_OPTS \
-	-Djava.security.egd=file:/dev/./urandom \
-	-Dlogging.level.org.springframework=${LOG_LEVEL} \
-	-jar /opt/redmic/${SERVICE}.jar
+EXPOSE ${COMMANDS_PORT} ${VIEW_PORT}

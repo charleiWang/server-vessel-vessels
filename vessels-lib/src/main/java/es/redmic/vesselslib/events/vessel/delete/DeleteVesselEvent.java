@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.apache.avro.Schema;
 
 import es.redmic.brokerlib.avro.common.SimpleEvent;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 
 public class DeleteVesselEvent extends SimpleEvent {
 
@@ -17,10 +17,10 @@ public class DeleteVesselEvent extends SimpleEvent {
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
 
-	static VesselEventType type = VesselEventType.DELETE_VESSEL;
+	static String type = VesselEventTypes.DELETE;
 
 	public DeleteVesselEvent() {
-		super(type.name());
+		super(type);
 		setSessionId(UUID.randomUUID().toString());
 	}
 

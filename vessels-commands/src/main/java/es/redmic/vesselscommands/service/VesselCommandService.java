@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 
 import es.redmic.brokerlib.avro.geodata.tracking.vessels.AISTrackingDTO;
 import es.redmic.commandslib.service.CommandServiceItfc;
-import es.redmic.vesselscommands.commands.CreateVesselCommand;
-import es.redmic.vesselscommands.commands.DeleteVesselCommand;
-import es.redmic.vesselscommands.commands.UpdateVesselCommand;
-import es.redmic.vesselscommands.commands.VesselCommandHandler;
-import es.redmic.vesselslib.dto.VesselDTO;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselscommands.commands.vessel.CreateVesselCommand;
+import es.redmic.vesselscommands.commands.vessel.DeleteVesselCommand;
+import es.redmic.vesselscommands.commands.vessel.UpdateVesselCommand;
+import es.redmic.vesselscommands.handler.VesselCommandHandler;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 @Service
 public class VesselCommandService implements CommandServiceItfc<VesselDTO> {

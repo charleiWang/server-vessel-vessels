@@ -8,7 +8,7 @@ import org.joda.time.DateTimeZone;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import es.redmic.brokerlib.avro.common.EventError;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 public abstract class VesselTypeCancelledEvent extends EventError {
 
@@ -96,13 +96,7 @@ public abstract class VesselTypeCancelledEvent extends EventError {
 
 	@JsonIgnore
 	public static String getVesselTypeEventSchema() {
-		// @formatter:off
-		return "{\"name\":\"vesselType\",\"type\":{ \"type\":\"record\",\"name\":\"VesselTypeDTO\","
-				+ "\"namespace\":\"es.redmic.vesselslib.dto\",\"fields\":["
-				+ "{\"name\":\"code\",\"type\":\"string\"},"
-				+ "{\"name\":\"name\",\"type\":\"string\"},"
-				+ "{\"name\":\"name_en\",\"type\":\"string\"},"
-				+ "{\"name\":\"id\",\"type\":\"string\"}]}}";
-		// @formatter:on
+
+		return "{\"name\":\"vesselType\", \"type\": " + VesselTypeDTO.SCHEMA$.toString() + "}";
 	}
 }

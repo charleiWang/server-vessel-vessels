@@ -8,17 +8,19 @@ import org.joda.time.DateTime;
 
 import es.redmic.exception.common.ExceptionType;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
-import es.redmic.vesselslib.dto.VesselDTO;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
+import es.redmic.vesselslib.events.vessel.create.EnrichCreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
+import es.redmic.vesselslib.events.vessel.update.EnrichUpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
@@ -34,13 +36,22 @@ public abstract class VesselDataUtil {
 		event.setAggregateId(PREFIX + mmsi);
 		event.setDate(DateTime.now());
 		event.setId(UUID.randomUUID().toString());
-		event.setType(VesselEventType.CREATE_VESSEL.name());
+		event.setType(VesselEventTypes.CREATE);
 		event.setVersion(1);
 		event.setUserId(USER);
 		event.setSessionId("sessionIdA");
 		event.setVessel(getVessel(mmsi));
 
 		return event;
+	}
+
+	public static EnrichCreateVesselEvent getEnrichCreateVesselEvent(Integer mmsi) {
+
+		EnrichCreateVesselEvent enrichCreateVesselEvent = new EnrichCreateVesselEvent().buildFrom(getCreateEvent(mmsi));
+
+		enrichCreateVesselEvent.setVessel(getVessel(mmsi));
+
+		return enrichCreateVesselEvent;
 	}
 
 	public static CreateVesselConfirmedEvent getCreateVesselConfirmedEvent(Integer mmsi) {
@@ -75,13 +86,22 @@ public abstract class VesselDataUtil {
 		event.setAggregateId(PREFIX + mmsi);
 		event.setDate(DateTime.now());
 		event.setId(UUID.randomUUID().toString());
-		event.setType(VesselEventType.UPDATE_VESSEL.name());
+		event.setType(VesselEventTypes.UPDATE);
 		event.setVersion(2);
 		event.setUserId(USER);
 		event.setSessionId("sessionIdB");
 		event.setVessel(getVessel(mmsi));
 
 		return event;
+	}
+
+	public static EnrichUpdateVesselEvent getEnrichUpdateVesselEvent(Integer mmsi) {
+
+		EnrichUpdateVesselEvent enrichUpdateVesselEvent = new EnrichUpdateVesselEvent().buildFrom(getUpdateEvent(mmsi));
+
+		enrichUpdateVesselEvent.setVessel(getVessel(mmsi));
+
+		return enrichUpdateVesselEvent;
 	}
 
 	public static UpdateVesselConfirmedEvent getUpdateVesselConfirmedEvent(Integer mmsi) {
@@ -116,7 +136,7 @@ public abstract class VesselDataUtil {
 		event.setAggregateId(PREFIX + mmsi);
 		event.setDate(DateTime.now());
 		event.setId(UUID.randomUUID().toString());
-		event.setType(VesselEventType.DELETE_VESSEL.name());
+		event.setType(VesselEventTypes.DELETE);
 		event.setVersion(3);
 		event.setUserId(USER);
 		event.setSessionId("sessionIdC");
@@ -155,6 +175,8 @@ public abstract class VesselDataUtil {
 		vessel.setBeam(30.2);
 		vessel.setLength(230.5);
 		vessel.setCallSign("23e2");
+		vessel.setInserted(DateTime.now());
+		vessel.setUpdated(DateTime.now());
 
 		VesselTypeDTO vesselType = new VesselTypeDTO();
 		vesselType.setCode("70");

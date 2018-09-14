@@ -12,14 +12,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import es.redmic.commandslib.exceptions.ItemLockedException;
 import es.redmic.exception.data.ItemNotFoundException;
-import es.redmic.vesselscommands.commands.CreateVesselCommand;
-import es.redmic.vesselscommands.commands.DeleteVesselCommand;
-import es.redmic.vesselscommands.commands.UpdateVesselCommand;
-import es.redmic.vesselslib.dto.VesselDTO;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
-import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
+import es.redmic.vesselscommands.commands.vessel.CreateVesselCommand;
+import es.redmic.vesselscommands.commands.vessel.DeleteVesselCommand;
+import es.redmic.vesselscommands.commands.vessel.UpdateVesselCommand;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
+import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
-import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProcessEventTest extends AggregateBaseTest {
@@ -33,7 +32,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 
 		CreateVesselCommand command = new CreateVesselCommand(vessel);
 
-		CreateVesselEvent evt = agg.process(command);
+		VesselEvent evt = agg.process(command);
 
 		assertNotNull(evt);
 		assertNotNull(evt.getDate());
@@ -41,7 +40,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 		assertEquals(evt.getVessel(), vessel);
 		assertNotNull(evt.getId());
 		assertEquals(evt.getAggregateId(), vessel.getId());
-		assertEquals(evt.getType(), VesselEventType.CREATE_VESSEL.name());
+		assertEquals(evt.getType(), VesselEventTypes.ENRICH_CREATE);
 		assertTrue(evt.getVersion().equals(1));
 	}
 
@@ -54,7 +53,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 
 		UpdateVesselCommand command = new UpdateVesselCommand(vessel);
 
-		UpdateVesselEvent evt = agg.process(command);
+		VesselEvent evt = agg.process(command);
 
 		assertNotNull(evt);
 		assertNotNull(evt.getDate());
@@ -62,7 +61,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 		assertEquals(evt.getVessel(), vessel);
 		assertNotNull(evt.getId());
 		assertEquals(evt.getAggregateId(), vessel.getId());
-		assertEquals(evt.getType(), VesselEventType.UPDATE_VESSEL.name());
+		assertEquals(evt.getType(), VesselEventTypes.ENRICH_UPDATE);
 		assertTrue(evt.getVersion().equals(2));
 	}
 
@@ -103,7 +102,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 		assertNotNull(evt.getDate());
 		assertNotNull(evt.getId());
 		assertEquals(evt.getAggregateId(), vessel.getId());
-		assertEquals(evt.getType(), VesselEventType.DELETE_VESSEL.name());
+		assertEquals(evt.getType(), VesselEventTypes.DELETE);
 		assertTrue(evt.getVersion().equals(3));
 	}
 

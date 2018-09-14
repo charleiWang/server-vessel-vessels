@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import es.redmic.exception.common.ExceptionType;
 import es.redmic.models.es.common.dto.EventApplicationResult;
 import es.redmic.models.es.common.query.dto.SimpleQueryDTO;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventFactory;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeConfirmedEvent;
@@ -22,7 +24,6 @@ import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeEvent;
 import es.redmic.vesselsview.config.MapperScanBean;
 import es.redmic.vesselsview.model.VesselType;
 import es.redmic.vesselsview.service.VesselTypeESService;
-import es.redmic.vesselsview.utils.VesselTypeEventFactory;
 import es.redmic.viewlib.common.controller.RWController;
 
 @Controller
@@ -56,7 +57,7 @@ public class VesselTypeController extends RWController<VesselType, VesselTypeDTO
 		try {
 			result = service.save(mapper.getMapperFacade().map(event.getVesselType(), VesselType.class));
 		} catch (Exception e) {
-			publishFailedEvent(VesselTypeEventFactory.getCreateVesselTypeFailedEvent(event,
+			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.CREATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_type_topic);
 		}
 
@@ -65,8 +66,8 @@ public class VesselTypeController extends RWController<VesselType, VesselTypeDTO
 			logger.info("Vessel type creado de la vista");
 			publishConfirmedEvent(new CreateVesselTypeConfirmedEvent().buildFrom(event), vessel_type_topic);
 		} else {
-			publishFailedEvent(VesselTypeEventFactory.getCreateVesselTypeFailedEvent(event, result.getExeptionType(),
-					result.getExceptionArguments()), vessel_type_topic);
+			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.CREATE_FAILED,
+					result.getExeptionType(), result.getExceptionArguments()), vessel_type_topic);
 		}
 	}
 
@@ -80,7 +81,7 @@ public class VesselTypeController extends RWController<VesselType, VesselTypeDTO
 		try {
 			result = service.update(mapper.getMapperFacade().map(event.getVesselType(), VesselType.class));
 		} catch (Exception e) {
-			publishFailedEvent(VesselTypeEventFactory.getUpdateVesselTypeFailedEvent(event,
+			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.UPDATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_type_topic);
 		}
 
@@ -89,8 +90,8 @@ public class VesselTypeController extends RWController<VesselType, VesselTypeDTO
 			logger.info("Vessel type modificado en la vista");
 			publishConfirmedEvent(new UpdateVesselTypeConfirmedEvent().buildFrom(event), vessel_type_topic);
 		} else {
-			publishFailedEvent(VesselTypeEventFactory.getUpdateVesselTypeFailedEvent(event, result.getExeptionType(),
-					result.getExceptionArguments()), vessel_type_topic);
+			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.UPDATE_FAILED,
+					result.getExeptionType(), result.getExceptionArguments()), vessel_type_topic);
 		}
 	}
 
@@ -104,7 +105,7 @@ public class VesselTypeController extends RWController<VesselType, VesselTypeDTO
 		try {
 			result = service.delete(event.getAggregateId());
 		} catch (Exception e) {
-			publishFailedEvent(VesselTypeEventFactory.getDeleteVesselTypeFailedEvent(event,
+			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.DELETE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_type_topic);
 		}
 
@@ -113,8 +114,8 @@ public class VesselTypeController extends RWController<VesselType, VesselTypeDTO
 			logger.info("Vessel type eliminado de la vista");
 			publishConfirmedEvent(new DeleteVesselTypeConfirmedEvent().buildFrom(event), vessel_type_topic);
 		} else {
-			publishFailedEvent(VesselTypeEventFactory.getDeleteVesselTypeFailedEvent(event, result.getExeptionType(),
-					result.getExceptionArguments()), vessel_type_topic);
+			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.DELETE_FAILED,
+					result.getExeptionType(), result.getExceptionArguments()), vessel_type_topic);
 		}
 	}
 

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import es.redmic.commandslib.controller.CommandController;
 import es.redmic.vesselscommands.service.VesselTypeCommandService;
-import es.redmic.vesselslib.dto.VesselTypeDTO;
+import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 @Controller
 @RequestMapping(value = "${controller.mapping.vesseltype}")

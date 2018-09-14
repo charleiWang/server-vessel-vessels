@@ -3,8 +3,8 @@ package es.redmic.vesselslib.events.vessel.create;
 import org.apache.avro.Schema;
 
 import es.redmic.brokerlib.avro.common.EventError;
-import es.redmic.vesselslib.dto.VesselDTO;
-import es.redmic.vesselslib.events.vessel.VesselEventType;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 
 public class CreateVesselCancelledEvent extends EventError {
 
@@ -17,14 +17,14 @@ public class CreateVesselCancelledEvent extends EventError {
 			+ getEventBaseSchema() + "]}");
 	// @formatter:on
 
-	static VesselEventType type = VesselEventType.CREATE_VESSEL_CANCELLED;
+	static String type = VesselEventTypes.CREATE_CANCELLED;
 
 	public CreateVesselCancelledEvent() {
-		super(type.name());
+		super(type);
 	}
 
 	public CreateVesselCancelledEvent(VesselDTO vessel) {
-		super(type.name());
+		super(type);
 	}
 
 	@Override

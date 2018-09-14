@@ -18,6 +18,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -44,14 +46,15 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
+import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
 import es.redmic.testutils.documentation.DocumentationCommandBaseTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
-import es.redmic.vesselscommands.commands.VesselCommandHandler;
-import es.redmic.vesselscommands.commands.VesselTypeCommandHandler;
+import es.redmic.vesselscommands.handler.VesselCommandHandler;
+import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
 import es.redmic.vesselscommands.statestore.VesselStateStore;
 import es.redmic.vesselscommands.statestore.VesselTypeStateStore;
-import es.redmic.vesselslib.dto.VesselDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
@@ -65,19 +68,15 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 @ActiveProfiles("test")
 @DirtiesContext
 @TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselFromRestTest",
-		"spring.kafka.client-id=CreateVesselFromRestTest" })
+		"schema.registry.port=18081" })
 @KafkaListener(topics = "${broker.topic.vessel}", groupId = "test")
 public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 
-	// number of brokers.
-	private final static Integer numBrokers = 3;
-	// partitions per topic.
-	private final static Integer partitionsPerTopic = 3;
-
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(numBrokers, true, partitionsPerTopic);
+	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(KafkaEmbeddedConfig.NUM_BROKERS, true,
+			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
 
-	private final Integer mmsi = 1234;
+	private final Integer mmsi = 1111;
 
 	// @formatter:off
 	
@@ -105,6 +104,12 @@ public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 
 	@Value("${broker.topic.vessel}")
 	private String VESSEL_TOPIC;
+
+	@PostConstruct
+	public void CreateVesselFromRestTestPostConstruct() throws Exception {
+
+		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+	}
 
 	@BeforeClass
 	public static void setup() {
