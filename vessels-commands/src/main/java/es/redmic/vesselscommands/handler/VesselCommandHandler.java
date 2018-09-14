@@ -30,9 +30,11 @@ import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
+import es.redmic.vesselslib.events.vessel.delete.CheckDeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCheckFailedEvent;
+import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCheckedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
-import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
@@ -53,6 +55,9 @@ public class VesselCommandHandler extends CommandHandler {
 
 	@Value("${broker.topic.vessel.updated}")
 	private String vesselUpdatedTopic;
+
+	@Value("${broker.topic.tracking.agg.by.vessel}")
+	private String vesselTrackingAggByVesselTopic;
 
 	@Value("${broker.topic.vessel.type.updated}")
 	private String vesselTypeUpdatedTopic;
@@ -111,7 +116,8 @@ public class VesselCommandHandler extends CommandHandler {
 				config
 					.serviceId(vesselsEventsStreamId)
 					.windowsTime(streamWindowsTime)
-					.build(), vesselTypeTopic, vesselsAggByVesselTypeTopic, vesselTypeUpdatedTopic, alertService);
+					.build(), vesselTypeTopic, vesselsAggByVesselTypeTopic,
+						vesselTypeUpdatedTopic, vesselTrackingAggByVesselTopic, alertService);
 		// @formatter:on
 	}
 
@@ -180,7 +186,7 @@ public class VesselCommandHandler extends CommandHandler {
 		agg.setAggregateId(id);
 
 		// Se procesa el comando, obteniendo el evento generado
-		DeleteVesselEvent event = agg.process(cmd);
+		CheckDeleteVesselEvent event = agg.process(cmd);
 
 		// Si no se genera evento significa que no se va a aplicar
 		if (event == null)
@@ -238,6 +244,12 @@ public class VesselCommandHandler extends CommandHandler {
 	}
 
 	@KafkaHandler
+	private void listen(DeleteVesselCheckedEvent event) {
+
+		publishToKafka(VesselEventFactory.getEvent(event, VesselEventTypes.DELETE), vesselTopic);
+	}
+
+	@KafkaHandler
 	private void listen(DeleteVesselConfirmedEvent event) {
 
 		publishToKafka(VesselEventFactory.getEvent(event, VesselEventTypes.DELETED), vesselTopic);
@@ -276,6 +288,13 @@ public class VesselCommandHandler extends CommandHandler {
 
 		resolveCommand(event.getSessionId(),
 				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+	}
+
+	@KafkaHandler
+	private void listen(DeleteVesselCheckFailedEvent event) {
+
+		publishToKafka(VesselEventFactory.getEvent(event, VesselEventTypes.DELETE_CANCELLED, event.getExceptionType(),
+				event.getArguments()), vesselTopic);
 	}
 
 	@KafkaHandler
