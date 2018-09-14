@@ -68,7 +68,7 @@ import es.redmic.vesselslib.events.vesseltracking.update.VesselTrackingUpdatedEv
 @DirtiesContext
 @KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "${random.value}")
 @TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselTrackingCommandHandlerTest",
-		"schema.registry.port=18084" })
+		"schema.registry.port=18184" })
 public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 	@ClassRule
