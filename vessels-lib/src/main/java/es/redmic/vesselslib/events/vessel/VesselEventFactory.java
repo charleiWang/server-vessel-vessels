@@ -13,6 +13,7 @@ import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.common.VesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselFailedEvent;
@@ -20,11 +21,13 @@ import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCancelledEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCheckFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselCheckedEvent;
+import es.redmic.vesselslib.events.vessel.delete.DeleteVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselEvent;
 import es.redmic.vesselslib.events.vessel.delete.DeleteVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.delete.VesselDeletedEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselCancelledEvent;
+import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
@@ -50,6 +53,27 @@ public class VesselEventFactory {
 			logger.info("Creando evento DeleteVesselCheckedEvent para: " + source.getAggregateId());
 
 			return new DeleteVesselCheckedEvent().buildFrom(source);
+		}
+
+		if (type.equals(VesselEventTypes.CREATE_CONFIRMED)) {
+
+			logger.info("Creando evento CreateVesselConfirmedEvent para: " + source.getAggregateId());
+
+			return new CreateVesselConfirmedEvent().buildFrom(source);
+		}
+
+		if (type.equals(VesselEventTypes.UPDATE_CONFIRMED)) {
+
+			logger.info("Creando evento UpdateVesselConfirmedEvent para: " + source.getAggregateId());
+
+			return new UpdateVesselConfirmedEvent().buildFrom(source);
+		}
+
+		if (type.equals(VesselEventTypes.DELETE_CONFIRMED)) {
+
+			logger.info("Creando evento DeleteVesselConfirmedEvent para: " + source.getAggregateId());
+
+			return new DeleteVesselConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.DELETED)) {

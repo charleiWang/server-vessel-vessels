@@ -12,6 +12,7 @@ import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventFactory;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingCancelledEvent;
+import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEnrichedEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingFailedEvent;
@@ -19,11 +20,13 @@ import es.redmic.vesselslib.events.vesseltracking.create.VesselTrackingCreatedEv
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCheckFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCheckedEvent;
+import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
 import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingCancelledEvent;
+import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEnrichedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingFailedEvent;
@@ -32,32 +35,6 @@ import es.redmic.vesselslib.unit.utils.VesselDataUtil;
 import es.redmic.vesselslib.unit.utils.VesselTrackingDataUtil;
 
 public class VesselTrackingEventFactoryTest {
-
-	@Test
-	public void GetEvent_ReturnCreateVesselTrackingEnrichedEvent_IfTypeIsCreateEnriched() {
-
-		Event source = VesselTrackingDataUtil.getEnrichCreateVesselTrackingEvent();
-		CreateVesselTrackingEnrichedEvent event = (CreateVesselTrackingEnrichedEvent) VesselTrackingEventFactory
-				.getEvent(source, VesselTrackingEventTypes.CREATE_ENRICHED,
-						((VesselTrackingEvent) source).getVesselTracking());
-
-		assertEquals(VesselTrackingEventTypes.CREATE_ENRICHED, event.getType());
-		assertNotNull(event.getVesselTracking());
-		checkMetadataFields(source, event);
-	}
-
-	@Test
-	public void GetEvent_ReturnUpdateVesselTrackingEnrichedEvent_IfTypeIsUpdateEnriched() {
-
-		Event source = VesselTrackingDataUtil.getEnrichUpdateVesselTrackingEvent();
-		UpdateVesselTrackingEnrichedEvent event = (UpdateVesselTrackingEnrichedEvent) VesselTrackingEventFactory
-				.getEvent(source, VesselTrackingEventTypes.UPDATE_ENRICHED,
-						((VesselTrackingEvent) source).getVesselTracking());
-
-		assertEquals(VesselTrackingEventTypes.UPDATE_ENRICHED, event.getType());
-		assertNotNull(event.getVesselTracking());
-		checkMetadataFields(source, event);
-	}
 
 	@Test
 	public void GetEvent_ReturnDeleteVesselTrackingEvent_IfTypeIsDelete() {
@@ -84,6 +61,42 @@ public class VesselTrackingEventFactoryTest {
 	}
 
 	@Test
+	public void GetEvent_ReturnCreateVesselTrackingConfirmedEvent_IfTypeIsCreateConfirmed() {
+
+		Event source = VesselTrackingDataUtil.getCreateConfirmedEvent();
+		CreateVesselTrackingConfirmedEvent event = (CreateVesselTrackingConfirmedEvent) VesselTrackingEventFactory
+				.getEvent(source, VesselTrackingEventTypes.CREATE_CONFIRMED);
+
+		assertEquals(VesselTrackingEventTypes.CREATE_CONFIRMED, event.getType());
+
+		checkMetadataFields(source, event);
+	}
+
+	@Test
+	public void GetEvent_ReturnUpdateVesselTrackingConfirmedEvent_IfTypeIsUpdateConfirmed() {
+
+		Event source = VesselTrackingDataUtil.getUpdateVesselTrackingConfirmedEvent();
+		UpdateVesselTrackingConfirmedEvent event = (UpdateVesselTrackingConfirmedEvent) VesselTrackingEventFactory
+				.getEvent(source, VesselTrackingEventTypes.UPDATE_CONFIRMED);
+
+		assertEquals(VesselTrackingEventTypes.UPDATE_CONFIRMED, event.getType());
+
+		checkMetadataFields(source, event);
+	}
+
+	@Test
+	public void GetEvent_ReturnDeleteVesselTrackingConfirmedEvent_IfTypeIsDeleteConfirmed() {
+
+		Event source = VesselTrackingDataUtil.getDeleteVesselTrackingConfirmedEvent();
+		DeleteVesselTrackingConfirmedEvent event = (DeleteVesselTrackingConfirmedEvent) VesselTrackingEventFactory
+				.getEvent(source, VesselTrackingEventTypes.DELETE_CONFIRMED);
+
+		assertEquals(VesselTrackingEventTypes.DELETE_CONFIRMED, event.getType());
+
+		checkMetadataFields(source, event);
+	}
+
+	@Test
 	public void GetEvent_ReturnDeleteVesselTrackingCheckedEvent_IfTypeIsDeleted() {
 
 		Event source = VesselTrackingDataUtil.getDeleteVesselTrackingConfirmedEvent();
@@ -96,6 +109,32 @@ public class VesselTrackingEventFactoryTest {
 	}
 
 	/////////////////////////
+
+	@Test
+	public void GetEvent_ReturnCreateVesselTrackingEnrichedEvent_IfTypeIsCreateEnriched() {
+
+		Event source = VesselTrackingDataUtil.getEnrichCreateVesselTrackingEvent();
+		CreateVesselTrackingEnrichedEvent event = (CreateVesselTrackingEnrichedEvent) VesselTrackingEventFactory
+				.getEvent(source, VesselTrackingEventTypes.CREATE_ENRICHED,
+						((VesselTrackingEvent) source).getVesselTracking());
+
+		assertEquals(VesselTrackingEventTypes.CREATE_ENRICHED, event.getType());
+		assertNotNull(event.getVesselTracking());
+		checkMetadataFields(source, event);
+	}
+
+	@Test
+	public void GetEvent_ReturnUpdateVesselTrackingEnrichedEvent_IfTypeIsUpdateEnriched() {
+
+		Event source = VesselTrackingDataUtil.getEnrichUpdateVesselTrackingEvent();
+		UpdateVesselTrackingEnrichedEvent event = (UpdateVesselTrackingEnrichedEvent) VesselTrackingEventFactory
+				.getEvent(source, VesselTrackingEventTypes.UPDATE_ENRICHED,
+						((VesselTrackingEvent) source).getVesselTracking());
+
+		assertEquals(VesselTrackingEventTypes.UPDATE_ENRICHED, event.getType());
+		assertNotNull(event.getVesselTracking());
+		checkMetadataFields(source, event);
+	}
 
 	@Test
 	public void GetEvent_ReturnCreateVesselTrackingEvent_IfTypeIsCreate() {
