@@ -32,9 +32,9 @@ import es.redmic.models.es.common.query.dto.MetadataQueryDTO;
 import es.redmic.models.es.common.query.dto.MgetDTO;
 import es.redmic.testutils.documentation.DocumentationViewBaseTest;
 import es.redmic.vesselsview.VesselsViewApplication;
-import es.redmic.vesselsview.model.Vessel;
-import es.redmic.vesselsview.model.VesselType;
-import es.redmic.vesselsview.repository.VesselESRepository;
+import es.redmic.vesselsview.model.vessel.Vessel;
+import es.redmic.vesselsview.model.vesseltype.VesselType;
+import es.redmic.vesselsview.repository.vessel.VesselESRepository;
 
 @SpringBootTest(classes = { VesselsViewApplication.class })
 @RunWith(SpringJUnit4ClassRunner.class)

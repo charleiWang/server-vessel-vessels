@@ -1,10 +1,10 @@
-package es.redmic.vesselsview.mapper;
+package es.redmic.vesselsview.mapper.vessel;
 
 import org.springframework.stereotype.Component;
 
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
-import es.redmic.vesselsview.model.Vessel;
-import es.redmic.vesselsview.model.VesselType;
+import es.redmic.vesselsview.model.vessel.Vessel;
+import es.redmic.vesselsview.model.vesseltype.VesselType;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MappingContext;
 

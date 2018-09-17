@@ -19,9 +19,9 @@ import es.redmic.models.es.data.common.model.DataSearchWrapper;
 import es.redmic.testutils.utils.JsonToBeanTestUtil;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselsview.config.MapperScanBean;
-import es.redmic.vesselsview.mapper.VesselESMapper;
-import es.redmic.vesselsview.mapper.VesselTypeESMapper;
-import es.redmic.vesselsview.model.Vessel;
+import es.redmic.vesselsview.mapper.vessel.VesselESMapper;
+import es.redmic.vesselsview.mapper.vesseltype.VesselTypeESMapper;
+import es.redmic.vesselsview.model.vessel.Vessel;
 import es.redmic.viewlib.common.mapper.es2dto.DataCollectionESMapper;
 import es.redmic.viewlib.common.mapper.es2dto.DataItemESMapper;
 

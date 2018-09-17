@@ -32,8 +32,8 @@ import es.redmic.models.es.common.query.dto.MgetDTO;
 import es.redmic.models.es.common.query.dto.SimpleQueryDTO;
 import es.redmic.testutils.documentation.DocumentationViewBaseTest;
 import es.redmic.vesselsview.VesselsViewApplication;
-import es.redmic.vesselsview.model.VesselType;
-import es.redmic.vesselsview.repository.VesselTypeESRepository;
+import es.redmic.vesselsview.model.vesseltype.VesselType;
+import es.redmic.vesselsview.repository.vesseltype.VesselTypeESRepository;
 
 @SpringBootTest(classes = { VesselsViewApplication.class })
 @RunWith(SpringJUnit4ClassRunner.class)

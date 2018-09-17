@@ -1,4 +1,4 @@
-package es.redmic.vesselsview.service;
+package es.redmic.vesselsview.service.vessel;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import es.redmic.models.es.common.dto.EventApplicationResult;
 import es.redmic.models.es.common.query.dto.MetadataQueryDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
-import es.redmic.vesselsview.model.Vessel;
-import es.redmic.vesselsview.model.VesselType;
-import es.redmic.vesselsview.repository.VesselESRepository;
+import es.redmic.vesselsview.model.vessel.Vessel;
+import es.redmic.vesselsview.model.vesseltype.VesselType;
+import es.redmic.vesselsview.repository.vessel.VesselESRepository;
 import es.redmic.viewlib.data.service.RWDataService;
 
 @Service

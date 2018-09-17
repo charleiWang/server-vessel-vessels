@@ -1,6 +1,7 @@
-package es.redmic.vesselsview.model;
+package es.redmic.vesselsview.model.vessel;
 
 import es.redmic.models.es.common.model.BaseUpdatableES;
+import es.redmic.vesselsview.model.vesseltype.VesselType;
 
 public class Vessel extends BaseUpdatableES {
 

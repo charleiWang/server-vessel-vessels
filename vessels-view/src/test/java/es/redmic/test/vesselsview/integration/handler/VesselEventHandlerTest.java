@@ -52,8 +52,8 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
 import es.redmic.vesselsview.VesselsViewApplication;
-import es.redmic.vesselsview.model.Vessel;
-import es.redmic.vesselsview.repository.VesselESRepository;
+import es.redmic.vesselsview.model.vessel.Vessel;
+import es.redmic.vesselsview.repository.vessel.VesselESRepository;
 import es.redmic.viewlib.config.MapperScanBeanItfc;
 
 @SpringBootTest(classes = { VesselsViewApplication.class })

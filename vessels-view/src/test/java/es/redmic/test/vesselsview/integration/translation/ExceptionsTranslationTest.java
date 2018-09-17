@@ -22,7 +22,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import es.redmic.exception.common.PatternUtils;
 import es.redmic.exception.data.ItemNotFoundException;
 import es.redmic.vesselsview.VesselsViewApplication;
-import es.redmic.vesselsview.repository.VesselESRepository;
+import es.redmic.vesselsview.repository.vessel.VesselESRepository;
 
 @SpringBootTest(classes = { VesselsViewApplication.class })
 @RunWith(SpringJUnit4ClassRunner.class)
