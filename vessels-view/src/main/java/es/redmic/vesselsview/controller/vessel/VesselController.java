@@ -24,12 +24,12 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselsview.model.vessel.Vessel;
 import es.redmic.vesselsview.model.vesseltype.VesselType;
 import es.redmic.vesselsview.service.vessel.VesselESService;
-import es.redmic.viewlib.common.controller.RWController;
 import es.redmic.viewlib.config.MapperScanBeanItfc;
+import es.redmic.viewlib.data.controller.DataController;
 
 @Controller
 @KafkaListener(topics = "${broker.topic.vessel}")
-public class VesselController extends RWController<Vessel, VesselDTO, MetadataQueryDTO> {
+public class VesselController extends DataController<Vessel, VesselDTO, MetadataQueryDTO> {
 
 	private static Logger logger = LogManager.getLogger();
 
