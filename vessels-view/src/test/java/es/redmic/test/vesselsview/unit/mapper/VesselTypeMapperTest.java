@@ -65,7 +65,7 @@ public class VesselTypeMapperTest {
 		String modelStringExpected = JsonToBeanTestUtil.getJsonString(modelPath);
 		String modelString = JsonToBeanTestUtil.writeValueAsString(modelOut);
 
-		JSONAssert.assertEquals(modelString, modelStringExpected, false);
+		JSONAssert.assertEquals(modelStringExpected, modelString, false);
 	}
 
 	@Test

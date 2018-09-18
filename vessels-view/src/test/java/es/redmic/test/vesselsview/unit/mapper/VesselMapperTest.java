@@ -20,7 +20,6 @@ import es.redmic.testutils.utils.JsonToBeanTestUtil;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselsview.config.MapperScanBean;
 import es.redmic.vesselsview.mapper.vessel.VesselESMapper;
-import es.redmic.vesselsview.mapper.vesseltype.VesselTypeESMapper;
 import es.redmic.vesselsview.model.vessel.Vessel;
 import es.redmic.viewlib.common.mapper.es2dto.DataCollectionESMapper;
 import es.redmic.viewlib.common.mapper.es2dto.DataItemESMapper;
@@ -36,9 +35,6 @@ public class VesselMapperTest {
 
 	@InjectMocks
 	DataItemESMapper dataItemMapper;
-
-	@InjectMocks
-	VesselTypeESMapper vesselTypeESMapper;
 
 	protected MapperScanBean factory = new MapperScanBean().build();
 
@@ -57,7 +53,6 @@ public class VesselMapperTest {
 		factory.addMapper(mapper);
 		factory.addMapper(dataCollectionMapper);
 		factory.addMapper(dataItemMapper);
-		factory.addMapper(vesselTypeESMapper);
 	}
 
 	@Test
@@ -70,7 +65,7 @@ public class VesselMapperTest {
 		String modelStringExpected = JsonToBeanTestUtil.getJsonString(modelPath);
 		String modelString = JsonToBeanTestUtil.writeValueAsString(modelOut);
 
-		JSONAssert.assertEquals(modelString, modelStringExpected, false);
+		JSONAssert.assertEquals(modelStringExpected, modelString, false);
 	}
 
 	@Test
