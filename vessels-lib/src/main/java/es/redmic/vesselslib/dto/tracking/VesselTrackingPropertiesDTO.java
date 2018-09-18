@@ -52,7 +52,7 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 					+ "{\"name\":\"navStat\",\"type\":[\"int\", \"null\"]},"
 					+ "{\"name\":\"dest\",\"type\":[\"string\", \"null\"]},"
 					+ "{\"name\":\"eta\",\"type\":[\"string\", \"null\"]},"
-					+ "{\"name\":\"activityId\",\"type\":\"string\"},"
+					+ "{\"name\":\"activity\",\"type\":\"string\"},"
 					+ "{\"name\":\"inserted\",\"type\":[\"null\",{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}],"
 						+ "\"default\": null},"
 					+ "{\"name\":\"updated\",\"type\":[\"null\",{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}],"
@@ -174,7 +174,7 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 		case 7:
 			return eta;
 		case 8:
-			return getActivityId();
+			return getActivity();
 		case 9:
 			return getInserted() != null ? getInserted().getMillis() : null;
 		case 10:
@@ -213,7 +213,7 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 			eta = value != null ? value.toString() : null;
 			break;
 		case 8:
-			setActivityId(value.toString());
+			setActivity(value.toString());
 			break;
 		case 9:
 			setInserted(value != null ? new DateTime(value, DateTimeZone.UTC).toDateTime() : null);
