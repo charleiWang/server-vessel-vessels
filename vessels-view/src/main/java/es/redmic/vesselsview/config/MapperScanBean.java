@@ -3,6 +3,8 @@ package es.redmic.vesselsview.config;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 
+import com.vividsolutions.jts.geom.Point;
+
 import es.redmic.viewlib.config.MapperScanBeanBase;
 import es.redmic.viewlib.config.MapperScanBeanItfc;
 import ma.glasnost.orika.converter.builtin.PassThroughConverter;
@@ -18,8 +20,9 @@ public class MapperScanBean extends MapperScanBeanBase implements MapperScanBean
 	@Override
 	protected void addDefaultActions() {
 
-		addConverter(new PassThroughConverter(org.joda.time.DateTime.class));
 		addConverter(new PassThroughConverter(DateTime.class));
+		addConverter(new PassThroughConverter(Point.class));
+
 	}
 
 	@Override
