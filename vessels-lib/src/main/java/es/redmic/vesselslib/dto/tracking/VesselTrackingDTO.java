@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vividsolutions.jts.geom.Point;
 
 import es.redmic.brokerlib.avro.geodata.common.FeatureDTO;
-import es.redmic.brokerlib.avro.geodata.common.GeoJSONFeatureType;
+import es.redmic.brokerlib.avro.geodata.utils.GeoJSONFeatureType;
 
 public class VesselTrackingDTO extends FeatureDTO<VesselTrackingPropertiesDTO, Point> {
 
