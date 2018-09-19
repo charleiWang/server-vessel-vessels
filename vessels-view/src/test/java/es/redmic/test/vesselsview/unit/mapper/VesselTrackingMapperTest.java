@@ -1,6 +1,8 @@
 package es.redmic.test.vesselsview.unit.mapper;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.junit.Before;
@@ -14,16 +16,19 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-import es.redmic.models.es.common.dto.JSONCollectionDTO;
-import es.redmic.models.es.data.common.model.DataSearchWrapper;
+import es.redmic.models.es.geojson.common.dto.GeoJSONFeatureCollectionDTO;
+import es.redmic.models.es.geojson.wrapper.GeoSearchWrapper;
 import es.redmic.testutils.utils.JsonToBeanTestUtil;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselsview.config.MapperScanBean;
+import es.redmic.vesselsview.mapper.vessel.VesselESMapper;
 import es.redmic.vesselsview.mapper.vesseltracking.VesselTrackingESMapper;
+import es.redmic.vesselsview.mapper.vesseltracking.VesselTrackingPropertiesESMapper;
 import es.redmic.vesselsview.mapper.vesseltype.VesselTypeESMapper;
 import es.redmic.vesselsview.model.vesseltracking.VesselTracking;
-import es.redmic.viewlib.common.mapper.es2dto.DataCollectionESMapper;
-import es.redmic.viewlib.common.mapper.es2dto.DataItemESMapper;
+import es.redmic.viewlib.common.mapper.es2dto.FeatureCollectionMapper;
+import es.redmic.viewlib.common.mapper.es2dto.FeatureMapper;
+import ma.glasnost.orika.MappingContext;
 
 @RunWith(MockitoJUnitRunner.class)
 public class VesselTrackingMapperTest {
@@ -32,13 +37,19 @@ public class VesselTrackingMapperTest {
 	VesselTrackingESMapper mapper;
 
 	@InjectMocks
-	DataCollectionESMapper dataCollectionMapper;
+	VesselTrackingPropertiesESMapper mapperProperties;
 
 	@InjectMocks
-	DataItemESMapper dataItemMapper;
+	VesselESMapper mapperVessel;
 
 	@InjectMocks
-	VesselTypeESMapper vesselTypeESMapper;
+	VesselTypeESMapper mapperVesselType;
+
+	@InjectMocks
+	FeatureCollectionMapper geoDataCollectionMapper;
+
+	@InjectMocks
+	FeatureMapper geoDataItemMapper;
 
 	protected MapperScanBean factory = new MapperScanBean().build();
 
@@ -55,8 +66,11 @@ public class VesselTrackingMapperTest {
 	public void setupTest() throws IOException {
 
 		factory.addMapper(mapper);
-		factory.addMapper(dataCollectionMapper);
-		factory.addMapper(dataItemMapper);
+		factory.addMapper(mapperProperties);
+		factory.addMapper(mapperVessel);
+		factory.addMapper(mapperVesselType);
+		factory.addMapper(geoDataCollectionMapper);
+		factory.addMapper(geoDataItemMapper);
 	}
 
 	@Test
@@ -76,14 +90,18 @@ public class VesselTrackingMapperTest {
 	@Test
 	public void mapperSearchWrapperToDto() throws JsonParseException, JsonMappingException, IOException, JSONException {
 
-		JavaType type = JsonToBeanTestUtil.getParametizedType(DataSearchWrapper.class, VesselTracking.class);
+		JavaType type = JsonToBeanTestUtil.getParametizedType(GeoSearchWrapper.class, VesselTracking.class);
 
-		DataSearchWrapper<?> searchWrapperModel = (DataSearchWrapper<?>) JsonToBeanTestUtil.getBean(searchWrapperPath,
+		GeoSearchWrapper<?> searchWrapperModel = (GeoSearchWrapper<?>) JsonToBeanTestUtil.getBean(searchWrapperPath,
 				type);
 		String expected = JsonToBeanTestUtil.getJsonString(searchDTOPath);
 
-		JSONCollectionDTO searchDTO = factory.getMapperFacade().map(searchWrapperModel.getHits(),
-				JSONCollectionDTO.class);
+		Map<Object, Object> globalProperties = new HashMap<Object, Object>();
+		globalProperties.put("targetTypeDto", VesselTrackingDTO.class);
+		MappingContext context = new MappingContext(globalProperties);
+
+		GeoJSONFeatureCollectionDTO searchDTO = factory.getMapperFacade().map(searchWrapperModel.getHits(),
+				GeoJSONFeatureCollectionDTO.class, context);
 
 		String searchDTOString = JsonToBeanTestUtil.writeValueAsString(searchDTO);
 
