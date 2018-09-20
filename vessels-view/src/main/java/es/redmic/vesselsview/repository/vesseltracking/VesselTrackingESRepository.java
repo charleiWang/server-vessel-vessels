@@ -35,8 +35,9 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
  
 		private final String ID_PROPERTY = "id",
 				UUID_PROPERTY = "uuid",
-				MMSI_PROPERTY = "properties.vessel.mmsi.id",
-				DATE_PROPERTY = "properties.date";
+				MMSI_PROPERTY = "properties.vessel.mmsi",
+				DATE_PROPERTY = "properties.date",
+				VESSEL_PROPERTY = "properties.vessel";
 	// @formatter:on
 
 	public VesselTrackingESRepository() {
@@ -49,7 +50,8 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 		XContentBuilder doc;
 
 		try {
-			doc = jsonBuilder().startObject().field("type", objectMapper.convertValue(vessel, Map.class)).endObject();
+			doc = jsonBuilder().startObject().field(VESSEL_PROPERTY, objectMapper.convertValue(vessel, Map.class))
+					.endObject();
 		} catch (IllegalArgumentException | IOException e1) {
 			LOGGER.debug("Error modificando el item con id " + vesselTrackingId + " en " + getIndex()[0] + " "
 					+ getType()[0]);
@@ -65,16 +67,22 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 		// @formatter:off
 
 		QueryBuilder idTerm = QueryBuilders.termQuery(ID_PROPERTY, modelToIndex.getId()),
-				uuidTerm = QueryBuilders.termQuery(UUID_PROPERTY, modelToIndex.getUuid());
+				uuidTerm = QueryBuilders.termQuery(UUID_PROPERTY, modelToIndex.getUuid()),
+				mmsiTerm = QueryBuilders.boolQuery()
+						.must(QueryBuilders.termQuery(MMSI_PROPERTY, modelToIndex.getProperties().getVessel().getMmsi()))
+						.must(QueryBuilders.termQuery(DATE_PROPERTY, modelToIndex.getProperties().getDate()));
 		
 		SearchRequestBuilder requestBuilderId = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
 				.setQuery(idTerm).setSize(1),
 			requestBuilderUuid = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(uuidTerm).setSize(1);
+				.setQuery(uuidTerm).setSize(1),
+			requestBuilderMmsi = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
+				.setQuery(mmsiTerm).setSize(1);
 
 		MultiSearchRequestBuilder multiSearchRequestBuilder = ESProvider.getClient().prepareMultiSearch()
 			.add(requestBuilderId)
-			.add(requestBuilderUuid);
+			.add(requestBuilderUuid)
+			.add(requestBuilderMmsi);
 		
 		MultiSearchResponse sr = multiSearchRequestBuilder.get();
 
@@ -90,6 +98,11 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 
 		if (responses != null && responses[1].getResponse().getHits().getTotalHits() > 0) {
 			arguments.put(UUID_PROPERTY, modelToIndex.getUuid().toString());
+		}
+
+		if (responses != null && responses[2].getResponse().getHits().getTotalHits() > 0) {
+			arguments.put(MMSI_PROPERTY, modelToIndex.getProperties().getVessel().getMmsi().toString());
+			arguments.put(DATE_PROPERTY, modelToIndex.getProperties().getDate().toString());
 		}
 
 		if (arguments.size() > 0) {
@@ -136,6 +149,7 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 
 		if (responses != null && responses[1].getResponse().getHits().getTotalHits() > 0) {
 			arguments.put(MMSI_PROPERTY, modelToIndex.getProperties().getVessel().getMmsi().toString());
+			arguments.put(DATE_PROPERTY, modelToIndex.getProperties().getDate().toString());
 		}
 
 		if (arguments.size() > 0) {
