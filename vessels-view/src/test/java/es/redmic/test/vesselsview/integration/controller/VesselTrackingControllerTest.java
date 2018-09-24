@@ -1,7 +1,9 @@
 package es.redmic.test.vesselsview.integration.controller;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -233,6 +235,8 @@ public class VesselTrackingControllerTest extends DocumentationViewBaseTest {
 				.andExpect(jsonPath("$.success", is(true)))
 				.andExpect(jsonPath("$.body", notNullValue()))
 				.andExpect(jsonPath("$.body.length()", is(1))) 
+				.andExpect(jsonPath("$.body[0]", startsWith("<b>")))
+				.andExpect(jsonPath("$.body[0]", endsWith("</b>")))
 					.andDo(getDataQueryFieldsDescriptor());
 				
 		

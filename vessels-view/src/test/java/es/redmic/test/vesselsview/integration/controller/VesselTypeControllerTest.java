@@ -1,7 +1,9 @@
 package es.redmic.test.vesselsview.integration.controller;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -9,10 +11,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Arrays;
-import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -65,8 +67,10 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 	@Before
 	public void setUp() {
 
-		vesselType.setId(UUID.randomUUID().toString());
-		vesselType.setCode("199");
+		String code = RandomStringUtils.random(4, true, false);
+
+		vesselType.setId("vesseltype-code-" + code);
+		vesselType.setCode(code);
 		vesselType.setName("Other Type, no additional information");
 		vesselType.setName_en("Other Type, no additional information");
 
@@ -175,14 +179,16 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 		
 		this.mockMvc
 			.perform(get(VESSELTYPE_PATH + "/_suggest")
-					.param("fields", "{name}")
+					.param("fields", new String[] { "name" })
 					.param("text", vesselType.getName())
 					.param("size", "1")
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success", is(true)))
 				.andExpect(jsonPath("$.body", notNullValue()))
-				//.andExpect(jsonPath("$.body.length()", is(1))) TODO: cuando funcionen las sugerencias, arreglar
+				.andExpect(jsonPath("$.body.length()", is(1)))
+				.andExpect(jsonPath("$.body[0]", startsWith("<b>")))
+				.andExpect(jsonPath("$.body[0]", endsWith("</b>")))
 					.andDo(getSuggestParametersDescription());
 		
 		// @formatter:on
@@ -203,7 +209,9 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success", is(true)))
 				.andExpect(jsonPath("$.body", notNullValue()))
-				//.andExpect(jsonPath("$.body.length()", is(1))); TODO: cuando funcionen las sugerencias, arreglar 
+				.andExpect(jsonPath("$.body.length()", is(1)))
+				.andExpect(jsonPath("$.body[0]", startsWith("<b>")))
+				.andExpect(jsonPath("$.body[0]", endsWith("</b>")))
 					.andDo(getSimpleQueryFieldsDescriptor());;
 				
 		

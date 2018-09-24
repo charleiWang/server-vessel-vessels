@@ -1,7 +1,9 @@
 package es.redmic.test.vesselsview.integration.controller;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -9,10 +11,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Arrays;
-import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -63,13 +65,17 @@ public class VesselControllerTest extends DocumentationViewBaseTest {
 	@Before
 	public void setUp() {
 
-		vessel.setId(UUID.randomUUID().toString());
+		String code = RandomStringUtils.random(4, true, false);
+
+		Integer mmsi = Integer.valueOf(RandomStringUtils.random(4, false, true));
+
+		vessel.setId("vessel-mmsi-" + mmsi);
 		vessel.setName("Prueba");
-		vessel.setImo(1234);
-		vessel.setMmsi(5678);
+		vessel.setImo(mmsi);
+		vessel.setMmsi(mmsi);
 		VesselType type = new VesselType();
-		type.setId("vessel-mmsi-5678");
-		type.setCode("99");
+		type.setId("vesseltype-code-" + code);
+		type.setCode(code);
 		type.setName("Other Type, no additional information");
 		type.setName_en("Other Type, no additional information");
 		vessel.setType(type);
@@ -181,14 +187,16 @@ public class VesselControllerTest extends DocumentationViewBaseTest {
 		
 		this.mockMvc
 			.perform(get("/_suggest")
-					.param("fields", "{name}")
+					.param("fields", new String[] { "name" })
 					.param("text", vessel.getName())
 					.param("size", "1")
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success", is(true)))
 				.andExpect(jsonPath("$.body", notNullValue()))
-				//.andExpect(jsonPath("$.body.length()", is(1))) TODO: cuando funcionen las sugerencias, arreglar
+				.andExpect(jsonPath("$.body.length()", is(1)))
+				.andExpect(jsonPath("$.body[0]", startsWith("<b>")))
+				.andExpect(jsonPath("$.body[0]", endsWith("</b>")))
 					.andDo(getSuggestParametersDescription());
 		
 		// @formatter:on
@@ -209,8 +217,10 @@ public class VesselControllerTest extends DocumentationViewBaseTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success", is(true)))
 				.andExpect(jsonPath("$.body", notNullValue()))
-				//.andExpect(jsonPath("$.body.length()", is(1))); TODO: cuando funcionen las sugerencias, arreglar 
-					.andDo(getMetadataQueryFieldsDescriptor());;
+				.andExpect(jsonPath("$.body.length()", is(1)))
+				.andExpect(jsonPath("$.body[0]", startsWith("<b>")))
+				.andExpect(jsonPath("$.body[0]", endsWith("</b>")))
+					.andDo(getMetadataQueryFieldsDescriptor());
 				
 		
 		// @formatter:on
