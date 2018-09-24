@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -39,6 +40,7 @@ import com.vividsolutions.jts.geom.Point;
 import es.redmic.models.es.common.query.dto.DataQueryDTO;
 import es.redmic.models.es.common.query.dto.MgetDTO;
 import es.redmic.testutils.documentation.DocumentationViewBaseTest;
+import es.redmic.testutils.utils.JsonToBeanTestUtil;
 import es.redmic.vesselsview.VesselsViewApplication;
 import es.redmic.vesselsview.model.vessel.Vessel;
 import es.redmic.vesselsview.model.vesseltracking.VesselTracking;
@@ -54,8 +56,8 @@ public class VesselTrackingControllerTest extends DocumentationViewBaseTest {
 
 	public final static String PREFIX = "vesseltracking-mmsi-tstamp-", MMSI = "1234", USER = "1";
 
-	@Value("${documentation.VESSELTRACKING_HOST}")
-	private String VESSELTRACKING_HOST;
+	@Value("${documentation.VESSEL_HOST}")
+	private String HOST;
 
 	@Value("${controller.mapping.vesseltracking}")
 	private String VESSELTRACKING_PATH;
@@ -136,7 +138,7 @@ public class VesselTrackingControllerTest extends DocumentationViewBaseTest {
 				.webAppContextSetup(webApplicationContext)
 				.addFilters(springSecurityFilterChain)
 				.apply(documentationConfiguration(this.restDocumentation)
-						.uris().withScheme(SCHEME).withHost(VESSELTRACKING_HOST.replace("{activityId}", ACTIVITY_ID))
+						.uris().withScheme(SCHEME).withHost(HOST.replace("{activityId}", ACTIVITY_ID))
 							.withPort(PORT))
 				.alwaysDo(this.document).build();
 
@@ -149,7 +151,7 @@ public class VesselTrackingControllerTest extends DocumentationViewBaseTest {
 	}
 
 	@Test
-	public void getVessel_Return200_WhenItemExist() throws Exception {
+	public void getVesselTracking_Return200_WhenItemExist() throws Exception {
 
 		// @formatter:off
 		
@@ -243,8 +245,12 @@ public class VesselTrackingControllerTest extends DocumentationViewBaseTest {
 		// @formatter:on
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void getFilterSchema_Return200_WhenSchemaIsAvailable() throws Exception {
+
+		Map<String, Object> schemaExpected = (Map<String, Object>) JsonToBeanTestUtil
+				.getBean("/data/schemas/vesseltrackingqueryschema.json", Map.class);
 
 		// @formatter:off
 		
@@ -253,11 +259,8 @@ public class VesselTrackingControllerTest extends DocumentationViewBaseTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.success", is(true)))
 			.andExpect(jsonPath("$.body", notNullValue()))
-			.andExpect(jsonPath("$.body.schema", notNullValue()))
-			.andExpect(jsonPath("$.body.schema.properties", notNullValue()))
-			.andExpect(jsonPath("$.body.schema.properties.postFilter", notNullValue()))
-			.andExpect(jsonPath("$.body.schema.properties.aggs", notNullValue()));
-			// TODO: aumentar el nivel de checkeo
+			.andExpect(jsonPath("$.body", notNullValue()))
+			.andExpect(jsonPath("$.body", is(schemaExpected)));
 		// @formatter:on
 	}
 }

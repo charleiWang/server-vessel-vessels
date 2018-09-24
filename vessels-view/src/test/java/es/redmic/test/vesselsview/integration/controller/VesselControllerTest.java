@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -33,6 +34,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import es.redmic.models.es.common.query.dto.MetadataQueryDTO;
 import es.redmic.models.es.common.query.dto.MgetDTO;
 import es.redmic.testutils.documentation.DocumentationViewBaseTest;
+import es.redmic.testutils.utils.JsonToBeanTestUtil;
 import es.redmic.vesselsview.VesselsViewApplication;
 import es.redmic.vesselsview.model.vessel.Vessel;
 import es.redmic.vesselsview.model.vesseltype.VesselType;
@@ -226,21 +228,21 @@ public class VesselControllerTest extends DocumentationViewBaseTest {
 		// @formatter:on
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void getFilterSchema_Return200_WhenSchemaIsAvailable() throws Exception {
 
 		// @formatter:off
+		
+		Map<String, Object> schemaExpected = (Map<String, Object>) JsonToBeanTestUtil
+				.getBean("/data/schemas/vesselqueryschema.json", Map.class);
 		
 		this.mockMvc.perform(get(filterSchemaPath)
 				.accept(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.success", is(true)))
 			.andExpect(jsonPath("$.body", notNullValue()))
-			.andExpect(jsonPath("$.body.schema", notNullValue()))
-			.andExpect(jsonPath("$.body.schema.properties", notNullValue()))
-			.andExpect(jsonPath("$.body.schema.properties.postFilter", notNullValue()))
-			.andExpect(jsonPath("$.body.schema.properties.aggs", notNullValue()));
-			// TODO: aumentar el nivel de checkeo
+			.andExpect(jsonPath("$.body", is(schemaExpected)));
 		// @formatter:on
 	}
 }

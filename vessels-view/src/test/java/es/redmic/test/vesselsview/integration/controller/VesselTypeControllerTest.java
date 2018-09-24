@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -33,6 +34,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import es.redmic.models.es.common.query.dto.MgetDTO;
 import es.redmic.models.es.common.query.dto.SimpleQueryDTO;
 import es.redmic.testutils.documentation.DocumentationViewBaseTest;
+import es.redmic.testutils.utils.JsonToBeanTestUtil;
 import es.redmic.vesselsview.VesselsViewApplication;
 import es.redmic.vesselsview.model.vesseltype.VesselType;
 import es.redmic.vesselsview.repository.vesseltype.VesselTypeESRepository;
@@ -43,8 +45,8 @@ import es.redmic.vesselsview.repository.vesseltype.VesselTypeESRepository;
 @DirtiesContext
 public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 
-	@Value("${documentation.VESSELTYPE_HOST}")
-	private String VESSELTYPE_HOST;
+	@Value("${documentation.VESSEL_HOST}")
+	private String HOST;
 
 	@Value("${controller.mapping.vesseltype}")
 	private String VESSELTYPE_PATH;
@@ -82,7 +84,7 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 				.webAppContextSetup(webApplicationContext)
 				.addFilters(springSecurityFilterChain)
 				.apply(documentationConfiguration(this.restDocumentation)
-						.uris().withScheme(SCHEME).withHost(VESSELTYPE_HOST).withPort(PORT))
+						.uris().withScheme(SCHEME).withHost(HOST).withPort(PORT))
 				.alwaysDo(this.document).build();
 
 		// @formatter:on
@@ -218,8 +220,12 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 		// @formatter:on
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void getFilterSchema_Return200_WhenSchemaIsAvailable() throws Exception {
+
+		Map<String, Object> schemaExpected = (Map<String, Object>) JsonToBeanTestUtil
+				.getBean("/data/schemas/vesseltypequeryschema.json", Map.class);
 
 		// @formatter:off
 		
@@ -228,11 +234,8 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.success", is(true)))
 			.andExpect(jsonPath("$.body", notNullValue()))
-			.andExpect(jsonPath("$.body.schema", notNullValue()))
-			.andExpect(jsonPath("$.body.schema.properties", notNullValue()))
-			.andExpect(jsonPath("$.body.schema.properties.postFilter").doesNotExist())
-			.andExpect(jsonPath("$.body.schema.properties.aggs").doesNotExist());
-			// TODO: aumentar el nivel de checkeo
+			.andExpect(jsonPath("$.body", notNullValue()))
+			.andExpect(jsonPath("$.body", is(schemaExpected)));
 		// @formatter:on
 	}
 }
