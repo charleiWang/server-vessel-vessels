@@ -41,14 +41,15 @@ import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
+import es.redmic.vesselslib.events.vesseltracking.create.EnrichCreateVesselTrackingEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselTrackingFromAISTest",
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselTrackingFromAIS",
 		"schema.registry.port=18182" })
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "testCreateVesselTrackingFromAISTest")
+@KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "CreateVesselTrackingFromAISTest")
 public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 
 	@Value("${broker.topic.realtime.tracking.vessels}")
@@ -113,7 +114,7 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 				.send(REALTIME_TRACKING_VESSELS_TOPIC, dto.getMmsi().toString(), dto);
 		future.addCallback(new SendListener());
 
-		VesselTrackingDTO vesselTracking = (VesselTrackingDTO) blockingQueue.poll(60, TimeUnit.SECONDS);
+		VesselTrackingDTO vesselTracking = (VesselTrackingDTO) blockingQueue.poll(240, TimeUnit.SECONDS);
 		assertNotNull(vesselTracking);
 
 		assertTrue(vesselTracking.getProperties().getDate().isEqual(dto.getTstamp()));
@@ -135,12 +136,12 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 
 	}
 
-	@KafkaListener(topics = "${broker.topic.vessel}", groupId = "test")
+	@KafkaListener(topics = "${broker.topic.vessel}", groupId = "CreateVesselTrackingFromAISTest")
 	public void listen(Event event) {
 
 		vesselCreatedEvent.setSessionId(event.getSessionId());
 
-		if (event.getType().equals(VesselEventTypes.CREATE)) {
+		if (event.getType().equals(VesselEventTypes.ENRICH_CREATE)) {
 			ListenableFuture<SendResult<String, Event>> futureCreatedEvent = kafkaTemplateEvent.send(VESSEL_TOPIC,
 					"vessel-mmsi-" + mmsi, vesselCreatedEvent);
 			futureCreatedEvent.addCallback(new SendListener());
@@ -149,6 +150,12 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 
 	@KafkaHandler
 	public void listen(CreateVesselTrackingEvent createEvent) {
+
+		blockingQueue.offer(createEvent.getVesselTracking());
+	}
+
+	@KafkaHandler
+	public void listen(EnrichCreateVesselTrackingEvent createEvent) {
 
 		blockingQueue.offer(createEvent.getVesselTracking());
 	}

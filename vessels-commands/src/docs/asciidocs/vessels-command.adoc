@@ -203,7 +203,7 @@ include::{snippets}/create-vessel-tracking-from-rest-test/update-vessel-tracking
 
 
 [[resources-delete-vessel-tracking]]
-== Delete vessel type
+== Delete vessel tracking
  
 === Example
 include::{snippets}/create-vessel-tracking-from-rest-test/delete-vessel-tracking_-send-delete-vessel-tracking-event_-if-command-was-success/curl-request.adoc[]

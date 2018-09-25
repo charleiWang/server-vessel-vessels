@@ -51,8 +51,8 @@ import es.redmic.vesselslib.events.vesseltracking.update.VesselTrackingUpdatedEv
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "testPostUpdate")
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselTrackingPostUpdateHandlerTest",
+@KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "VesselTrackingPostUpdateHandlerTest")
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselTrackingPostUpdateHandler",
 		"schema.registry.port=18185" })
 public class VesselTrackingPostUpdateHandlerTest extends KafkaBaseIntegrationTest {
 
@@ -115,14 +115,14 @@ public class VesselTrackingPostUpdateHandlerTest extends KafkaBaseIntegrationTes
 				.getVesselTrackingCreatedEvent(mmsi, String.valueOf(new DateTime().getMillis()));
 		kafkaTemplate.send(VESSELTRACKING_TOPIC, vesselTrackingCreatedEvent.getAggregateId(),
 				vesselTrackingCreatedEvent);
-		Thread.sleep(3000);
+		Thread.sleep(5000);
 
 		// Envía created para que genere un evento postUpdate y lo saca de la cola
 		VesselTrackingCreatedEvent vesselTrackingCreatedEvent2 = VesselTrackingDataUtil
 				.getVesselTrackingCreatedEvent(mmsi, String.valueOf(new DateTime().getMillis()));
 		kafkaTemplate.send(VESSELTRACKING_TOPIC, vesselTrackingCreatedEvent2.getAggregateId(),
 				vesselTrackingCreatedEvent2);
-		Thread.sleep(3000);
+		Thread.sleep(5000);
 
 		// Envía created con vessel actualizado para comprobar que no genera evento
 		VesselTrackingCreatedEvent vesselTrackingCreatedEvent3 = VesselTrackingDataUtil
@@ -130,50 +130,52 @@ public class VesselTrackingPostUpdateHandlerTest extends KafkaBaseIntegrationTes
 		vesselTrackingCreatedEvent3.getVesselTracking().getProperties().setVessel(vesselUpdatedEvent.getVessel());
 		kafkaTemplate.send(VESSELTRACKING_TOPIC, vesselTrackingCreatedEvent3.getAggregateId(),
 				vesselTrackingCreatedEvent3);
-		Thread.sleep(3000);
+		Thread.sleep(5000);
 
 		// Envía create para simular uno a medias en el stream y lo saca de la cola
 		CreateVesselTrackingEvent createVesselTrackingEvent = VesselTrackingDataUtil.getCreateEvent(mmsi,
 				String.valueOf(new DateTime().getMillis()));
 		kafkaTemplate.send(VESSELTRACKING_TOPIC, createVesselTrackingEvent.getAggregateId(), createVesselTrackingEvent);
-		Thread.sleep(3000);
+		Thread.sleep(5000);
 
 		// Envía evento de vessel actualizado para que genere los eventos de
 		// postUpdate
 		kafkaTemplate.send(VESSEL_TOPIC, vesselUpdatedEvent.getAggregateId(), vesselUpdatedEvent);
 		Thread.sleep(2000);
-
+		/*-------------------*/
+		// Se hace pasar por la vista para generar evento de respuesta.
 		UpdateVesselInVesselTrackingEvent update = (UpdateVesselInVesselTrackingEvent) blockingQueue.poll(30,
 				TimeUnit.SECONDS);
 		assertNotNull(update);
 		assertEquals(VesselTrackingEventTypes.UPDATE_VESSEL, update.getType());
 		assertEquals(vesselUpdatedEvent.getVessel(), update.getVessel());
-		assertEquals(vesselTrackingCreatedEvent.getAggregateId(), update.getAggregateId());
-
 		// Envía confirmación para simular que view lo insertó
 		kafkaTemplate.send(VESSELTRACKING_TOPIC, update.getAggregateId(),
 				new UpdateVesselTrackingConfirmedEvent().buildFrom(update));
 
+		/*-------------------*/
+		// Se hace pasar por la vista para generar evento de respuesta.
 		UpdateVesselInVesselTrackingEvent update2 = (UpdateVesselInVesselTrackingEvent) blockingQueue.poll(30,
 				TimeUnit.SECONDS);
 		assertNotNull(update2);
 		assertEquals(VesselTrackingEventTypes.UPDATE_VESSEL, update2.getType());
 		assertEquals(vesselUpdatedEvent.getVessel(), update2.getVessel());
-		assertEquals(vesselTrackingCreatedEvent2.getAggregateId(), update2.getAggregateId());
 
-		// Envía fallo para simular que view no lo insertó
 		UpdateVesselTrackingFailedEvent updateVesselTrackingFailedEvent = new UpdateVesselTrackingFailedEvent()
 				.buildFrom(update2);
 		updateVesselTrackingFailedEvent.setExceptionType(ExceptionType.ITEM_NOT_FOUND.name());
 		Map<String, String> arguments = new HashMap<>();
 		arguments.put("A", "B");
 		updateVesselTrackingFailedEvent.setArguments(arguments);
+		// Envía fallo para simular que view no lo insertó
 		kafkaTemplate.send(VESSELTRACKING_TOPIC, update2.getAggregateId(), updateVesselTrackingFailedEvent);
 
+		// Comprueba que el enviado con vessel actualizado no envía evento a la
+		// vista
 		Event update3 = (Event) blockingQueue.poll(30, TimeUnit.SECONDS);
 		assertNull(update3);
 
-		// LLegó un mensaje de alerta
+		// Comprueba que el evento bloqueado genera un mensaje de alerta
 		Message message = (Message) blockingQueueForAlerts.poll(30, TimeUnit.SECONDS);
 		assertNotNull(message);
 		assertEquals(AlertType.ERROR.name(), message.getType());
@@ -184,16 +186,17 @@ public class VesselTrackingPostUpdateHandlerTest extends KafkaBaseIntegrationTes
 		assertNotNull(updated);
 		assertEquals(VesselTrackingEventTypes.UPDATED, updated.getType());
 		assertEquals(vesselUpdatedEvent.getVessel(), updated.getVesselTracking().getProperties().getVessel());
-		assertEquals(vesselTrackingCreatedEvent.getAggregateId(), updated.getAggregateId());
+		assertEquals(update.getAggregateId(), updated.getAggregateId());
 
 		// No se modificó bien el segundo vesselTracking
 		VesselTrackingCancelledEvent cancelled = (VesselTrackingCancelledEvent) blockingQueueForCancelledEvents.poll(30,
 				TimeUnit.SECONDS);
 		assertNotNull(cancelled);
 		assertEquals(VesselTrackingEventTypes.UPDATE_CANCELLED, cancelled.getType());
-		assertEquals(vesselTrackingCreatedEvent2.getVesselTracking().getProperties().getVessel(),
-				cancelled.getVesselTracking().getProperties().getVessel());
-		assertEquals(vesselTrackingCreatedEvent2.getAggregateId(), cancelled.getAggregateId());
+		// Cancela con el estado inicial
+		assertEquals(vesselTrackingCreatedEvent2.getVesselTracking().getProperties().getVessel().getName(),
+				cancelled.getVesselTracking().getProperties().getVessel().getName());
+		assertEquals(update2.getAggregateId(), cancelled.getAggregateId());
 
 		// LLegó un mensaje de alerta
 		Message message2 = (Message) blockingQueueForAlerts.poll(30, TimeUnit.SECONDS);

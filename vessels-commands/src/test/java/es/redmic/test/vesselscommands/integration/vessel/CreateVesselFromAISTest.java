@@ -34,16 +34,15 @@ import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
-import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
+import es.redmic.vesselslib.events.vessel.create.EnrichCreateVesselEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselFromTrackingTest",
-		"schema.registry.port=18082" })
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselFromAIS", "schema.registry.port=18082" })
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@KafkaListener(topics = "${broker.topic.vessel}", groupId = "test")
-public class CreateVesselFromTrackingTest extends KafkaBaseIntegrationTest {
+@KafkaListener(topics = "${broker.topic.vessel}", groupId = "CreateVesselFromAISTest")
+public class CreateVesselFromAISTest extends KafkaBaseIntegrationTest {
 
 	@Value("${broker.topic.realtime.tracking.vessels}")
 	String REALTIME_TRACKING_VESSELS_TOPIC;
@@ -58,7 +57,7 @@ public class CreateVesselFromTrackingTest extends KafkaBaseIntegrationTest {
 	protected static BlockingQueue<Object> blockingQueue;
 
 	@PostConstruct
-	public void CreateVesselFromTrackingTestPostConstruct() throws Exception {
+	public void CreateVesselFromAISTestPostConstruct() throws Exception {
 		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
 	}
 
@@ -72,7 +71,7 @@ public class CreateVesselFromTrackingTest extends KafkaBaseIntegrationTest {
 	public void createVessel_SendCreateVesselEvent_IfCommandWasSuccess() throws Exception {
 
 		AISTrackingDTO dto = new AISTrackingDTO();
-		dto.setMmsi(1);
+		dto.setMmsi(2);
 		dto.setImo(1);
 		dto.setName("Avatar");
 		dto.setType(70);
@@ -89,7 +88,7 @@ public class CreateVesselFromTrackingTest extends KafkaBaseIntegrationTest {
 				.send(REALTIME_TRACKING_VESSELS_TOPIC, "vessel-mmsi-" + dto.getMmsi(), dto);
 		future.addCallback(new SendListener());
 
-		VesselDTO vessel = (VesselDTO) blockingQueue.poll(60, TimeUnit.SECONDS);
+		VesselDTO vessel = (VesselDTO) blockingQueue.poll(120, TimeUnit.SECONDS);
 		assertNotNull(vessel);
 		assertEquals(vessel.getMmsi(), dto.getMmsi());
 		assertEquals(vessel.getName(), dto.getName());
@@ -101,7 +100,7 @@ public class CreateVesselFromTrackingTest extends KafkaBaseIntegrationTest {
 	}
 
 	@KafkaHandler
-	public void listen(CreateVesselEvent createEvent) {
+	public void listen(EnrichCreateVesselEvent createEvent) {
 
 		blockingQueue.offer(createEvent.getVessel());
 	}

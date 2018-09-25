@@ -67,8 +67,8 @@ import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@KafkaListener(topics = "${broker.topic.vessel-type}", groupId = "${random.value}")
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselTypeCommandHandlerTest",
+@KafkaListener(topics = "${broker.topic.vessel-type}", groupId = "VesselTypeCommandHandlerTest")
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselTypeCommandHandler",
 		"schema.registry.port=18088" })
 public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 

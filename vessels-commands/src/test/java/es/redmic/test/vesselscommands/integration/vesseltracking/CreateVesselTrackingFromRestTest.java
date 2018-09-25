@@ -76,16 +76,16 @@ import es.redmic.vesselslib.events.vesseltracking.update.VesselTrackingUpdatedEv
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselTrackingFromRestTest",
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselTrackingFromRest",
 		"schema.registry.port=18181" })
-@KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "test")
+@KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "CreateVesselTrackingFromRestTest")
 public class CreateVesselTrackingFromRestTest extends DocumentationCommandBaseTest {
 
 	@ClassRule
 	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(KafkaEmbeddedConfig.NUM_BROKERS, true,
 			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
 
-	private final Integer mmsi = 1111;
+	private final Integer mmsi = 4444;
 
 	// @formatter:off
 	
@@ -146,7 +146,7 @@ public class CreateVesselTrackingFromRestTest extends DocumentationCommandBaseTe
 		String tstamp = String.valueOf(new DateTime().getMillis());
 
 		VesselTrackingDTO vesselTrackingDTO = VesselTrackingDataUtil.getVesselTracking(mmsi, tstamp);
-		vesselTrackingDTO.getProperties().setActivityId(ACTIVITY_ID);
+		vesselTrackingDTO.getProperties().setActivity(ACTIVITY_ID);
 
 		String id = vesselTrackingDTO.getId();
 
@@ -164,7 +164,7 @@ public class CreateVesselTrackingFromRestTest extends DocumentationCommandBaseTe
 				.andExpect(jsonPath("$.body.uuid", is(vesselTrackingDTO.getUuid())))
 				.andExpect(jsonPath("$.body.geometry", notNullValue()))
 				.andExpect(jsonPath("$.body.properties", notNullValue()))
-				.andExpect(jsonPath("$.body.properties.activityId", is(vesselTrackingDTO.getProperties().getActivityId())))
+				.andExpect(jsonPath("$.body.properties.activity", is(vesselTrackingDTO.getProperties().getActivity())))
 				.andExpect(jsonPath("$.body.properties.date", 
 						is(vesselTrackingDTO.getProperties().getDate().toString("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))))
 				.andExpect(jsonPath("$.body.properties.vessel.id", is(vesselTrackingDTO.getProperties().getVessel().getId())))
@@ -208,7 +208,7 @@ public class CreateVesselTrackingFromRestTest extends DocumentationCommandBaseTe
 		String tstamp = String.valueOf(new DateTime().getMillis());
 
 		VesselTrackingDTO vesselTrackingDTO = VesselTrackingDataUtil.getVesselTracking(mmsi, tstamp);
-		vesselTrackingDTO.getProperties().setActivityId(ACTIVITY_ID);
+		vesselTrackingDTO.getProperties().setActivity(ACTIVITY_ID);
 
 		String id = vesselTrackingDTO.getId();
 
@@ -229,7 +229,7 @@ public class CreateVesselTrackingFromRestTest extends DocumentationCommandBaseTe
 				.andExpect(jsonPath("$.body.uuid", is(vesselTrackingDTO.getUuid())))
 				.andExpect(jsonPath("$.body.geometry", notNullValue()))
 				.andExpect(jsonPath("$.body.properties", notNullValue()))
-				.andExpect(jsonPath("$.body.properties.activityId", is(vesselTrackingDTO.getProperties().getActivityId())))
+				.andExpect(jsonPath("$.body.properties.activity", is(vesselTrackingDTO.getProperties().getActivity())))
 				.andExpect(jsonPath("$.body.properties.date", 
 						is(vesselTrackingDTO.getProperties().getDate().toString("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))))
 				.andExpect(jsonPath("$.body.properties.vessel.id", is(vesselTrackingDTO.getProperties().getVessel().getId())))

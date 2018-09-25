@@ -221,7 +221,7 @@ public abstract class VesselTrackingDataUtil {
 		VesselTrackingPropertiesDTO properties = new VesselTrackingPropertiesDTO();
 		vesselTracking.setProperties(properties);
 
-		properties.setActivityId("22");
+		properties.setActivity("22");
 		properties.setVessel(vessel);
 		properties.setDate(new DateTime(DateTimeZone.UTC).toDateTimeISO());
 

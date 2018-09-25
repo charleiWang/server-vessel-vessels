@@ -52,7 +52,7 @@ public class VesselTrackingCommandService implements CommandGeoServiceItfc<Vesse
 
 		checkActivityId(activityId);
 
-		vesselTracking.getProperties().setActivityId(activityId);
+		vesselTracking.getProperties().setActivity(activityId);
 
 		return commandHandler.save(new CreateVesselTrackingCommand(vesselTracking));
 	}
@@ -64,7 +64,7 @@ public class VesselTrackingCommandService implements CommandGeoServiceItfc<Vesse
 
 		checkActivityId(activityId);
 
-		vesselTracking.getProperties().setActivityId(activityId);
+		vesselTracking.getProperties().setActivity(activityId);
 
 		return commandHandler.update(id, new UpdateVesselTrackingCommand(vesselTracking));
 	}

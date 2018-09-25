@@ -66,8 +66,8 @@ import es.redmic.vesselslib.events.vesseltracking.update.VesselTrackingUpdatedEv
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "${random.value}")
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselTrackingCommandHandlerTest",
+@KafkaListener(topics = "${broker.topic.vessel-tracking}", groupId = "VesselTrackingCommandHandlerTest")
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=VesselTrackingCommandHandler",
 		"schema.registry.port=18184" })
 public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 
@@ -75,7 +75,7 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(KafkaEmbeddedConfig.NUM_BROKERS, true,
 			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
 
-	private static final Integer mmsi = 1234;
+	private static final Integer mmsi = 6666;
 
 	@Value("${broker.topic.vessel}")
 	private String vessel_topic;
