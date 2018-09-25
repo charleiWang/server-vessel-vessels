@@ -11,6 +11,8 @@ maven-build-lib:
   variables:
     MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
     SPRING_PROFILES_ACTIVE: test
+    LOGGING_LEVEL_ROOT: error
+    LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: error
   only:
     - branches
   cache:
