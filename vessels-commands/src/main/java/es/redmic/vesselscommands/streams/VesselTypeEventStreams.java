@@ -135,8 +135,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 		assert failedEvent.getType().equals(VesselTypeEventTypes.UPDATE_FAILED);
 
-		assert lastSuccessEvent.getType().equals(VesselTypeEventTypes.CREATED)
-				|| lastSuccessEvent.getType().equals(VesselTypeEventTypes.UPDATED);
+		assert isSnapshot(lastSuccessEvent.getType());
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
 
@@ -156,8 +155,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 		assert failedEvent.getType().equals(VesselTypeEventTypes.DELETE_FAILED);
 
-		assert lastSuccessEvent.getType().equals(VesselTypeEventTypes.CREATED)
-				|| lastSuccessEvent.getType().equals(VesselTypeEventTypes.UPDATED);
+		assert isSnapshot(lastSuccessEvent.getType());
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
 
@@ -165,6 +163,12 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 		return VesselTypeEventFactory.getEvent(failedEvent, VesselTypeEventTypes.DELETE_CANCELLED, vesselType,
 				eventError.getExceptionType(), eventError.getArguments());
+	}
+
+	@Override
+	protected boolean isSnapshot(String eventType) {
+
+		return VesselTypeEventTypes.isSnapshot(eventType);
 	}
 
 	@Override

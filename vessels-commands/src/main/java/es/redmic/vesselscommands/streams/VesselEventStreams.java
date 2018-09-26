@@ -288,8 +288,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 	@Override
 	protected Event getUpdateCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		assert lastSuccessEvent.getType().equals(VesselEventTypes.CREATED)
-				|| lastSuccessEvent.getType().equals(VesselEventTypes.UPDATED);
+		assert isSnapshot(lastSuccessEvent.getType());
 
 		assert failedEvent.getType().equals(VesselEventTypes.UPDATE_FAILED);
 
@@ -312,8 +311,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 	@Override
 	protected Event getDeleteCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		assert lastSuccessEvent.getType().equals(VesselEventTypes.CREATED)
-				|| lastSuccessEvent.getType().equals(VesselEventTypes.UPDATED);
+		assert isSnapshot(lastSuccessEvent.getType());
 
 		assert failedEvent.getType().equals(VesselEventTypes.DELETE_FAILED);
 
@@ -323,6 +321,12 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 		return VesselEventFactory.getEvent(failedEvent, VesselEventTypes.DELETE_CANCELLED, vessel,
 				eventError.getExceptionType(), eventError.getArguments());
+	}
+
+	@Override
+	protected boolean isSnapshot(String eventType) {
+
+		return VesselEventTypes.isSnapshot(eventType);
 	}
 
 	/*
