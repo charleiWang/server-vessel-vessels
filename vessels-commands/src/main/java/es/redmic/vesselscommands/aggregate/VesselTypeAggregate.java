@@ -99,45 +99,39 @@ public class VesselTypeAggregate extends Aggregate {
 	}
 
 	@Override
-	public void loadFromHistory(Event history) {
+	public void loadFromHistory(Event event) {
 
-		logger.debug("Cargando último estado del vessel type ", history.getAggregateId());
+		logger.debug("Cargando último estado del vessel type ", event.getAggregateId());
 
-		String eventType = history.getType();
+		check(event);
+
+		String eventType = event.getType();
 
 		switch (eventType) {
-		case "CREATE":
-			logger.debug("En fase de creación");
-			apply((VesselTypeEvent) history);
-			break;
 		case "CREATED":
 			logger.debug("Item creado");
-			apply((VesselTypeEvent) history);
-			break;
-		case "UPDATE":
-			logger.debug("En fase de modificación");
-			apply((VesselTypeEvent) history);
+			apply((VesselTypeEvent) event);
 			break;
 		case "UPDATED":
 			logger.debug("Item modificado");
-			apply((VesselTypeEvent) history);
+			apply((VesselTypeEvent) event);
 			break;
 		case "DELETED":
 			logger.debug("Item borrado");
-			apply((VesselTypeDeletedEvent) history);
+			apply((VesselTypeDeletedEvent) event);
 			break;
 		// CANCELLED
 		case "CREATE_CANCELLED":
 			logger.debug("Compensación por creación fallida");
-			apply((CreateVesselTypeCancelledEvent) history);
+			apply((CreateVesselTypeCancelledEvent) event);
 			break;
 		case "UPDATE_CANCELLED":
 		case "DELETE_CANCELLED":
 			logger.debug("Compensación por edición/borrado fallido");
-			apply((VesselTypeEvent) history);
+			apply((VesselTypeEvent) event);
 			break;
 		default:
-			super._loadFromHistory(history);
+			logger.debug("Evento no manejado ", event.getType());
 		}
 	}
 

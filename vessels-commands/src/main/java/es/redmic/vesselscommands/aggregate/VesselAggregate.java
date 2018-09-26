@@ -119,58 +119,41 @@ public class VesselAggregate extends Aggregate {
 	}
 
 	@Override
-	public void loadFromHistory(Event history) {
+	public void loadFromHistory(Event event) {
 
-		logger.debug("Cargando último estado del vessel ", history.getAggregateId());
+		logger.debug("Cargando último estado del vessel ", event.getAggregateId());
 
-		String eventType = history.getType();
+		check(event);
+
+		String eventType = event.getType();
 
 		switch (eventType) {
-		case "CREATE":
-			logger.debug("En fase de creación");
-			apply((VesselEvent) history);
-			break;
 		case "CREATED":
 			logger.debug("Item creado");
-			apply((VesselEvent) history);
-			break;
-		case "UPDATE":
-			logger.debug("En fase de modificación");
-			apply((VesselEvent) history);
+			apply((VesselEvent) event);
 			break;
 		case "UPDATED":
 			logger.debug("Item modificado");
-			apply((VesselEvent) history);
+			apply((VesselEvent) event);
 			break;
 		case "DELETED":
 			logger.debug("Item borrado");
-			apply((VesselDeletedEvent) history);
+			apply((VesselDeletedEvent) event);
 			break;
 		// CANCELLED
 		case "CREATE_CANCELLED":
 			logger.debug("Compensación por creación fallida");
-			apply((CreateVesselCancelledEvent) history);
+			apply((CreateVesselCancelledEvent) event);
 			break;
 		case "UPDATE_CANCELLED":
 		case "DELETE_CANCELLED":
 			logger.debug("Compensación por edición/borrado fallido");
-			apply((VesselEvent) history);
-			break;
-		case "UPDATE_VESSELTYPE":
-			logger.debug("En fase de edición parcial de veseltype en vessel");
-			apply(history);
+			apply((VesselEvent) event);
 			break;
 		default:
-			super._loadFromHistory(history);
+			logger.debug("Evento no manejado ", event.getType());
 			break;
 		}
-	}
-
-	public void apply(UpdateVesselTypeInVesselEvent event) {
-		if (this.vessel == null)
-			this.vessel = new VesselDTO();
-		this.vessel.setType(event.getVesselType());
-		super.apply(event);
 	}
 
 	public void apply(CreateVesselCancelledEvent event) {
@@ -180,6 +163,13 @@ public class VesselAggregate extends Aggregate {
 
 	public void apply(VesselDeletedEvent event) {
 		this.deleted = true;
+		super.apply(event);
+	}
+
+	public void apply(UpdateVesselTypeInVesselEvent event) {
+		if (this.vessel == null)
+			this.vessel = new VesselDTO();
+		this.vessel.setType(event.getVesselType());
 		super.apply(event);
 	}
 

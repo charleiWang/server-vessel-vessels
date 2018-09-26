@@ -115,53 +115,51 @@ public class VesselTrackingAggregate extends Aggregate {
 	}
 
 	@Override
-	public void loadFromHistory(Event history) {
+	public void loadFromHistory(Event event) {
 
-		logger.debug("Cargando último estado del vesselTracking ", history.getAggregateId());
+		logger.debug("Cargando último estado del vesselTracking ", event.getAggregateId());
 
-		String eventType = history.getType();
+		check(event);
 
-		// TODO: Si se trata de un evento no final, controlar el error.
+		String eventType = event.getType();
 
 		switch (eventType) {
-		case "CREATE":
-			logger.debug("En fase de creación");
-			apply((VesselTrackingEvent) history);
-			break;
 		case "CREATED":
 			logger.debug("Item creado");
-			apply((VesselTrackingEvent) history);
-			break;
-		case "UPDATE":
-			logger.debug("En fase de modificación");
-			apply((VesselTrackingEvent) history);
+			apply((VesselTrackingEvent) event);
 			break;
 		case "UPDATED":
 			logger.debug("Item modificado");
-			apply((VesselTrackingEvent) history);
+			apply((VesselTrackingEvent) event);
 			break;
 		case "DELETED":
 			logger.debug("Item borrado");
-			apply((VesselTrackingDeletedEvent) history);
+			apply((VesselTrackingDeletedEvent) event);
 			break;
 		// CANCELLED
 		case "CREATE_CANCELLED":
 			logger.debug("Compensación por creación fallida");
-			apply(history);
+			apply(event);
 			break;
 		case "UPDATE_CANCELLED":
 		case "DELETE_CANCELLED":
 			logger.debug("Compensación por edición/borrado fallido");
-			apply((VesselTrackingEvent) history);
-			break;
-		case "UPDATE_VESSELTYPE":
-			logger.debug("En fase de edición parcial de veseltype en vessel");
-			apply(history);
+			apply((VesselTrackingEvent) event);
 			break;
 		default:
-			super._loadFromHistory(history);
+			logger.debug("Evento no manejado ", event.getType());
 			break;
 		}
+	}
+
+	public void apply(CreateVesselTrackingCancelledEvent event) {
+		this.deleted = true;
+		apply(event);
+	}
+
+	public void apply(VesselTrackingDeletedEvent event) {
+		this.deleted = true;
+		super.apply(event);
 	}
 
 	public void apply(UpdateVesselInVesselTrackingEvent event) {
@@ -174,16 +172,6 @@ public class VesselTrackingAggregate extends Aggregate {
 
 		this.vesselTracking.setProperties(properties);
 
-		super.apply(event);
-	}
-
-	public void apply(CreateVesselTrackingCancelledEvent event) {
-		this.deleted = true;
-		apply(event);
-	}
-
-	public void apply(VesselTrackingDeletedEvent event) {
-		this.deleted = true;
 		super.apply(event);
 	}
 
