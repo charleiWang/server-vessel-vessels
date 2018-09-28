@@ -37,11 +37,11 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		init();
 	}
 
-	/*
+	/**
 	 * Crea KTable de vessels agregados por vesseltype
 	 * 
 	 * @see es.redmic.commandslib.streaming.streams.EventSourcingStreams#
-	 * createExtraStreams()
+	 *      createExtraStreams()
 	 */
 
 	@Override
@@ -49,7 +49,16 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		aggByVesselType = builder.table(vesselsAggByVesselTypeTopic, Consumed.with(Serdes.String(), hashMapSerde));
 	}
 
-	/*
+	/**
+	 * Reenvía eventos finales a topic de snapshot
+	 */
+	@Override
+	protected void forwardSnapshotEvents(KStream<String, Event> events) {
+
+		events.filter((id, event) -> (VesselTypeEventTypes.isSnapshot(event.getType()))).to(snapshotTopic);
+	}
+
+	/**
 	 * Función que apartir del evento de confirmación de la vista y del evento
 	 * create (petición de creación), si todo es correcto, genera evento created
 	 */
@@ -70,7 +79,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		return VesselTypeEventFactory.getEvent(confirmedEvent, VesselTypeEventTypes.CREATED, vesselType);
 	}
 
-	/*
+	/**
 	 * Función que apartir del evento de confirmación de la vista y del evento
 	 * update (petición de modificación), si todo es correcto, genera evento updated
 	 */
@@ -91,7 +100,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		return VesselTypeEventFactory.getEvent(requestEvent, VesselTypeEventTypes.UPDATED, vesselType);
 	}
 
-	/*
+	/**
 	 * Comprueba si vesselType está referenciado en vessel para cancelar el borrado
 	 */
 
@@ -125,7 +134,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		}
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento fallido y el último evento correcto, genera
 	 * evento UpdateCancelled
 	 */
@@ -145,7 +154,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 				eventError.getExceptionType(), eventError.getArguments());
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento fallido y el último evento correcto, genera
 	 * evento DeleteFailed
 	 */
@@ -187,7 +196,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		// En este caso no hay modificaciones parciales
 	}
 
-	/*
+	/**
 	 * Función para procesar modificaciones de referencias
 	 */
 

@@ -69,11 +69,11 @@ public class VesselEventStreams extends EventSourcingStreams {
 		init();
 	}
 
-	/*
+	/**
 	 * Crea GlobalKTable de vessels agregados por vesseltype
 	 * 
 	 * @see es.redmic.commandslib.streaming.streams.EventSourcingStreams#
-	 * createExtraStreams()
+	 *      createExtraStreams()
 	 */
 	@Override
 	protected void createExtraStreams() {
@@ -91,7 +91,16 @@ public class VesselEventStreams extends EventSourcingStreams {
 				Consumed.with(Serdes.String(), hashMapSerdeAggregationVesselInVesselTracking));
 	}
 
-	/*
+	/**
+	 * Reenvía eventos finales a topic de snapshot
+	 */
+	@Override
+	protected void forwardSnapshotEvents(KStream<String, Event> events) {
+
+		events.filter((id, event) -> (VesselEventTypes.isSnapshot(event.getType()))).to(snapshotTopic);
+	}
+
+	/**
 	 * Función que a partir de los eventos de tipo CreateEnrich y globalKTable de
 	 * las relaciones, enriquece el item antes de mandarlo a crear
 	 * 
@@ -121,7 +130,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 		return event;
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento de confirmación de la vista y del evento
 	 * create (petición de creación), si todo es correcto, genera evento created
 	 */
@@ -172,7 +181,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 		return event;
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento de confirmación de la vista y del evento
 	 * update (petición de modificación), si todo es correcto, genera evento updated
 	 */
@@ -193,7 +202,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 		return VesselEventFactory.getEvent(confirmedEvent, VesselEventTypes.UPDATED, vessel);
 	}
 
-	/*
+	/**
 	 * Comprueba si vessel está referenciado en tracking para cancelar el borrado
 	 */
 	@Override
@@ -226,7 +235,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 		}
 	}
 
-	/*
+	/**
 	 * Función que a partir del último evento correcto + el evento de edición
 	 * parcial + la confirmación de la vista, envía evento modificado.
 	 */
@@ -260,7 +269,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 				.to(topic);
 	}
 
-	/*
+	/**
 	 * Función que a partir del último evento correcto + el evento de edición
 	 * parcial + la confirmación de la vista, si todo es correcto, genera evento
 	 * updated
@@ -280,7 +289,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 		return VesselEventFactory.getEvent(partialUpdateConfirmEvent, VesselEventTypes.UPDATED, vessel);
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento fallido y el último evento correcto, genera
 	 * evento UpdateCancelled
 	 */
@@ -303,7 +312,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 				eventError.getExceptionType(), eventError.getArguments());
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento fallido y el último evento correcto, genera
 	 * evento DeleteFailed
 	 */
@@ -329,7 +338,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 		return VesselEventTypes.isSnapshot(eventType);
 	}
 
-	/*
+	/**
 	 * Función para procesar modificaciones de referencias
 	 */
 

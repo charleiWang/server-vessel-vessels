@@ -59,11 +59,11 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 		init();
 	}
 
-	/*
+	/**
 	 * Crea GlobalKTable de vesselTracking agregados por vessel
 	 * 
 	 * @see es.redmic.commandslib.streaming.streams.EventSourcingStreams#
-	 * createExtraStreams()
+	 *      createExtraStreams()
 	 */
 	@Override
 	protected void createExtraStreams() {
@@ -77,7 +77,16 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 		vesselEvents = builder.stream(vesselUpdatedTopic);
 	}
 
-	/*
+	/**
+	 * Reenvía eventos finales a topic de snapshot
+	 */
+	@Override
+	protected void forwardSnapshotEvents(KStream<String, Event> events) {
+
+		events.filter((id, event) -> (VesselTrackingEventTypes.isSnapshot(event.getType()))).to(snapshotTopic);
+	}
+
+	/**
 	 * Función que a partir de los eventos de tipo CreateEnrich y globalKTable de
 	 * las relaciones, enriquece el item antes de mandarlo a crear
 	 * 
@@ -110,7 +119,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 		return event;
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento de confirmación de la vista y del evento
 	 * create (petición de creación), si todo es correcto, genera evento created
 	 */
@@ -131,7 +140,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 		return VesselTrackingEventFactory.getEvent(confirmedEvent, VesselTrackingEventTypes.CREATED, vesselTracking);
 	}
 
-	/*
+	/**
 	 * Función que a partir de los eventos de tipo UpdateEnrich y globalKTable de
 	 * las relaciones, enriquece el item antes de mandarlo a modificar
 	 * 
@@ -163,7 +172,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 		return event;
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento de confirmación de la vista y del evento
 	 * update (petición de modificación), si todo es correcto, genera evento updated
 	 */
@@ -184,14 +193,14 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 		return VesselTrackingEventFactory.getEvent(confirmedEvent, VesselTrackingEventTypes.UPDATED, vesselTracking);
 	}
 
-	/*
+	/**
 	 * Comprueba si vessel tracking está referenciado en otro servicio
 	 */
 	@Override
 	protected void processDeleteStream(KStream<String, Event> events) {
 	}
 
-	/*
+	/**
 	 * Función que a partir del último evento correcto + el evento de edición
 	 * parcial + la confirmación de la vista, envía evento modificado.
 	 */
@@ -225,7 +234,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 				.to(topic);
 	}
 
-	/*
+	/**
 	 * Función que a partir del último evento correcto + el evento de edición
 	 * parcial + la confirmación de la vista, si todo es correcto, genera evento
 	 * updated
@@ -245,7 +254,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 				vesselTracking);
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento fallido y el último evento correcto, genera
 	 * evento UpdateCancelled
 	 */
@@ -268,7 +277,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 				vesselTracking, eventError.getExceptionType(), eventError.getArguments());
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento fallido y el último evento correcto, genera
 	 * evento DeleteFailed
 	 */
@@ -294,7 +303,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 		return VesselTrackingEventTypes.isSnapshot(eventType);
 	}
 
-	/*
+	/**
 	 * Función para procesar modificaciones de referencias
 	 */
 
