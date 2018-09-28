@@ -125,6 +125,8 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 		vesselCreatedEvent.setVessel(VesselDataUtil.getVessel(mmsi));
 		kafkaTemplate.send(vessel_topic, vesselCreatedEvent.getAggregateId(), vesselCreatedEvent);
 
+		Thread.sleep(4000);
+
 		// Envía enrichCreateVesselTracking con id del vessel igual al enviado
 
 		EnrichCreateVesselTrackingEvent enrichCreateVesselTrackingEvent = VesselTrackingDataUtil
@@ -202,6 +204,8 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 		vesselCreatedEvent.setVessel(VesselDataUtil.getVessel(mmsi));
 		kafkaTemplate.send(vessel_topic, vesselCreatedEvent.getAggregateId(), vesselCreatedEvent);
 
+		Thread.sleep(4000);
+
 		// Envía enrichUpdateVesselTracking con id del vessel igual al enviado
 
 		EnrichUpdateVesselTrackingEvent enrichUpdateVesselTrackingEvent = VesselTrackingDataUtil
@@ -223,8 +227,10 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 		assertNotNull(confirm);
 		assertEquals(VesselTrackingEventTypes.UPDATE, confirm.getType());
 
-		assertEquals(vesselCreatedEvent.getVessel(),
-				((UpdateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel());
+		assertEquals(vesselCreatedEvent.getVessel().getName(),
+				((UpdateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel().getName());
+		assertEquals(vesselCreatedEvent.getVessel().getType(),
+				((UpdateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel().getType());
 	}
 
 	// Envía un evento de confirmación de modificación y debe provocar un evento
@@ -343,6 +349,8 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 		Event updated = (Event) blockingQueue.poll(20, TimeUnit.SECONDS);
 		assertNotNull(updated);
 
+		Thread.sleep(8000);
+
 		// Envía failed y espera un evento de cancelled con el vesselTracking original
 		// dentro
 		UpdateVesselTrackingFailedEvent event = VesselTrackingDataUtil.getUpdateVesselTrackingFailedEvent(mmsi + 5,
@@ -389,6 +397,8 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 		kafkaTemplate.send(vessel_tracking_topic, vesselTrackingUpdateEvent.getAggregateId(),
 				vesselTrackingUpdateEvent);
 		blockingQueue.poll(10, TimeUnit.SECONDS);
+
+		Thread.sleep(8000);
 
 		// Envía failed y espera un evento de cancelled con el vesselTracking original
 		// dentro

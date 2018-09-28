@@ -244,6 +244,8 @@ public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 		kafkaTemplate.send(vessel_type_topic, vesselTypeUpdateEvent.getAggregateId(), vesselTypeUpdateEvent);
 		blockingQueue.poll(20, TimeUnit.SECONDS);
 
+		Thread.sleep(8000);
+
 		// Envía failed y espera un evento de cancelled con el vessel original dentro
 		UpdateVesselTypeFailedEvent event = VesselTypeDataUtil.getUpdateVesselTypeFailedEvent(code + "5");
 
@@ -310,6 +312,8 @@ public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 		vesselTypeUpdateEvent.setSessionId(UUID.randomUUID().toString());
 		kafkaTemplate.send(vessel_type_topic, vesselTypeUpdateEvent.getAggregateId(), vesselTypeUpdateEvent);
 		blockingQueue.poll(10, TimeUnit.SECONDS);
+
+		Thread.sleep(8000);
 
 		// Envía failed y espera un evento de cancelled con el vessel original dentro
 		DeleteVesselTypeFailedEvent event = VesselTypeDataUtil.getDeleteVesselTypeFailedEvent(code + "6");
