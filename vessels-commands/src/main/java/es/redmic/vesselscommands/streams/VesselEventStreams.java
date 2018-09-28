@@ -31,6 +31,7 @@ import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.AggregationVe
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.AggregationVesselInVesselTrackingPostUpdateEvent;
+import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 
 public class VesselEventStreams extends EventSourcingStreams {
@@ -123,8 +124,15 @@ public class VesselEventStreams extends EventSourcingStreams {
 		CreateVesselEnrichedEvent event = (CreateVesselEnrichedEvent) VesselEventFactory.getEvent(enrichCreateEvents,
 				VesselEventTypes.CREATE_ENRICHED, ((VesselEvent) enrichCreateEvents).getVessel());
 
-		if (vesselTypeEvent != null) {
+		if (vesselTypeEvent != null && !vesselTypeEvent.getType().equals(VesselTypeEventTypes.DELETED)) {
 			((VesselEvent) event).getVessel().setType(((VesselTypeEvent) vesselTypeEvent).getVesselType());
+		} else {
+
+			String error = "Intentando enriquecer " + enrichCreateEvents.getAggregateId()
+					+ " con un elemento que no existe";
+
+			logger.warn(error);
+			alertService.errorAlert("No se puedo enriquecer " + enrichCreateEvents.getAggregateId(), error);
 		}
 
 		return event;
@@ -174,8 +182,15 @@ public class VesselEventStreams extends EventSourcingStreams {
 		UpdateVesselEnrichedEvent event = (UpdateVesselEnrichedEvent) VesselEventFactory.getEvent(enrichUpdateEvents,
 				VesselEventTypes.UPDATE_ENRICHED, ((VesselEvent) enrichUpdateEvents).getVessel());
 
-		if (vesselTypeEvent != null) {
+		if (vesselTypeEvent != null && !vesselTypeEvent.getType().equals(VesselTypeEventTypes.DELETED)) {
 			((VesselEvent) event).getVessel().setType(((VesselTypeEvent) vesselTypeEvent).getVesselType());
+		} else {
+
+			String error = "Intentando enriquecer " + enrichUpdateEvents.getAggregateId()
+					+ " con un elemento que no existe";
+
+			logger.warn(error);
+			alertService.errorAlert("No se puedo enriquecer " + enrichUpdateEvents.getAggregateId(), error);
 		}
 
 		return event;
@@ -297,7 +312,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 	@Override
 	protected Event getUpdateCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		assert isSnapshot(lastSuccessEvent.getType());
+		assert VesselEventTypes.isSnapshot(lastSuccessEvent.getType());
 
 		assert failedEvent.getType().equals(VesselEventTypes.UPDATE_FAILED);
 
@@ -320,7 +335,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 	@Override
 	protected Event getDeleteCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		assert isSnapshot(lastSuccessEvent.getType());
+		assert VesselEventTypes.isSnapshot(lastSuccessEvent.getType());
 
 		assert failedEvent.getType().equals(VesselEventTypes.DELETE_FAILED);
 
@@ -330,12 +345,6 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 		return VesselEventFactory.getEvent(failedEvent, VesselEventTypes.DELETE_CANCELLED, vessel,
 				eventError.getExceptionType(), eventError.getArguments());
-	}
-
-	@Override
-	protected boolean isSnapshot(String eventType) {
-
-		return VesselEventTypes.isSnapshot(eventType);
 	}
 
 	/**

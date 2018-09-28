@@ -22,6 +22,7 @@ import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventFactory;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
@@ -111,9 +112,16 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 				.getEvent(enrichCreateEvents, VesselTrackingEventTypes.CREATE_ENRICHED,
 						((VesselTrackingEvent) enrichCreateEvents).getVesselTracking());
 
-		if (vesselEvent != null) {
+		if (vesselEvent != null && !vesselEvent.getType().equals(VesselEventTypes.DELETED)) {
 			((VesselTrackingEvent) event).getVesselTracking().getProperties()
 					.setVessel(((VesselEvent) vesselEvent).getVessel());
+		} else {
+
+			String error = "Intentando enriquecer " + enrichCreateEvents.getAggregateId()
+					+ " con un elemento que no existe";
+
+			logger.warn(error);
+			alertService.errorAlert("No se puedo enriquecer " + enrichCreateEvents.getAggregateId(), error);
 		}
 
 		return event;
@@ -164,9 +172,16 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 				.getEvent(enrichUpdateEvents, VesselTrackingEventTypes.UPDATE_ENRICHED,
 						((VesselTrackingEvent) enrichUpdateEvents).getVesselTracking());
 
-		if (vesselEvent != null) {
+		if (vesselEvent != null && !vesselEvent.getType().equals(VesselEventTypes.DELETED)) {
 			((VesselTrackingEvent) event).getVesselTracking().getProperties()
 					.setVessel(((VesselEvent) vesselEvent).getVessel());
+		} else {
+
+			String error = "Intentando enriquecer " + enrichUpdateEvents.getAggregateId()
+					+ " con un elemento que no existe";
+
+			logger.warn(error);
+			alertService.errorAlert("No se puedo enriquecer " + enrichUpdateEvents.getAggregateId(), error);
 		}
 
 		return event;
@@ -243,7 +258,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 	private Event getUpdatedEventFromPartialUpdate(UpdateVesselInVesselTrackingEvent partialUpdateConfirmEvent,
 			Event lastSuccessEvent) {
 
-		assert isSnapshot(lastSuccessEvent.getType());
+		assert VesselTrackingEventTypes.isSnapshot(lastSuccessEvent.getType());
 
 		assert partialUpdateConfirmEvent.getType().equals(VesselTrackingEventTypes.UPDATE_VESSEL);
 
@@ -262,7 +277,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 	@Override
 	protected Event getUpdateCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		assert isSnapshot(lastSuccessEvent.getType());
+		assert VesselTrackingEventTypes.isSnapshot(lastSuccessEvent.getType());
 
 		assert failedEvent.getType().equals(VesselTrackingEventTypes.UPDATE_FAILED);
 
@@ -285,7 +300,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 	@Override
 	protected Event getDeleteCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		assert isSnapshot(lastSuccessEvent.getType());
+		assert VesselTrackingEventTypes.isSnapshot(lastSuccessEvent.getType());
 
 		assert failedEvent.getType().equals(VesselTrackingEventTypes.DELETE_FAILED);
 
@@ -295,12 +310,6 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 
 		return VesselTrackingEventFactory.getEvent(failedEvent, VesselTrackingEventTypes.DELETE_CANCELLED,
 				vesselTracking, eventError.getExceptionType(), eventError.getArguments());
-	}
-
-	@Override
-	protected boolean isSnapshot(String eventType) {
-
-		return VesselTrackingEventTypes.isSnapshot(eventType);
 	}
 
 	/**
