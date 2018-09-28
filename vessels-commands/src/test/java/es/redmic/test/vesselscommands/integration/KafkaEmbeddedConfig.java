@@ -11,12 +11,16 @@ public class KafkaEmbeddedConfig {
  
 	public final static String[] TOPICS_NAME = new String[] { 
 		"vessels-agg-by-vessel-type",
-		"vessel-type", "vessel",
+		"vessel-type",
+		"vessel",
 		"realtime.tracking.vessels",
 		"vessel-type-updated",
 		"tracking-agg-by-vessel",
 		"vessel-updated",
-		"vessel-tracking"
+		"vessel-tracking",
+		"vessel-type-snapshot",
+		"vessel-snapshot",
+		"vessel-tracking-snapshot"
 	};
 	
 	// @formatter:on
