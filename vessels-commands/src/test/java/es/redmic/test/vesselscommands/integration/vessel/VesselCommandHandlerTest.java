@@ -66,6 +66,7 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.VesselTrackingCreatedEvent;
+import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.VesselTypeCreatedEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -125,11 +126,19 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 		String code = "1234";
 
+		// Envía Create vesseltype para simular otros eventos anteriores
+		CreateVesselTypeConfirmedEvent createVesselTypeConfirmedEvent = VesselTypeDataUtil
+				.getCreateVesselTypeConfirmedEvent(code);
+		kafkaTemplate.send(vessel_type_topic, createVesselTypeConfirmedEvent.getAggregateId(),
+				createVesselTypeConfirmedEvent);
+
 		// Envía vesseltypeCreated
-		VesselTypeCreatedEvent vesselTypeCreatedEvent = VesselTypeDataUtil.getVesselTypeCreatedEvent(code);
+		VesselTypeCreatedEvent vesselTypeCreatedEvent = new VesselTypeCreatedEvent()
+				.buildFrom(createVesselTypeConfirmedEvent);
+		vesselTypeCreatedEvent.setVesselType(VesselTypeDataUtil.getVesselType(code));
 		kafkaTemplate.send(vessel_type_topic, vesselTypeCreatedEvent.getAggregateId(), vesselTypeCreatedEvent);
 
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		// Envía enrichCreateVessel con id del vesseltype igual al enviado
 
@@ -182,11 +191,19 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 		// Envía vesseltypeCreated
 		String code = "1235";
 
+		// Envía Create vesseltype para simular otros eventos anteriores
+		CreateVesselTypeConfirmedEvent createVesselTypeConfirmedEvent = VesselTypeDataUtil
+				.getCreateVesselTypeConfirmedEvent(code);
+		kafkaTemplate.send(vessel_type_topic, createVesselTypeConfirmedEvent.getAggregateId(),
+				createVesselTypeConfirmedEvent);
+
 		// Envía vesseltypeCreated
-		VesselTypeCreatedEvent vesselTypeCreatedEvent = VesselTypeDataUtil.getVesselTypeCreatedEvent(code);
+		VesselTypeCreatedEvent vesselTypeCreatedEvent = new VesselTypeCreatedEvent()
+				.buildFrom(createVesselTypeConfirmedEvent);
+		vesselTypeCreatedEvent.setVesselType(VesselTypeDataUtil.getVesselType(code));
 		kafkaTemplate.send(vessel_type_topic, vesselTypeCreatedEvent.getAggregateId(), vesselTypeCreatedEvent);
 
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		// Envía enrichUpdateVessel con id del vesseltype igual al enviado
 

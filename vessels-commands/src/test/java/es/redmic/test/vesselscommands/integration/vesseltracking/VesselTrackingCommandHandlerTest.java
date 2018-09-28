@@ -43,6 +43,7 @@ import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.handler.VesselTrackingCommandHandler;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingCancelledEvent;
@@ -115,11 +116,14 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 		String tstamp = String.valueOf(new DateTime().getMillis());
 
-		// Envía vesselCreated
-		VesselCreatedEvent vesselCreatedEvent = VesselDataUtil.getVesselCreatedEvent(mmsi);
-		kafkaTemplate.send(vessel_topic, vesselCreatedEvent.getAggregateId(), vesselCreatedEvent);
+		// Envía Create vessel para simular otros eventos anteriores
+		CreateVesselConfirmedEvent createVesselConfirmedEvent = VesselDataUtil.getCreateVesselConfirmedEvent(mmsi);
+		kafkaTemplate.send(vessel_topic, createVesselConfirmedEvent.getAggregateId(), createVesselConfirmedEvent);
 
-		Thread.sleep(2000);
+		// Envía vesselCreated
+		VesselCreatedEvent vesselCreatedEvent = new VesselCreatedEvent().buildFrom(createVesselConfirmedEvent);
+		vesselCreatedEvent.setVessel(VesselDataUtil.getVessel(mmsi));
+		kafkaTemplate.send(vessel_topic, vesselCreatedEvent.getAggregateId(), vesselCreatedEvent);
 
 		// Envía enrichCreateVesselTracking con id del vessel igual al enviado
 
@@ -142,8 +146,10 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 		assertNotNull(confirm);
 		assertEquals(VesselTrackingEventTypes.CREATE, confirm.getType());
 
-		assertEquals(vesselCreatedEvent.getVessel(),
-				((CreateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel());
+		assertEquals(vesselCreatedEvent.getVessel().getName(),
+				((CreateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel().getName());
+		assertEquals(vesselCreatedEvent.getVessel().getType(),
+				((CreateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel().getType());
 	}
 
 	// Envía un evento de confirmación de creación y debe provocar un evento Created
@@ -187,11 +193,14 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 		String tstamp = String.valueOf(new DateTime().getMillis());
 
-		// Envía vesselCreated
-		VesselCreatedEvent vesselCreatedEvent = VesselDataUtil.getVesselCreatedEvent(mmsi);
-		kafkaTemplate.send(vessel_topic, vesselCreatedEvent.getAggregateId(), vesselCreatedEvent);
+		// Envía Create vessel para simular otros eventos anteriores
+		CreateVesselConfirmedEvent createVesselConfirmedEvent = VesselDataUtil.getCreateVesselConfirmedEvent(mmsi);
+		kafkaTemplate.send(vessel_topic, createVesselConfirmedEvent.getAggregateId(), createVesselConfirmedEvent);
 
-		Thread.sleep(2000);
+		// Envía vesselCreated
+		VesselCreatedEvent vesselCreatedEvent = new VesselCreatedEvent().buildFrom(createVesselConfirmedEvent);
+		vesselCreatedEvent.setVessel(VesselDataUtil.getVessel(mmsi));
+		kafkaTemplate.send(vessel_topic, vesselCreatedEvent.getAggregateId(), vesselCreatedEvent);
 
 		// Envía enrichUpdateVesselTracking con id del vessel igual al enviado
 
