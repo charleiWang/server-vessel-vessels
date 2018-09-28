@@ -59,7 +59,7 @@ public class VesselCommandService implements CommandServiceItfc<VesselDTO> {
 		return commandHandler.update(id, new DeleteVesselCommand(id));
 	}
 
-	private VesselDTO convertTrackToVessel(AISTrackingDTO aisTracking) {
+	public static VesselDTO convertTrackToVessel(AISTrackingDTO aisTracking) {
 
 		VesselDTO vessel = new VesselDTO();
 

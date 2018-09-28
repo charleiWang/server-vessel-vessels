@@ -14,6 +14,7 @@ import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingCancelledEvent;
+import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEnrichedEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingFailedEvent;
@@ -21,11 +22,13 @@ import es.redmic.vesselslib.events.vesseltracking.create.VesselTrackingCreatedEv
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCheckFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCheckedEvent;
+import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
 import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingCancelledEvent;
+import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEnrichedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingFailedEvent;
@@ -49,6 +52,27 @@ public class VesselTrackingEventFactory {
 			logger.info("Creando evento DeleteVesselTrackingCheckedEvent para: " + source.getAggregateId());
 
 			return new DeleteVesselTrackingCheckedEvent().buildFrom(source);
+		}
+
+		if (type.equals(VesselTrackingEventTypes.CREATE_CONFIRMED)) {
+
+			logger.info("Creando evento CreateVesselTrackingConfirmedEvent para: " + source.getAggregateId());
+
+			return new CreateVesselTrackingConfirmedEvent().buildFrom(source);
+		}
+
+		if (type.equals(VesselTrackingEventTypes.UPDATE_CONFIRMED)) {
+
+			logger.info("Creando evento UpdateVesselTrackingConfirmedEvent para: " + source.getAggregateId());
+
+			return new UpdateVesselTrackingConfirmedEvent().buildFrom(source);
+		}
+
+		if (type.equals(VesselTrackingEventTypes.DELETE_CONFIRMED)) {
+
+			logger.info("Creando evento DeleteVesselTrackingConfirmedEvent para: " + source.getAggregateId());
+
+			return new DeleteVesselTrackingConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.DELETED)) {

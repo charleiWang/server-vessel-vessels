@@ -282,3 +282,79 @@ include::{snippets}/vessel-type-controller-test/get-filter-schema_-return200_-wh
 === HTTP response
 include::{snippets}/vessel-type-controller-test/get-filter-schema_-return200_-when-schema-is-available/http-response.adoc[]
 
+
+//-----------------------------------------------------------------------------
+
+[[resources-get-vessel-tracking]]
+== Get vessel tracking
+ 
+=== Example
+include::{snippets}/vessel-tracking-controller-test/get-vessel-tracking_-return200_-when-item-exist/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-tracking-controller-test/get-vessel-tracking_-return200_-when-item-exist/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-tracking-controller-test/get-vessel-tracking_-return200_-when-item-exist/http-response.adoc[]
+
+
+[[resources-search-vessels-tracking]]
+== Search vessel trackings
+ 
+=== Example
+include::{snippets}/vessel-tracking-controller-test/search-vessel-tracking-post_-return200_-when-search-is-correct/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-tracking-controller-test/search-vessel-tracking-post_-return200_-when-search-is-correct/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-tracking-controller-test/search-vessel-tracking-post_-return200_-when-search-is-correct/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-tracking-controller-test/search-vessel-tracking-post_-return200_-when-search-is-correct/request-fields.adoc[]
+
+
+[[resources-mget-vessels-tracking]]
+== Multi get vessel trackings by id
+ 
+=== Example
+include::{snippets}/vessel-tracking-controller-test/mget-vessel-tracking_-return200_-when-vessel-tracking-exists/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-tracking-controller-test/mget-vessel-tracking_-return200_-when-vessel-tracking-exists/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-tracking-controller-test/mget-vessel-tracking_-return200_-when-vessel-tracking-exists/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-tracking-controller-test/mget-vessel-tracking_-return200_-when-vessel-tracking-exists/request-fields.adoc[]
+
+
+[[resources-suggest-vessels-tracking]]
+== Suggest vessel trackings
+ 
+=== Example
+include::{snippets}/vessel-tracking-controller-test/suggest-vessel-tracking-post_-return200_-when-suggest-is-correct/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-tracking-controller-test/suggest-vessel-tracking-post_-return200_-when-suggest-is-correct/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-tracking-controller-test/suggest-vessel-tracking-post_-return200_-when-suggest-is-correct/http-response.adoc[]
+ 
+=== Request fields
+include::{snippets}/vessel-tracking-controller-test/suggest-vessel-tracking-post_-return200_-when-suggest-is-correct/request-fields.adoc[]
+
+
+[[resources-filterschema-vessels-tracking]]
+== Get vessel tracking filter schema
+ 
+=== Example
+include::{snippets}/vessel-tracking-controller-test/get-filter-schema_-return200_-when-schema-is-available/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/vessel-tracking-controller-test/get-filter-schema_-return200_-when-schema-is-available/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/vessel-tracking-controller-test/get-filter-schema_-return200_-when-schema-is-available/http-response.adoc[]
+

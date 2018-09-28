@@ -1,0 +1,51 @@
+{
+	"type": "FeatureCollection",
+	"features": [{
+		"_meta": {
+			"score": 1.0,
+			"version": 1,
+			"highlight": null
+		},
+		"id": "vesseltracking-mmsi-tstamp-247039300-34342329243244232",
+		"uuid": "sdsd323sdds_3ed",
+		"type": "Feature",
+		"properties": {
+			"inserted": "2017-05-23T11:37:12.052+00:00",
+			"updated": "2017-05-23T11:37:12.052+00:00",
+			"activity": "r.1.8.22",
+			"vessel": {
+				"id": "d5673b99-f3d1-444d-aa47-d821aaebc11e",
+				"mmsi": 247039300,
+				"imo": 9227912,
+				"type": {
+					"id": "a5673b99-f3d1-444d-aa47-d821aaebc11e",
+					"code": "70",
+					"name": "Cargo, all ships of this type",
+					"name_en": "Cargo, all ships of this type"
+				},
+				"name": "GRANDE ITALIA",
+				"callSign": "IBTF",
+				"length": 300.3,
+				"beam": 33.5,
+				"inserted": "2017-05-23T12:35:12.052+00:00",
+				"updated": "2017-05-23T12:35:12.052+00:00"
+			},
+			"date": "2017-05-23T11:35:12.052+00:00",
+			"cog": 23.3,
+			"sog": 23.3,
+			"heading": 12,
+			"navStat": 33,
+			"dest": "Santa Cruz de Tenerife",
+			"eta": "00:00 00:00"
+		},
+		"geometry": {
+			"type": "Point",
+			"coordinates": [-16.35215172, 28.35351045]
+		}
+	}],
+	"_aggs": {},
+	"_meta": {
+		"max_score": null
+	},
+	"total": 1
+}

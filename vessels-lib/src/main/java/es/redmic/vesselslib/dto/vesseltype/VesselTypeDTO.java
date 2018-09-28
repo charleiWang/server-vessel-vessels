@@ -17,8 +17,8 @@ public class VesselTypeDTO extends CommonDTO {
 	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse(
 		"{\"type\":\"record\",\"name\":\"VesselTypeDTO\",\"namespace\":\"es.redmic.vesselslib.dto.vesseltype\",\"fields\":["
 			+ "{\"name\":\"code\",\"type\":\"string\"},"
-			+ "{\"name\":\"name\",\"type\":\"string\"},"
-			+ "{\"name\":\"name_en\",\"type\":\"string\"},"
+			+ "{\"name\":\"name\",\"type\":[\"string\", \"null\"]},"
+			+ "{\"name\":\"name_en\",\"type\":[\"string\", \"null\"]},"
 			+ "{\"name\":\"id\",\"type\":\"string\"}]}");
 	// @formatter:on
 

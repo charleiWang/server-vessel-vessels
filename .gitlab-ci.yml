@@ -11,6 +11,8 @@ maven-build-lib:
   variables:
     MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
     SPRING_PROFILES_ACTIVE: test
+    LOGGING_LEVEL_ROOT: error
+    LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: error
   only:
     - branches
   cache:
@@ -34,8 +36,9 @@ maven-build-commands:
   variables:
     MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
     SPRING_PROFILES_ACTIVE: test
-    LOGGING_LEVEL_ROOT: error
+    LOGGING_LEVEL_ROOT: "off"
     LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: error
+    LOGGING_LEVEL_ES_REDMIC: error
     OAUTH_CLIENT_ID: ${DEV_OAUTH_CLIENT_ID}
     OAUTH_CLIENT_SECRET: ${DEV_OAUTH_CLIENT_SECRET}
     TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}

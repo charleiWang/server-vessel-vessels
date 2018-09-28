@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,8 +53,8 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
 import es.redmic.vesselsview.VesselsViewApplication;
-import es.redmic.vesselsview.model.Vessel;
-import es.redmic.vesselsview.repository.VesselESRepository;
+import es.redmic.vesselsview.model.vessel.Vessel;
+import es.redmic.vesselsview.repository.vessel.VesselESRepository;
 import es.redmic.viewlib.config.MapperScanBeanItfc;
 
 @SpringBootTest(classes = { VesselsViewApplication.class })
@@ -65,6 +66,10 @@ import es.redmic.viewlib.config.MapperScanBeanItfc;
 public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 
 	private final String USER_ID = "1";
+
+	private String code = RandomStringUtils.random(4, true, false);
+
+	private Integer mmsi = Integer.valueOf(RandomStringUtils.random(4, false, true));
 
 	@Autowired
 	MapperScanBeanItfc mapper;
@@ -339,15 +344,15 @@ public class VesselEventHandlerTest extends DocumentationViewBaseTest {
 	protected VesselDTO getVessel() {
 
 		VesselDTO vessel = new VesselDTO();
-		vessel.setId("ww1effbf-700f-4dfb-8aba-8212ac2d26b3");
-		vessel.setMmsi(1234);
+		vessel.setId("vessel-mmsi-" + mmsi);
+		vessel.setMmsi(mmsi);
 		vessel.setName("Avatar");
-		vessel.setImo(1234);
+		vessel.setImo(mmsi);
 		vessel.setCallSign("PACH");
 
 		VesselTypeDTO vesselType = new VesselTypeDTO();
-		vesselType.setCode("70");
-		vesselType.setId("1234");
+		vesselType.setId("vesseltype-code-" + code);
+		vesselType.setCode(code);
 		vesselType.setName("Cargo, all ships of this type");
 		vesselType.setName_en("Cargo, all ships of this type");
 		vessel.setType(vesselType);

@@ -1,4 +1,4 @@
-package es.redmic.vesselsview.controller;
+package es.redmic.vesselsview.controller.vesseltype;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,14 +22,14 @@ import es.redmic.vesselslib.events.vesseltype.delete.DeleteVesselTypeEvent;
 import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.update.UpdateVesselTypeEvent;
 import es.redmic.vesselsview.config.MapperScanBean;
-import es.redmic.vesselsview.model.VesselType;
-import es.redmic.vesselsview.service.VesselTypeESService;
-import es.redmic.viewlib.common.controller.RWController;
+import es.redmic.vesselsview.model.vesseltype.VesselType;
+import es.redmic.vesselsview.service.vesseltype.VesselTypeESService;
+import es.redmic.viewlib.data.controller.DataController;
 
 @Controller
 @RequestMapping(value = "${controller.mapping.vesseltype}")
 @KafkaListener(topics = "${broker.topic.vessel-type}")
-public class VesselTypeController extends RWController<VesselType, VesselTypeDTO, SimpleQueryDTO> {
+public class VesselTypeController extends DataController<VesselType, VesselTypeDTO, SimpleQueryDTO> {
 
 	private static Logger logger = LogManager.getLogger();
 

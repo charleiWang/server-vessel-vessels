@@ -13,4 +13,9 @@ public abstract class VesselTrackingEventTypes extends EventTypes {
 
 		return EventTypes.isLocked(eventType);
 	}
+
+	public static boolean isSnapshot(String eventType) {
+
+		return EventTypes.isSnapshot(eventType);
+	}
 }

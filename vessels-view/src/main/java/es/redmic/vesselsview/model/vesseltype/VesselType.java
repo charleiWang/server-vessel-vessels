@@ -1,4 +1,4 @@
-package es.redmic.vesselsview.model;
+package es.redmic.vesselsview.model.vesseltype;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

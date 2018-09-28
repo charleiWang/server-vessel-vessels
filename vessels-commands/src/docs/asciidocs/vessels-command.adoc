@@ -173,3 +173,55 @@ include::{snippets}/create-vessel-type-from-rest-test/get-edit-schema_-return200
  
 === HTTP response
 include::{snippets}/create-vessel-type-from-rest-test/get-edit-schema_-return200_-when-schema-is-available/http-response.adoc[]
+
+//-----------------------------------------------------------------------------
+
+[[resources-add-vessel-tracking]]
+== Add vessel tracking
+ 
+=== Example
+include::{snippets}/create-vessel-tracking-from-rest-test/create-vessel-tracking_-send-create-vessel-tracking-event_-if-command-was-success/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-tracking-from-rest-test/create-vessel-tracking_-send-create-vessel-tracking-event_-if-command-was-success/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-tracking-from-rest-test/create-vessel-tracking_-send-create-vessel-tracking-event_-if-command-was-success/http-response.adoc[]
+
+
+[[resources-update-vessel-tracking]]
+== Update vessel tracking
+ 
+=== Example
+include::{snippets}/create-vessel-tracking-from-rest-test/update-vessel-tracking_-send-update-vessel-tracking-event_-if-command-was-success/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-tracking-from-rest-test/update-vessel-tracking_-send-update-vessel-tracking-event_-if-command-was-success/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-tracking-from-rest-test/update-vessel-tracking_-send-update-vessel-tracking-event_-if-command-was-success/http-response.adoc[]
+
+
+[[resources-delete-vessel-tracking]]
+== Delete vessel tracking
+ 
+=== Example
+include::{snippets}/create-vessel-tracking-from-rest-test/delete-vessel-tracking_-send-delete-vessel-tracking-event_-if-command-was-success/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-tracking-from-rest-test/delete-vessel-tracking_-send-delete-vessel-tracking-event_-if-command-was-success/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-tracking-from-rest-test/delete-vessel-tracking_-send-delete-vessel-tracking-event_-if-command-was-success/http-response.adoc[]
+
+[[resources-editschema-vessel-tracking]]
+== Get vessel tracking edit schema
+ 
+=== Example
+include::{snippets}/create-vessel-tracking-from-rest-test/get-edit-schema_-return200_-when-schema-is-available/curl-request.adoc[]
+ 
+=== HTTP request
+include::{snippets}/create-vessel-tracking-from-rest-test/get-edit-schema_-return200_-when-schema-is-available/http-request.adoc[]
+ 
+=== HTTP response
+include::{snippets}/create-vessel-tracking-from-rest-test/get-edit-schema_-return200_-when-schema-is-available/http-response.adoc[]

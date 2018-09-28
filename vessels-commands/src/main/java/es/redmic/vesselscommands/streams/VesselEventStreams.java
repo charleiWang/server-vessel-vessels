@@ -18,6 +18,7 @@ import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.brokerlib.avro.common.EventTypes;
 import es.redmic.brokerlib.avro.serde.hashmap.HashMapSerde;
+import es.redmic.commandslib.exceptions.ExceptionType;
 import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
@@ -29,6 +30,7 @@ import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.AggregationVesselTypeInVesselPostUpdateEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
+import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.AggregationVesselInVesselTrackingPostUpdateEvent;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 
 public class VesselEventStreams extends EventSourcingStreams {
@@ -39,7 +41,9 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 	private String vesselTypeUpdatedTopic;
 
-	private HashMapSerde<String, AggregationVesselTypeInVesselPostUpdateEvent> hashMapSerde;
+	private String vesselTrackingAggByVesselTopic;
+
+	private HashMapSerde<String, AggregationVesselTypeInVesselPostUpdateEvent> hashMapSerdeAggregationVesselTypeInVessel;
 
 	private GlobalKTable<String, HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent>> aggByVesselType;
 
@@ -47,13 +51,19 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 	private KStream<String, Event> vesselTypeEvents;
 
+	private HashMapSerde<String, AggregationVesselInVesselTrackingPostUpdateEvent> hashMapSerdeAggregationVesselInVesselTracking;
+
+	private KTable<String, HashMap<String, AggregationVesselInVesselTrackingPostUpdateEvent>> aggByVessel;
+
 	public VesselEventStreams(StreamConfig config, String vesselTypeTopic, String vesselsAggByVesselTypeTopic,
-			String vesselTypeUpdatedTopic, AlertService alertService) {
+			String vesselTypeUpdatedTopic, String vesselTrackingAggByVesselTopic, AlertService alertService) {
 		super(config, alertService);
 		this.vesselTypeTopic = vesselTypeTopic;
 		this.vesselsAggByVesselTypeTopic = vesselsAggByVesselTypeTopic;
 		this.vesselTypeUpdatedTopic = vesselTypeUpdatedTopic;
-		this.hashMapSerde = new HashMapSerde<>(schemaRegistry);
+		this.vesselTrackingAggByVesselTopic = vesselTrackingAggByVesselTopic;
+		this.hashMapSerdeAggregationVesselTypeInVessel = new HashMapSerde<>(schemaRegistry);
+		this.hashMapSerdeAggregationVesselInVesselTracking = new HashMapSerde<>(schemaRegistry);
 
 		logger.info("Arrancado servicio de streaming para event sourcing de Vessel con Id: " + this.serviceId);
 		init();
@@ -71,11 +81,14 @@ public class VesselEventStreams extends EventSourcingStreams {
 		// Crea un store global para procesar los datos de todas las instancias de
 		// vessels agregados por vesselType
 		aggByVesselType = builder.globalTable(vesselsAggByVesselTypeTopic,
-				Consumed.with(Serdes.String(), hashMapSerde));
+				Consumed.with(Serdes.String(), hashMapSerdeAggregationVesselTypeInVessel));
 
 		vesselType = builder.globalTable(vesselTypeTopic);
 
 		vesselTypeEvents = builder.stream(vesselTypeUpdatedTopic);
+
+		aggByVessel = builder.table(vesselTrackingAggByVesselTopic,
+				Consumed.with(Serdes.String(), hashMapSerdeAggregationVesselInVesselTracking));
 	}
 
 	/*
@@ -185,7 +198,32 @@ public class VesselEventStreams extends EventSourcingStreams {
 	 */
 	@Override
 	protected void processDeleteStream(KStream<String, Event> events) {
-		// TODO: Implementar en relación a tracking
+		// Stream filtrado por eventos de borrado
+		KStream<String, Event> deleteEvents = events
+				.filter((id, event) -> (EventTypes.CHECK_DELETE.equals(event.getType())));
+
+		deleteEvents
+				.leftJoin(aggByVessel, (deleteEvent,
+						vesselTrackingAggByVessel) -> getCheckDeleteResultEvent(deleteEvent, vesselTrackingAggByVessel))
+				.to(topic);
+	}
+
+	@SuppressWarnings("serial")
+	private Event getCheckDeleteResultEvent(Event deleteEvent,
+			HashMap<String, AggregationVesselInVesselTrackingPostUpdateEvent> vesselTrackingAggByVessel) {
+
+		if (vesselTrackingAggByVessel == null || vesselTrackingAggByVessel.isEmpty()) { // elemento no referenciado
+
+			return VesselEventFactory.getEvent(deleteEvent, VesselEventTypes.DELETE_CHECKED);
+		} else { // elemento referenciado
+
+			return VesselEventFactory.getEvent(deleteEvent, VesselEventTypes.DELETE_CHECK_FAILED,
+					ExceptionType.ITEM_REFERENCED.toString(), new HashMap<String, String>() {
+						{
+							put("id", deleteEvent.getAggregateId());
+						}
+					});
+		}
 	}
 
 	/*
@@ -250,8 +288,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 	@Override
 	protected Event getUpdateCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		assert lastSuccessEvent.getType().equals(VesselEventTypes.CREATED)
-				|| lastSuccessEvent.getType().equals(VesselEventTypes.UPDATED);
+		assert isSnapshot(lastSuccessEvent.getType());
 
 		assert failedEvent.getType().equals(VesselEventTypes.UPDATE_FAILED);
 
@@ -274,8 +311,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 	@Override
 	protected Event getDeleteCancelledEvent(Event failedEvent, Event lastSuccessEvent) {
 
-		assert lastSuccessEvent.getType().equals(VesselEventTypes.CREATED)
-				|| lastSuccessEvent.getType().equals(VesselEventTypes.UPDATED);
+		assert isSnapshot(lastSuccessEvent.getType());
 
 		assert failedEvent.getType().equals(VesselEventTypes.DELETE_FAILED);
 
@@ -285,6 +321,12 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 		return VesselEventFactory.getEvent(failedEvent, VesselEventTypes.DELETE_CANCELLED, vessel,
 				eventError.getExceptionType(), eventError.getArguments());
+	}
+
+	@Override
+	protected boolean isSnapshot(String eventType) {
+
+		return VesselEventTypes.isSnapshot(eventType);
 	}
 
 	/*
@@ -317,8 +359,9 @@ public class VesselEventStreams extends EventSourcingStreams {
 		vesselEventsStream.groupByKey()
 				.aggregate(HashMap<String, AggregationVesselTypeInVesselPostUpdateEvent>::new,
 						(k, v, map) -> aggregateVesselsByVesselType(k, v, map),
-						Materialized.with(Serdes.String(), hashMapSerde))
-				.toStream().to(vesselsAggByVesselTypeTopic, Produced.with(Serdes.String(), hashMapSerde));
+						Materialized.with(Serdes.String(), hashMapSerdeAggregationVesselTypeInVessel))
+				.toStream().to(vesselsAggByVesselTypeTopic,
+						Produced.with(Serdes.String(), hashMapSerdeAggregationVesselTypeInVessel));
 	}
 
 	private void processVesselTypePostUpdate() {

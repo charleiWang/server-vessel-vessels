@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import es.redmic.brokerlib.avro.common.Event;
+import es.redmic.commandslib.exceptions.ItemLockedException;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
@@ -24,33 +25,13 @@ import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 public class ApplyEventTest extends AggregateBaseTest {
 
 	@Test
-	public void applyCreateVesselEvent_ChangeAggrefateState_IfProcessIsOk() {
-
-		CreateVesselEvent evt = getCreateVesselEvent();
-
-		agg.apply(evt);
-
-		checkCreateOrUpdateState(evt);
-	}
-
-	@Test
 	public void applyVesselCreatedEvent_ChangeAggrefateState_IfProcessIsOk() {
 
 		VesselCreatedEvent evt = getVesselCreatedEvent();
 
 		agg.apply(evt);
 
-		checkCreateOrUpdateState(evt);
-	}
-
-	@Test
-	public void applyUpdateVesselEvent_ChangeAggregateState_IfProcessIsOk() {
-
-		UpdateVesselEvent evt = getUpdateVesselEvent();
-
-		agg.apply(evt);
-
-		checkCreateOrUpdateState(evt);
+		checkCreatedOrUpdatedState(evt);
 	}
 
 	@Test
@@ -60,17 +41,7 @@ public class ApplyEventTest extends AggregateBaseTest {
 
 		agg.apply(evt);
 
-		checkCreateOrUpdateState(evt);
-	}
-
-	@Test
-	public void applyDeleteVesselEvent_ChangeAggregateState_IfProcessIsOk() {
-
-		DeleteVesselEvent evt = getDeleteVesselEvent();
-
-		agg.apply(evt);
-
-		checkDeleteState(evt);
+		checkCreatedOrUpdatedState(evt);
 	}
 
 	@Test
@@ -84,59 +55,49 @@ public class ApplyEventTest extends AggregateBaseTest {
 	}
 
 	@Test
-	public void loadFromHistory_ChangeAggregateStateToCreate_IfEventIsCreate() {
+	public void loadFromHistory_ChangeAggregateStateToCreated_IfEventIsCreated() {
+
+		VesselCreatedEvent evt = getVesselCreatedEvent();
+
+		agg.loadFromHistory(evt);
+
+		checkCreatedOrUpdatedState(evt);
+	}
+
+	@Test(expected = ItemLockedException.class)
+	public void loadFromHistory_ThrowItemLockedException_IfEventIsCreate() {
 
 		CreateVesselEvent evt = getCreateVesselEvent();
 
 		agg.loadFromHistory(evt);
-
-		checkCreateOrUpdateState(evt);
 	}
 
 	@Test
-	public void loadFromHistory_ChangeAggregateStateToUpdate_IfEventIsUpdate() {
+	public void loadFromHistory_ChangeAggregateStateToUpdated_IfEventIsUpdated() {
+
+		VesselUpdatedEvent evt = getVesselUpdatedEvent();
+
+		agg.loadFromHistory(evt);
+
+		checkCreatedOrUpdatedState(evt);
+	}
+
+	@Test(expected = ItemLockedException.class)
+	public void loadFromHistory_ThrowItemLockedException_IfEventIsUpdate() {
 
 		UpdateVesselEvent evt = getUpdateVesselEvent();
 
 		agg.loadFromHistory(evt);
-
-		checkCreateOrUpdateState(evt);
 	}
 
 	@Test
-	public void loadFromHistory_ChangeAggregateStateToDelete_IfEventIsDelete() {
-
-		DeleteVesselEvent evt = getDeleteVesselEvent();
-
-		agg.loadFromHistory(evt);
-
-		checkDeleteState(evt);
-	}
-
-	@Test
-	public void loadFromHistory_ChangeAggregateStateToDelete_IfLastEventIsDelete() {
+	public void loadFromHistory_ChangeAggregateStateToDeleted_IfEventIsDeleted() {
 
 		List<Event> history = new ArrayList<>();
 
-		history.add(getCreateVesselEvent());
-		history.add(getUpdateVesselEvent());
-		history.add(getDeleteVesselEvent());
-
-		history.add(getDeleteVesselEvent());
-
-		agg.loadFromHistory(history);
-
-		checkDeleteState((DeleteVesselEvent) history.get(3));
-	}
-
-	@Test
-	public void loadFromHistory_ChangeAggregateStateToDeleted_IfEventIsDelete() {
-
-		List<Event> history = new ArrayList<>();
-
-		history.add(getCreateVesselEvent());
-		history.add(getUpdateVesselEvent());
-		history.add(getDeleteVesselEvent());
+		history.add(getVesselCreatedEvent());
+		history.add(getVesselUpdatedEvent());
+		history.add(getVesselDeletedEvent());
 
 		history.add(getVesselDeletedEvent());
 
@@ -145,18 +106,19 @@ public class ApplyEventTest extends AggregateBaseTest {
 		checkDeletedState((VesselDeletedEvent) history.get(3));
 	}
 
-	private void checkCreateOrUpdateState(VesselEvent evt) {
+	@Test(expected = ItemLockedException.class)
+	public void loadFromHistory_ThrowItemLockedException_IfEventIsDelete() {
+
+		DeleteVesselEvent evt = getDeleteVesselEvent();
+
+		agg.loadFromHistory(evt);
+	}
+
+	private void checkCreatedOrUpdatedState(VesselEvent evt) {
 
 		assertEquals(agg.getVersion(), evt.getVersion());
 		assertEquals(agg.getAggregateId(), evt.getAggregateId());
 		assertEquals(agg.getVessel(), evt.getVessel());
-		assertFalse(agg.isDeleted());
-	}
-
-	private void checkDeleteState(DeleteVesselEvent evt) {
-
-		assertEquals(agg.getVersion(), evt.getVersion());
-		assertEquals(agg.getAggregateId(), evt.getAggregateId());
 		assertFalse(agg.isDeleted());
 	}
 

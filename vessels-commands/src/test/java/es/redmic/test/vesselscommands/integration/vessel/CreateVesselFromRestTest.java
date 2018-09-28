@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -47,13 +48,11 @@ import org.springframework.util.concurrent.ListenableFuture;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
 import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
-import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
 import es.redmic.testutils.documentation.DocumentationCommandBaseTest;
+import es.redmic.testutils.utils.JsonToBeanTestUtil;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.handler.VesselCommandHandler;
-import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
 import es.redmic.vesselscommands.statestore.VesselStateStore;
-import es.redmic.vesselscommands.statestore.VesselTypeStateStore;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
@@ -67,16 +66,16 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
-@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselFromRestTest",
+@TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselFromRest",
 		"schema.registry.port=18081" })
-@KafkaListener(topics = "${broker.topic.vessel}", groupId = "test")
+@KafkaListener(topics = "${broker.topic.vessel}", groupId = "CreateVesselFromRestTest")
 public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 
 	@ClassRule
 	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(KafkaEmbeddedConfig.NUM_BROKERS, true,
 			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
 
-	private final Integer mmsi = 1111;
+	private final Integer mmsi = 5555;
 
 	// @formatter:off
 	
@@ -86,13 +85,8 @@ public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 
 	VesselStateStore vesselsStateStore;
 
-	VesselTypeStateStore vesselTypeStateStore;
-
 	@Autowired
 	VesselCommandHandler vesselCommandHandler;
-
-	@Autowired
-	VesselTypeCommandHandler vesselTypeCommandHandler;
 
 	@Autowired
 	private KafkaTemplate<String, Event> kafkaTemplate;
@@ -123,13 +117,6 @@ public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 		vesselsStateStore = Mockito.mock(VesselStateStore.class);
 
 		Whitebox.setInternalState(vesselCommandHandler, "vesselStateStore", vesselsStateStore);
-
-		vesselTypeStateStore = Mockito.mock(VesselTypeStateStore.class);
-
-		Whitebox.setInternalState(vesselTypeCommandHandler, "vesselTypeStateStore", vesselTypeStateStore);
-
-		when(vesselTypeStateStore.getVesselType(VesselTypeDataUtil.PREFIX + "70"))
-				.thenReturn(VesselTypeDataUtil.getCreateEvent("70"));
 
 		// @formatter:off
 
@@ -244,8 +231,12 @@ public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 		assertEquals(event.getAggregateId(), expectedEvent.getAggregateId());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void getEditSchema_Return200_WhenSchemaIsAvailable() throws Exception {
+
+		Map<String, Object> schemaExpected = (Map<String, Object>) JsonToBeanTestUtil
+				.getBean("/data/schemas/vesselschema.json", Map.class);
 
 		// @formatter:off
 		
@@ -253,13 +244,7 @@ public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 				.header("Authorization", "Bearer " + getTokenOAGUser())
 				.accept(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.title", is("Vessel DTO")))
-			.andExpect(jsonPath("$.properties", notNullValue()))
-			.andExpect(jsonPath("$.properties.id", notNullValue()))
-			.andExpect(jsonPath("$.properties.type", notNullValue()))
-			.andExpect(jsonPath("$.properties.type.type", notNullValue()))
-			.andExpect(jsonPath("$.properties.type.url", notNullValue()));
-			// TODO: aumentar el nivel de checkeo
+			.andExpect(jsonPath("$", is(schemaExpected)));
 		// @formatter:on
 	}
 

@@ -1,4 +1,4 @@
-package es.redmic.vesselsview.repository;
+package es.redmic.vesselsview.repository.vessel;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -20,8 +20,8 @@ import es.redmic.elasticsearchlib.data.repository.RWDataESRepository;
 import es.redmic.exception.common.ExceptionType;
 import es.redmic.models.es.common.dto.EventApplicationResult;
 import es.redmic.models.es.common.query.dto.MetadataQueryDTO;
-import es.redmic.vesselsview.model.Vessel;
-import es.redmic.vesselsview.model.VesselType;
+import es.redmic.vesselsview.model.vessel.Vessel;
+import es.redmic.vesselsview.model.vesseltype.VesselType;
 import es.redmic.viewlib.data.repository.IDataRepository;
 
 @Repository

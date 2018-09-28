@@ -1,7 +1,9 @@
 package es.redmic.test.vesselsview.integration.controller;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -9,10 +11,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Arrays;
-import java.util.UUID;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -31,9 +34,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import es.redmic.models.es.common.query.dto.MgetDTO;
 import es.redmic.models.es.common.query.dto.SimpleQueryDTO;
 import es.redmic.testutils.documentation.DocumentationViewBaseTest;
+import es.redmic.testutils.utils.JsonToBeanTestUtil;
 import es.redmic.vesselsview.VesselsViewApplication;
-import es.redmic.vesselsview.model.VesselType;
-import es.redmic.vesselsview.repository.VesselTypeESRepository;
+import es.redmic.vesselsview.model.vesseltype.VesselType;
+import es.redmic.vesselsview.repository.vesseltype.VesselTypeESRepository;
 
 @SpringBootTest(classes = { VesselsViewApplication.class })
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -41,8 +45,8 @@ import es.redmic.vesselsview.repository.VesselTypeESRepository;
 @DirtiesContext
 public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 
-	@Value("${documentation.VESSELTYPE_HOST}")
-	private String VESSELTYPE_HOST;
+	@Value("${documentation.VESSEL_HOST}")
+	private String HOST;
 
 	@Value("${controller.mapping.vesseltype}")
 	private String VESSELTYPE_PATH;
@@ -65,8 +69,10 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 	@Before
 	public void setUp() {
 
-		vesselType.setId(UUID.randomUUID().toString());
-		vesselType.setCode("199");
+		String code = RandomStringUtils.random(4, true, false);
+
+		vesselType.setId("vesseltype-code-" + code);
+		vesselType.setCode(code);
 		vesselType.setName("Other Type, no additional information");
 		vesselType.setName_en("Other Type, no additional information");
 
@@ -78,7 +84,7 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 				.webAppContextSetup(webApplicationContext)
 				.addFilters(springSecurityFilterChain)
 				.apply(documentationConfiguration(this.restDocumentation)
-						.uris().withScheme(SCHEME).withHost(VESSELTYPE_HOST).withPort(PORT))
+						.uris().withScheme(SCHEME).withHost(HOST).withPort(PORT))
 				.alwaysDo(this.document).build();
 
 		// @formatter:on
@@ -175,14 +181,16 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 		
 		this.mockMvc
 			.perform(get(VESSELTYPE_PATH + "/_suggest")
-					.param("fields", "{name}")
+					.param("fields", new String[] { "name" })
 					.param("text", vesselType.getName())
 					.param("size", "1")
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success", is(true)))
 				.andExpect(jsonPath("$.body", notNullValue()))
-				//.andExpect(jsonPath("$.body.length()", is(1))) TODO: cuando funcionen las sugerencias, arreglar
+				.andExpect(jsonPath("$.body.length()", is(1)))
+				.andExpect(jsonPath("$.body[0]", startsWith("<b>")))
+				.andExpect(jsonPath("$.body[0]", endsWith("</b>")))
 					.andDo(getSuggestParametersDescription());
 		
 		// @formatter:on
@@ -203,15 +211,21 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success", is(true)))
 				.andExpect(jsonPath("$.body", notNullValue()))
-				//.andExpect(jsonPath("$.body.length()", is(1))); TODO: cuando funcionen las sugerencias, arreglar 
+				.andExpect(jsonPath("$.body.length()", is(1)))
+				.andExpect(jsonPath("$.body[0]", startsWith("<b>")))
+				.andExpect(jsonPath("$.body[0]", endsWith("</b>")))
 					.andDo(getSimpleQueryFieldsDescriptor());;
 				
 		
 		// @formatter:on
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void getFilterSchema_Return200_WhenSchemaIsAvailable() throws Exception {
+
+		Map<String, Object> schemaExpected = (Map<String, Object>) JsonToBeanTestUtil
+				.getBean("/data/schemas/vesseltypequeryschema.json", Map.class);
 
 		// @formatter:off
 		
@@ -220,11 +234,8 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.success", is(true)))
 			.andExpect(jsonPath("$.body", notNullValue()))
-			.andExpect(jsonPath("$.body.schema", notNullValue()))
-			.andExpect(jsonPath("$.body.schema.properties", notNullValue()))
-			.andExpect(jsonPath("$.body.schema.properties.postFilter").doesNotExist())
-			.andExpect(jsonPath("$.body.schema.properties.aggs").doesNotExist());
-			// TODO: aumentar el nivel de checkeo
+			.andExpect(jsonPath("$.body", notNullValue()))
+			.andExpect(jsonPath("$.body", is(schemaExpected)));
 		// @formatter:on
 	}
 }
