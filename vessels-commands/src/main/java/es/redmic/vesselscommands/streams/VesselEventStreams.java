@@ -58,7 +58,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 	public VesselEventStreams(StreamConfig config, String vesselTypeTopic, String vesselsAggByVesselTypeTopic,
 			String vesselTypeUpdatedTopic, String vesselTrackingAggByVesselTopic, AlertService alertService) {
 		super(config, alertService);
-		this.vesselTypeTopic = vesselTypeTopic;
+		this.vesselTypeTopic = vesselTypeTopic + snapshotTopicSuffix;
 		this.vesselsAggByVesselTypeTopic = vesselsAggByVesselTypeTopic;
 		this.vesselTypeUpdatedTopic = vesselTypeUpdatedTopic;
 		this.vesselTrackingAggByVesselTopic = vesselTrackingAggByVesselTopic;
