@@ -34,7 +34,7 @@ import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
-import es.redmic.vesselslib.events.vessel.create.EnrichCreateVesselEvent;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselFromAIS", "schema.registry.port=18082" })
@@ -100,9 +100,9 @@ public class CreateVesselFromAISTest extends KafkaBaseIntegrationTest {
 	}
 
 	@KafkaHandler
-	public void listen(EnrichCreateVesselEvent createEvent) {
+	public void listen(CreateVesselEnrichedEvent createVesselEnrichedEvent) {
 
-		blockingQueue.offer(createEvent.getVessel());
+		blockingQueue.offer(createVesselEnrichedEvent.getVessel());
 	}
 
 	@KafkaHandler(isDefault = true)

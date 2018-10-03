@@ -42,7 +42,7 @@ import es.redmic.vesselscommands.service.VesselTrackingCommandService;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
-import es.redmic.vesselslib.events.vesseltracking.create.EnrichCreateVesselTrackingEvent;
+import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEnrichedEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselTrackingFromAIS",
@@ -147,12 +147,13 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 	}
 
 	@KafkaHandler
-	public void listen(EnrichCreateVesselTrackingEvent createEvent) throws Exception {
+	public void listen(CreateVesselTrackingEnrichedEvent createVesselTrackingEnrichedEvent) throws Exception {
 
 		// Resuelve la espera para que siga la ejecución
-		Whitebox.invokeMethod(vesselTrackingCommandHandler, "resolveCommand", createEvent.getSessionId());
+		Whitebox.invokeMethod(vesselTrackingCommandHandler, "resolveCommand",
+				createVesselTrackingEnrichedEvent.getSessionId());
 
-		blockingQueue.offer(createEvent.getVesselTracking());
+		blockingQueue.offer(createVesselTrackingEnrichedEvent.getVesselTracking());
 	}
 
 	@KafkaHandler(isDefault = true)
