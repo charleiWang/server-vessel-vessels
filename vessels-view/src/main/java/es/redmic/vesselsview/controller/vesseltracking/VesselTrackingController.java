@@ -60,6 +60,7 @@ public class VesselTrackingController extends GeoDataController<VesselTracking, 
 					+ " " + e.getMessage());
 			publishFailedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.CREATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vesseltracking_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
@@ -84,6 +85,7 @@ public class VesselTrackingController extends GeoDataController<VesselTracking, 
 		} catch (Exception e) {
 			publishFailedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.UPDATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vesseltracking_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
@@ -109,6 +111,7 @@ public class VesselTrackingController extends GeoDataController<VesselTracking, 
 		} catch (Exception e) {
 			publishFailedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.UPDATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vesseltracking_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
@@ -133,6 +136,7 @@ public class VesselTrackingController extends GeoDataController<VesselTracking, 
 		} catch (Exception e) {
 			publishFailedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.DELETE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vesseltracking_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {

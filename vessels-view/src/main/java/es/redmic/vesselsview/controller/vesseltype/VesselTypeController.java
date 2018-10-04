@@ -59,6 +59,7 @@ public class VesselTypeController extends DataController<VesselType, VesselTypeD
 		} catch (Exception e) {
 			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.CREATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_type_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
@@ -83,6 +84,7 @@ public class VesselTypeController extends DataController<VesselType, VesselTypeD
 		} catch (Exception e) {
 			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.UPDATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_type_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
@@ -107,6 +109,7 @@ public class VesselTypeController extends DataController<VesselType, VesselTypeD
 		} catch (Exception e) {
 			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.DELETE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_type_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {

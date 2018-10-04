@@ -61,6 +61,7 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 					"Error al procesar CreateVesselEvent para vessel " + event.getAggregateId() + " " + e.getMessage());
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.CREATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
@@ -84,6 +85,7 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 		} catch (Exception e) {
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.UPDATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
@@ -108,6 +110,7 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 		} catch (Exception e) {
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.UPDATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
@@ -131,6 +134,7 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 		} catch (Exception e) {
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.DELETE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
