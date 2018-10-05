@@ -10,6 +10,7 @@ services:
       - OAUTH_CLIENT_SECRET
       - ELASTIC_XPACKSECURITYUSER
       - MICROSERVICE_NAME=${UNIT_NAME}-view
+      - SPRING_KAFKA_CLIENT-ID={{.Service.Name}}-{{.Task.Slot}}
       - JAVA_OPTS=-XX:MaxRAMFraction=2
     networks:
       - elastic-net
