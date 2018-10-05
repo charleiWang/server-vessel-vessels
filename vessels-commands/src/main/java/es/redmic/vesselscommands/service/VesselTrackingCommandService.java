@@ -98,7 +98,7 @@ public class VesselTrackingCommandService implements CommandGeoServiceItfc<Vesse
 		VesselTrackingDTO vesselTracking = new VesselTrackingDTO();
 
 		Point geometry = geometryFactory
-				.createPoint(new Coordinate(aisTracking.getLatitude(), aisTracking.getLongitude()));
+				.createPoint(new Coordinate(aisTracking.getLongitude(), aisTracking.getLatitude()));
 
 		vesselTracking.setGeometry(geometry);
 
