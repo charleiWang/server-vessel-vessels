@@ -132,7 +132,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 					+ " con un elemento que no existe";
 
 			logger.warn(error);
-			alertService.errorAlert("No se puedo enriquecer " + enrichCreateEvents.getAggregateId(), error);
+			alertService.warnAlert("No se puedo enriquecer " + enrichCreateEvents.getAggregateId(), error);
 		}
 
 		return event;
@@ -190,7 +190,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 					+ " con un elemento que no existe";
 
 			logger.warn(error);
-			alertService.errorAlert("No se puedo enriquecer " + enrichUpdateEvents.getAggregateId(), error);
+			alertService.warnAlert("No se puedo enriquecer " + enrichUpdateEvents.getAggregateId(), error);
 		}
 
 		return event;
