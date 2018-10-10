@@ -31,6 +31,12 @@ public class VesselTrackingCommandService implements CommandGeoServiceItfc<Vesse
 	@Value("${vesseltracking-activity-id}")
 	protected String activityId;
 
+	@Value("${qflag.default}")
+	private String QFLAG_DEFAUL;
+
+	@Value("${vflag.default}")
+	private String VFLAG_DEFAULT;
+
 	@Autowired
 	public VesselTrackingCommandService(VesselTrackingCommandHandler commandHandler) {
 		this.commandHandler = commandHandler;
@@ -85,7 +91,7 @@ public class VesselTrackingCommandService implements CommandGeoServiceItfc<Vesse
 			throw new FieldNotValidException("activityId", requestId);
 	}
 
-	public static VesselTrackingDTO convertTrackToVesselTracking(AISTrackingDTO aisTracking) {
+	public VesselTrackingDTO convertTrackToVesselTracking(AISTrackingDTO aisTracking) {
 
 		if (aisTracking.getMmsi() == null)
 			throw new FieldNotValidException("mmsi", "null");
@@ -114,6 +120,8 @@ public class VesselTrackingCommandService implements CommandGeoServiceItfc<Vesse
 		properties.setNavStat(aisTracking.getNavStat());
 		properties.setDest(aisTracking.getDest());
 		properties.setEta(aisTracking.getEta());
+		properties.setQFlag(QFLAG_DEFAUL);
+		properties.setVFlag(VFLAG_DEFAULT);
 
 		vesselTracking.setProperties(properties);
 
