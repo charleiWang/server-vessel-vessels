@@ -7,8 +7,10 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaNotNull;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaUrl;
 
@@ -52,6 +54,8 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 					+ "{\"name\":\"navStat\",\"type\":[\"int\", \"null\"]},"
 					+ "{\"name\":\"dest\",\"type\":[\"string\", \"null\"]},"
 					+ "{\"name\":\"eta\",\"type\":[\"string\", \"null\"]},"
+					+ "{\"name\":\"qFlag\",\"type\":\"string\"},"
+					+ "{\"name\":\"vFlag\",\"type\":\"string\"},"
 					+ "{\"name\":\"activity\",\"type\":\"string\"},"
 					+ "{\"name\":\"inserted\",\"type\":[\"null\",{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}],"
 						+ "\"default\": null},"
@@ -82,6 +86,10 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 	private String dest;
 
 	private String eta;
+
+	private String qFlag;
+
+	private String vFlag;
 
 	public VesselDTO getVessel() {
 		return vessel;
@@ -147,6 +155,30 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 		this.eta = eta;
 	}
 
+	@NotNull
+	@JsonSchemaDefault(value = "0")
+	@JsonProperty(value = "qFlag")
+	public String getQFlag() {
+		return qFlag;
+	}
+
+	@JsonProperty(value = "qFlag")
+	public void setQFlag(String qFlag) {
+		this.qFlag = qFlag;
+	}
+
+	@NotNull
+	@JsonSchemaDefault(value = "N")
+	@JsonProperty(value = "vFlag")
+	public String getVFlag() {
+		return vFlag;
+	}
+
+	@JsonProperty(value = "vFlag")
+	public void setVFlag(String vFlag) {
+		this.vFlag = vFlag;
+	}
+
 	@JsonIgnore
 	@Override
 	public Schema getSchema() {
@@ -174,10 +206,14 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 		case 7:
 			return eta;
 		case 8:
-			return getActivity();
+			return qFlag;
 		case 9:
-			return getInserted() != null ? getInserted().getMillis() : null;
+			return vFlag;
 		case 10:
+			return getActivity();
+		case 11:
+			return getInserted() != null ? getInserted().getMillis() : null;
+		case 12:
 			return getUpdated() != null ? getUpdated().getMillis() : null;
 		default:
 			throw new org.apache.avro.AvroRuntimeException("Bad index");
@@ -213,12 +249,18 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 			eta = value != null ? value.toString() : null;
 			break;
 		case 8:
-			setActivity(value.toString());
+			qFlag = value != null ? value.toString() : null;
 			break;
 		case 9:
-			setInserted(value != null ? new DateTime(value, DateTimeZone.UTC).toDateTime() : null);
+			vFlag = value != null ? value.toString() : null;
 			break;
 		case 10:
+			setActivity(value.toString());
+			break;
+		case 11:
+			setInserted(value != null ? new DateTime(value, DateTimeZone.UTC).toDateTime() : null);
+			break;
+		case 12:
 			setUpdated(value != null ? new DateTime(value, DateTimeZone.UTC).toDateTime() : null);
 			break;
 		default:
@@ -236,7 +278,9 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 		result = prime * result + ((eta == null) ? 0 : eta.hashCode());
 		result = prime * result + ((heading == null) ? 0 : heading.hashCode());
 		result = prime * result + ((navStat == null) ? 0 : navStat.hashCode());
+		result = prime * result + ((qFlag == null) ? 0 : qFlag.hashCode());
 		result = prime * result + ((sog == null) ? 0 : sog.hashCode());
+		result = prime * result + ((vFlag == null) ? 0 : vFlag.hashCode());
 		result = prime * result + ((vessel == null) ? 0 : vessel.hashCode());
 		return result;
 	}
@@ -280,10 +324,20 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 				return false;
 		} else if (!navStat.equals(other.navStat))
 			return false;
+		if (qFlag == null) {
+			if (other.qFlag != null)
+				return false;
+		} else if (!qFlag.equals(other.qFlag))
+			return false;
 		if (sog == null) {
 			if (other.sog != null)
 				return false;
 		} else if (!sog.equals(other.sog))
+			return false;
+		if (vFlag == null) {
+			if (other.vFlag != null)
+				return false;
+		} else if (!vFlag.equals(other.vFlag))
 			return false;
 		if (vessel == null) {
 			if (other.vessel != null)

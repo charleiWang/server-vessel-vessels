@@ -291,6 +291,8 @@ public abstract class VesselTrackingDataUtil {
 		properties.setNavStat(33);
 		properties.setDest("Santa Cruz de Tenerife");
 		properties.setEta("00:00 00:00");
+		properties.setQFlag("0");
+		properties.setVFlag("N");
 
 		return vesselTracking;
 	}
