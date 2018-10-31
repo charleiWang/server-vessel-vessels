@@ -1,7 +1,9 @@
 package es.redmic.vesselsview;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +21,7 @@ import es.redmic.models.es.common.view.QueryDTODeserializerModifier;
 import es.redmic.restlib.common.service.UserUtilsServiceItfc;
 import es.redmic.restlib.config.ResourceBundleMessageSource;
 import es.redmic.viewlib.common.querymanagement.QueryDTOMessageConverter;
+import io.micrometer.core.instrument.MeterRegistry;
 
 @SpringBootApplication
 @ComponentScan({ "es.redmic.vesselsview", "es.redmic.viewlib.common.mapper.es2dto", "es.redmic.elasticsearchlib",
@@ -30,6 +33,9 @@ public class VesselsViewApplication {
 
 	@Autowired
 	UserUtilsServiceItfc userService;
+
+	@Value("${info.microservice.name}")
+	String microserviceName;
 
 	public static void main(String[] args) {
 		SpringApplication.run(VesselsViewApplication.class, args);
@@ -60,5 +66,10 @@ public class VesselsViewApplication {
 		objectMapper.setFilterProvider(filters);
 
 		return new QueryDTOMessageConverter(objectMapper, userService);
+	}
+
+	@Bean
+	MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
+		return registry -> registry.config().commonTags("application", microserviceName);
 	}
 }
