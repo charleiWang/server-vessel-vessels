@@ -11,6 +11,23 @@ services:
       - MICROSERVICE_NAME=${UNIT_NAME}-commands
       - SPRING_KAFKA_CLIENT-ID={{.Service.Name}}-{{.Task.Slot}}
       - JAVA_OPTS=-XX:MaxRAMFraction=2
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        traefik.port: "${COMMANDS_PORT}"
+        traefik.docker.network: traefik-net
+        traefik.frontend.rule: PathPrefix:/api/${UNIT_NAME}/commands
+        traefik.backend: ${UNIT_NAME}-commands
+      restart_policy:
+        delay: 1m
+        window: 3m
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          memory: 820M
     networks:
       - kafka-net
       - redmic-net
