@@ -2,4 +2,4 @@ version: '3.5'
 
 volumes:
   commands-vol:
-    name: ${UNIT_NAME}-commands-vol
+    name: "${UNIT_NAME}-commands-{{.Task.Slot}}-vol"
