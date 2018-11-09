@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -57,12 +57,13 @@ public class VesselTypeControllerTest extends DocumentationViewBaseTest {
 	VesselType vesselType = new VesselType();
 
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1);
+	public static EmbeddedKafkaRule embeddedKafka = new EmbeddedKafkaRule(1);
 
 	@PostConstruct
 	public void CreateVesselFromRestTestPostConstruct() throws Exception {
 
-		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+		createSchemaRegistryRestApp(embeddedKafka.getEmbeddedKafka().getZookeeperConnectionString(),
+				embeddedKafka.getEmbeddedKafka().getBrokersAsString());
 	}
 
 	@Override

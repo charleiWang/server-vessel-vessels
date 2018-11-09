@@ -15,8 +15,9 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.MessageSource;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import es.redmic.exception.common.PatternUtils;
@@ -26,6 +27,7 @@ import es.redmic.vesselsview.repository.vessel.VesselESRepository;
 
 @SpringBootTest(classes = { VesselsViewApplication.class })
 @RunWith(SpringJUnit4ClassRunner.class)
+@TestPropertySource(properties = { "schema.registry.port=0" })
 @ActiveProfiles("test")
 public class ExceptionsTranslationTest {
 
@@ -39,7 +41,7 @@ public class ExceptionsTranslationTest {
 			resourcePathEnglish = "classpath*:i18n/messages_en_EN.properties";
 
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1);
+	public static EmbeddedKafkaRule embeddedKafka = new EmbeddedKafkaRule(1);
 
 	@Before
 	public void init() {
