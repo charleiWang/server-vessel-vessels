@@ -64,24 +64,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-						<configuration>
-							<executable>true</executable>
-							<finalName>vessels-commands</finalName>
-							<outputDirectory>dist</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
+				<configuration>
+					<executable>true</executable>
+					<finalName>vessels-commands</finalName>
+					<outputDirectory>dist</outputDirectory>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-				    <reuseForks>true</reuseForks>
+					<reuseForks>true</reuseForks>
 					<includes>
 						<include>**/Test*.java</include>
 						<include>**/*Test.java</include>
