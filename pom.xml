@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.3.RELEASE</version>
+		<version>2.1.0.RELEASE</version>
 		<relativePath />
 	</parent>
 
@@ -35,7 +35,7 @@
 
 		<!-- OTHERS -->
 		<ma.glasnost.orika.core.version>1.5.2</ma.glasnost.orika.core.version>
-		<kafka.version>1.1.0</kafka.version>
+		<kafka.version>2.0.0</kafka.version>
 
 		<!-- Plugins -->
 		<jacoco.version>0.8.1</jacoco.version>
