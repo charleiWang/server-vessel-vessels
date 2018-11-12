@@ -23,6 +23,23 @@ services:
       timeout: 10s
       retries: 3
       start_period: 2m
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        traefik.port: "${VIEW_PORT}"
+        traefik.docker.network: traefik-net
+        traefik.frontend.rule: PathPrefix:/api/${UNIT_NAME}/view
+        traefik.backend: ${UNIT_NAME}-view
+      restart_policy:
+        delay: 1m
+        window: 3m
+      resources:
+        limits:
+          cpus: '1'
+          memory: 768M
+        reservations:
+          memory: 615M
 
 networks:
   elastic-net:
