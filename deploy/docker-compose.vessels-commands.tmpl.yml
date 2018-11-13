@@ -29,6 +29,7 @@ services:
         reservations:
           memory: 820M
     networks:
+      - metrics-net
       - kafka-net
       - redmic-net
       - traefik-net
