@@ -67,8 +67,12 @@ public class VesselCommandService implements CommandServiceItfc<VesselDTO> {
 		vessel.setName(aisTracking.getName());
 		vessel.setCallSign(aisTracking.getCallSign());
 		vessel.setImo(aisTracking.getImo());
-		vessel.setLength(aisTracking.getA() + aisTracking.getB());
-		vessel.setBeam(aisTracking.getC() + aisTracking.getD());
+
+		if (aisTracking.getA() != null && aisTracking.getB() != null)
+			vessel.setLength(aisTracking.getA() + aisTracking.getB());
+
+		if (aisTracking.getC() != null && aisTracking.getD() != null)
+			vessel.setBeam(aisTracking.getC() + aisTracking.getD());
 
 		VesselTypeDTO vesselType = new VesselTypeDTO();
 		vesselType.setCode(aisTracking.getType().toString());
