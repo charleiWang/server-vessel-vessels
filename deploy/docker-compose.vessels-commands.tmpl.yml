@@ -29,7 +29,7 @@ services:
         reservations:
           memory: 820M
     networks:
-      - metrics-net
+      - metric-net
       - kafka-net
       - redmic-net
       - traefik-net
@@ -43,6 +43,9 @@ services:
       start_period: 2m
 
 networks:
+  metric-net:
+    external: true
+
   kafka-net:
     external: true
 
