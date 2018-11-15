@@ -31,7 +31,7 @@ services:
           memory: 615M
     networks:
       - elastic-net
-      - metrics-net
+      - metric-net
       - kafka-net
       - redmic-net
       - traefik-net
@@ -44,6 +44,9 @@ services:
 
 networks:
   elastic-net:
+    external: true
+
+  metric-net:
     external: true
 
   kafka-net:
