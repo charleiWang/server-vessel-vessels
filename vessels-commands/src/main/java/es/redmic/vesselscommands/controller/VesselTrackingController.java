@@ -29,8 +29,8 @@ public class VesselTrackingController extends CommandGeoController<VesselTrackin
 	@KafkaListener(topics = "${broker.topic.realtime.tracking.vessels}")
 	public void run(AISTrackingDTO dto) throws InterruptedException {
 
-		logger.info("Procesando barco: " + dto.getMmsi());
-		vesselService.create(dto);
+		// logger.info("Procesando barco: " + dto.getMmsi());
+		// vesselService.create(dto);
 
 		logger.info("Procesando track para el barco: " + dto.getMmsi() + " date: " + dto.getTstamp());
 		service.create(dto);
