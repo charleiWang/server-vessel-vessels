@@ -26,7 +26,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 	@Test
 	public void processCreateVesselCommand_ReturnVesselCreatedEvent_IfProcessIsOk() {
 
-		when(vesselsStateStore.getVessel(any())).thenReturn(null);
+		// when(vesselsStateStore.getVessel(any())).thenReturn(null);
 
 		VesselDTO vessel = getVessel();
 
