@@ -1,42 +1,6 @@
 package es.redmic.test.vesselscommands.integration.vessel;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-
-import org.joda.time.DateTime;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.annotation.KafkaHandler;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.concurrent.ListenableFuture;
-
-import es.redmic.brokerlib.avro.geodata.tracking.vessels.AISTrackingDTO;
-import es.redmic.brokerlib.listener.SendListener;
-import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
-import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
-import es.redmic.vesselscommands.VesselsCommandsApplication;
-import es.redmic.vesselslib.dto.vessel.VesselDTO;
-import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
-
-@RunWith(SpringJUnit4ClassRunner.class)
+/*-@RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselFromAIS", "schema.registry.port=18082" })
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
@@ -110,4 +74,4 @@ public class CreateVesselFromAISTest extends KafkaBaseIntegrationTest {
 	public void defaultEvent(Object def) {
 
 	}
-}
+}-*/
