@@ -30,7 +30,7 @@ public class ProcessEventTest extends AggregateBaseTest {
 	@Test
 	public void processCreateVesselTrackingCommand_ReturnVesselTrackingCreatedEvent_IfProcessIsOk() {
 
-		// when(vesselTrackingsStateStore.getVesselTracking(any())).thenReturn(null);
+		when(vesselTrackingsStateStore.getVesselTracking(any())).thenReturn(null);
 
 		VesselTrackingDTO vesselTracking = getVesselTracking();
 

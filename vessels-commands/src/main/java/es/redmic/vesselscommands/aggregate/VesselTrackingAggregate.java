@@ -34,10 +34,10 @@ public class VesselTrackingAggregate extends Aggregate {
 
 		String id = cmd.getVesselTracking().getId();
 
-		/*-if (exist(id)) {
+		if (exist(id)) {
 			logger.info("Descartando inserción de " + id + ". El item ya está registrado.");
 			return null; // Se lanza excepción en el origen no aquí
-		}-*/
+		}
 		this.setAggregateId(id);
 
 		VesselDTO vessel = cmd.getVesselTracking().getProperties().getVessel();
