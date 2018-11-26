@@ -7,7 +7,6 @@ import es.redmic.vesselscommands.commands.vesseltracking.DeleteVesselTrackingCom
 import es.redmic.vesselscommands.commands.vesseltracking.UpdateVesselTrackingCommand;
 import es.redmic.vesselscommands.statestore.VesselTrackingStateStore;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
-import es.redmic.vesselslib.dto.tracking.VesselTrackingPropertiesDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
@@ -15,7 +14,6 @@ import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingCan
 import es.redmic.vesselslib.events.vesseltracking.create.EnrichCreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.EnrichUpdateVesselTrackingEvent;
 
 public class VesselTrackingAggregate extends Aggregate {
@@ -159,19 +157,6 @@ public class VesselTrackingAggregate extends Aggregate {
 
 	public void apply(VesselTrackingDeletedEvent event) {
 		this.deleted = true;
-		super.apply(event);
-	}
-
-	public void apply(UpdateVesselInVesselTrackingEvent event) {
-		if (this.vesselTracking == null)
-			this.vesselTracking = new VesselTrackingDTO();
-
-		VesselTrackingPropertiesDTO properties = new VesselTrackingPropertiesDTO();
-
-		properties.setVessel(event.getVessel());
-
-		this.vesselTracking.setProperties(properties);
-
 		super.apply(event);
 	}
 
