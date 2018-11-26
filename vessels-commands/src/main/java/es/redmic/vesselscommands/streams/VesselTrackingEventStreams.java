@@ -1,34 +1,23 @@
 package es.redmic.vesselscommands.streams;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.GlobalKTable;
 import org.apache.kafka.streams.kstream.JoinWindows;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
-import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.kstream.Produced;
 
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.brokerlib.avro.common.EventTypes;
-import es.redmic.brokerlib.avro.serde.hashmap.HashMapSerde;
 import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
-import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventFactory;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEnrichedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.AggregationVesselInVesselTrackingPostUpdateEvent;
 import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEnrichedEvent;
 
@@ -36,32 +25,17 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 
 	private String vesselTopic;
 
-	private String vesselTrackingAggByVesselTopic;
-
-	private String vesselUpdatedTopic;
-
-	private HashMapSerde<String, AggregationVesselInVesselTrackingPostUpdateEvent> hashMapSerde;
-
-	private GlobalKTable<String, HashMap<String, AggregationVesselInVesselTrackingPostUpdateEvent>> aggByVessel;
-
 	private GlobalKTable<String, Event> vessel;
 
-	private KStream<String, Event> vesselEvents;
-
-	public VesselTrackingEventStreams(StreamConfig config, String vesselTopic, String vesselTrackingAggByVesselTopic,
-			String vesselUpdatedTopic, AlertService alertService) {
+	public VesselTrackingEventStreams(StreamConfig config, String vesselTopic, AlertService alertService) {
 		super(config, alertService);
 		this.vesselTopic = vesselTopic + snapshotTopicSuffix;
-		this.vesselTrackingAggByVesselTopic = vesselTrackingAggByVesselTopic;
-		this.vesselUpdatedTopic = vesselUpdatedTopic;
-		this.hashMapSerde = new HashMapSerde<String, AggregationVesselInVesselTrackingPostUpdateEvent>(schemaRegistry);
 
 		logger.info("Arrancado servicio de streaming para event sourcing de Vessel tracking con Id: " + this.serviceId);
 		init();
 	}
 
 	/**
-	 * Crea GlobalKTable de vesselTracking agregados por vessel
 	 * 
 	 * @see es.redmic.commandslib.streaming.streams.EventSourcingStreams#
 	 *      createExtraStreams()
@@ -69,13 +43,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 	@Override
 	protected void createExtraStreams() {
 
-		// Crea un store global para procesar los datos de todas las instancias de
-		// vesselTracking agregados por vessel
-		aggByVessel = builder.globalTable(vesselTrackingAggByVesselTopic, Consumed.with(Serdes.String(), hashMapSerde));
-
 		vessel = builder.globalTable(vesselTopic);
-
-		vesselEvents = builder.stream(vesselUpdatedTopic);
 	}
 
 	/**
@@ -314,95 +282,13 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 				vesselTracking, eventError.getExceptionType(), eventError.getArguments());
 	}
 
-	/**
-	 * Función para procesar modificaciones de referencias
-	 */
-
-	@Override
-	protected void processPostUpdateStream(KStream<String, Event> vesselTrackingEvents) {
-
-		KStream<String, Event> vesselTrackingEventsStream = vesselTrackingEvents.filter((id, event) -> {
-			return (event instanceof VesselTrackingEvent);
-		}).selectKey((k, v) -> getVesselIdFromVesselTracking(v));
-
-		// Para cada una de las referencias
-
-		// Agregar por vesseltype
-		aggregateVesselTrackingByVessel(vesselTrackingEventsStream);
-
-		// processar los vessel modificados
-		processVesselPostUpdate();
-	}
-
-	private String getVesselIdFromVesselTracking(Event evt) {
+	public static String getVesselIdFromVesselTracking(Event evt) {
 
 		return ((VesselTrackingEvent) evt).getVesselTracking().getProperties().getVessel().getId();
 	}
 
-	private void aggregateVesselTrackingByVessel(KStream<String, Event> vesselTrackingEventsStream) {
-
-		vesselTrackingEventsStream.groupByKey()
-				.aggregate(HashMap<String, AggregationVesselInVesselTrackingPostUpdateEvent>::new,
-						(k, v, map) -> aggregateVesselTrackingByVessel(k, v, map),
-						Materialized.with(Serdes.String(), hashMapSerde))
-				.toStream().to(vesselTrackingAggByVesselTopic, Produced.with(Serdes.String(), hashMapSerde));
-	}
-
-	private void processVesselPostUpdate() {
-
-		KStream<String, ArrayList<UpdateVesselInVesselTrackingEvent>> join = vesselEvents.join(aggByVessel, (k, v) -> k,
-				(updateReferenceEvent, vesselTrackingWithReferenceEvents) -> getPostUpdateEvent(updateReferenceEvent,
-						vesselTrackingWithReferenceEvents));
-
-		// desagregar, cambiar clave por la de vesselTracking y enviar a topic
-		join.flatMapValues(value -> value).selectKey((k, v) -> v.getAggregateId()).to(topic);
-	}
-
-	private HashMap<String, AggregationVesselInVesselTrackingPostUpdateEvent> aggregateVesselTrackingByVessel(
-			String key, Event value, HashMap<String, AggregationVesselInVesselTrackingPostUpdateEvent> hashMap) {
-
-		VesselDTO vessel = ((VesselTrackingEvent) value).getVesselTracking().getProperties().getVessel();
-
-		if (vessel != null) {
-
-			hashMap.put(value.getAggregateId(),
-					new AggregationVesselInVesselTrackingPostUpdateEvent(value.getType(), vessel).buildFrom(value));
-		}
-		return hashMap;
-	}
-
-	private ArrayList<UpdateVesselInVesselTrackingEvent> getPostUpdateEvent(Event updateReferenceEvent,
-			HashMap<String, AggregationVesselInVesselTrackingPostUpdateEvent> vesselTrackingWithReferenceEvents) {
-
-		ArrayList<UpdateVesselInVesselTrackingEvent> result = new ArrayList<>();
-
-		VesselDTO vessel = ((VesselEvent) updateReferenceEvent).getVessel();
-
-		for (Map.Entry<String, AggregationVesselInVesselTrackingPostUpdateEvent> entry : vesselTrackingWithReferenceEvents
-				.entrySet()) {
-
-			AggregationVesselInVesselTrackingPostUpdateEvent aggregationEvent = entry.getValue();
-
-			if (VesselTrackingEventTypes.isLocked(aggregationEvent.getType())) {
-
-				if (!aggregationEvent.getType().equals(VesselTrackingEventTypes.DELETED)) {
-					String message = "Item con id " + aggregationEvent.getAggregateId()
-							+ " se encuentra en mitad de un ciclo de creación o edición, por lo que no se modificó la referencia "
-							+ updateReferenceEvent.getAggregateId();
-
-					logger.info(message);
-					alertService.errorAlert(aggregationEvent.getAggregateId(), message);
-				}
-
-			} else if (!aggregationEvent.getVessel().equals(vessel)) {
-
-				result.add((UpdateVesselInVesselTrackingEvent) VesselTrackingEventFactory.getEvent(aggregationEvent,
-						updateReferenceEvent, VesselTrackingEventTypes.UPDATE_VESSEL));
-
-			} else {
-				logger.debug("Vessel ya estaba actualizado o los campos indexados no han cambiado ");
-			}
-		}
-		return result;
+	@Override
+	protected void processPostUpdateStream(KStream<String, Event> events) {
+		// En series temporales no se hace postUpdate
 	}
 }

@@ -53,12 +53,6 @@ public class VesselCommandHandler extends CommandHandler {
 	@Value("${broker.topic.vessel}")
 	private String vesselTopic;
 
-	@Value("${broker.topic.vessel.updated}")
-	private String vesselUpdatedTopic;
-
-	@Value("${broker.topic.tracking.agg.by.vessel}")
-	private String vesselTrackingAggByVesselTopic;
-
 	@Value("${broker.topic.vessel.type.updated}")
 	private String vesselTypeUpdatedTopic;
 
@@ -117,7 +111,7 @@ public class VesselCommandHandler extends CommandHandler {
 					.serviceId(vesselsEventsStreamId)
 					.windowsTime(streamWindowsTime)
 					.build(), vesselTypeTopic, vesselsAggByVesselTypeTopic,
-						vesselTypeUpdatedTopic, vesselTrackingAggByVesselTopic, alertService);
+						vesselTypeUpdatedTopic, alertService);
 		// @formatter:on
 	}
 
@@ -236,7 +230,7 @@ public class VesselCommandHandler extends CommandHandler {
 
 		// Envía los editados satisfactoriamente para tenerlos en cuenta en el
 		// postupdate
-		publishToKafka(event, vesselUpdatedTopic);
+		// publishToKafka(event, vesselUpdatedTopic);
 
 		// El evento Modificado se envió desde el stream
 

@@ -51,12 +51,6 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@Value("${broker.topic.vessel-tracking}")
 	private String vesselTrackingTopic;
 
-	@Value("${broker.topic.vessel.updated}")
-	private String vesselUpdatedTopic;
-
-	@Value("${broker.topic.tracking.agg.by.vessel}")
-	private String vesselTrackingAggByVesselTopic;
-
 	@Value("${broker.state.store.vesseltracking.dir}")
 	private String stateStoreVesselTrackingDir;
 
@@ -108,7 +102,7 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 				config
 					.serviceId(vesselTrackingEventsStreamId)
 					.windowsTime(streamWindowsTime)
-					.build(), vesselTopic, vesselTrackingAggByVesselTopic, vesselUpdatedTopic, alertService);
+					.build(), vesselTopic, alertService);
 		// @formatter:on
 	}
 

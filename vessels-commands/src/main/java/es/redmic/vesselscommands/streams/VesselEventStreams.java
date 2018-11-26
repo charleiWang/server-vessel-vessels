@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.GlobalKTable;
 import org.apache.kafka.streams.kstream.JoinWindows;
@@ -18,7 +19,6 @@ import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.brokerlib.avro.common.EventTypes;
 import es.redmic.brokerlib.avro.serde.hashmap.HashMapSerde;
-import es.redmic.commandslib.exceptions.ExceptionType;
 import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
@@ -30,7 +30,6 @@ import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.AggregationVesselTypeInVesselPostUpdateEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.AggregationVesselInVesselTrackingPostUpdateEvent;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
 
@@ -42,7 +41,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 	private String vesselTypeUpdatedTopic;
 
-	private String vesselTrackingAggByVesselTopic;
+	// private String vesselTrackingAggByVesselTopic;
 
 	private HashMapSerde<String, AggregationVesselTypeInVesselPostUpdateEvent> hashMapSerdeAggregationVesselTypeInVessel;
 
@@ -52,19 +51,13 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 	private KStream<String, Event> vesselTypeEvents;
 
-	private HashMapSerde<String, AggregationVesselInVesselTrackingPostUpdateEvent> hashMapSerdeAggregationVesselInVesselTracking;
-
-	private KTable<String, HashMap<String, AggregationVesselInVesselTrackingPostUpdateEvent>> aggByVessel;
-
 	public VesselEventStreams(StreamConfig config, String vesselTypeTopic, String vesselsAggByVesselTypeTopic,
-			String vesselTypeUpdatedTopic, String vesselTrackingAggByVesselTopic, AlertService alertService) {
+			String vesselTypeUpdatedTopic, AlertService alertService) {
 		super(config, alertService);
 		this.vesselTypeTopic = vesselTypeTopic + snapshotTopicSuffix;
 		this.vesselsAggByVesselTypeTopic = vesselsAggByVesselTypeTopic;
 		this.vesselTypeUpdatedTopic = vesselTypeUpdatedTopic;
-		this.vesselTrackingAggByVesselTopic = vesselTrackingAggByVesselTopic;
 		this.hashMapSerdeAggregationVesselTypeInVessel = new HashMapSerde<>(schemaRegistry);
-		this.hashMapSerdeAggregationVesselInVesselTracking = new HashMapSerde<>(schemaRegistry);
 
 		logger.info("Arrancado servicio de streaming para event sourcing de Vessel con Id: " + this.serviceId);
 		init();
@@ -87,9 +80,6 @@ public class VesselEventStreams extends EventSourcingStreams {
 		vesselType = builder.globalTable(vesselTypeTopic);
 
 		vesselTypeEvents = builder.stream(vesselTypeUpdatedTopic);
-
-		aggByVessel = builder.table(vesselTrackingAggByVesselTopic,
-				Consumed.with(Serdes.String(), hashMapSerdeAggregationVesselInVesselTracking));
 	}
 
 	/**
@@ -228,21 +218,27 @@ public class VesselEventStreams extends EventSourcingStreams {
 		KStream<String, Event> deleteEvents = events
 				.filter((id, event) -> (EventTypes.CHECK_DELETE.equals(event.getType())));
 
-		deleteEvents
+		// TODO: Buscar la manera de comprobar si el barco está en algún track
+		deleteEvents.map(
+				(key, value) -> KeyValue.pair(key, VesselEventFactory.getEvent(value, VesselEventTypes.DELETE_CHECKED)))
+				.to(topic);
+		;
+
+		/*-deleteEvents
 				.leftJoin(aggByVessel, (deleteEvent,
 						vesselTrackingAggByVessel) -> getCheckDeleteResultEvent(deleteEvent, vesselTrackingAggByVessel))
-				.to(topic);
+				.to(topic);-*/
 	}
 
-	@SuppressWarnings("serial")
+	/*-@SuppressWarnings("serial")
 	private Event getCheckDeleteResultEvent(Event deleteEvent,
 			HashMap<String, AggregationVesselInVesselTrackingPostUpdateEvent> vesselTrackingAggByVessel) {
-
+	
 		if (vesselTrackingAggByVessel == null || vesselTrackingAggByVessel.isEmpty()) { // elemento no referenciado
-
+	
 			return VesselEventFactory.getEvent(deleteEvent, VesselEventTypes.DELETE_CHECKED);
 		} else { // elemento referenciado
-
+	
 			return VesselEventFactory.getEvent(deleteEvent, VesselEventTypes.DELETE_CHECK_FAILED,
 					ExceptionType.ITEM_REFERENCED.toString(), new HashMap<String, String>() {
 						{
@@ -250,7 +246,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 						}
 					});
 		}
-	}
+	}-*/
 
 	/**
 	 * Función que a partir del último evento correcto + el evento de edición

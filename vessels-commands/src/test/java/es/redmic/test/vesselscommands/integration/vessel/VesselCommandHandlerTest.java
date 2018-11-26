@@ -13,7 +13,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -39,7 +38,6 @@ import es.redmic.exception.data.DeleteItemException;
 import es.redmic.exception.data.ItemAlreadyExistException;
 import es.redmic.exception.data.ItemNotFoundException;
 import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
-import es.redmic.test.vesselscommands.integration.vesseltracking.VesselTrackingDataUtil;
 import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
@@ -65,7 +63,6 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
-import es.redmic.vesselslib.events.vesseltracking.create.VesselTrackingCreatedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.VesselTypeCreatedEvent;
 
@@ -358,37 +355,37 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 	// Envía un evento de comprobación de que el elemento puede ser borrado y debe
 	// provocar un evento DeleteVesselCheckFailedEvent ya que está referenciado
-	@Test
+	/*-@Test
 	public void checkDeleteVesselEvent_SendDeleteVesselCheckFailedEvent_IfVesselIsReference()
 			throws InterruptedException {
-
+	
 		logger.debug("----> DeleteVesselCheckFailedEvent");
-
+	
 		String tstamp = String.valueOf(new DateTime().getMillis());
-
+	
 		CheckDeleteVesselEvent event = VesselDataUtil.getCheckDeleteVesselEvent(mmsi + 55);
-
+	
 		VesselTrackingCreatedEvent vesselTrackingWithVesselEvent = VesselTrackingDataUtil
 				.getVesselTrackingCreatedEvent(1, tstamp);
 		vesselTrackingWithVesselEvent.getVesselTracking().getProperties()
 				.setVessel(VesselDataUtil.getVessel(mmsi + 55));
-
+	
 		kafkaTemplate.send(vessel_tracking_topic, vesselTrackingWithVesselEvent.getAggregateId(),
 				vesselTrackingWithVesselEvent);
-
+	
 		Thread.sleep(4000);
-
+	
 		kafkaTemplate.send(vessel_topic, event.getAggregateId(), event);
-
+	
 		Event confirm = (Event) blockingQueue.poll(60, TimeUnit.SECONDS);
-
+	
 		assertNotNull(confirm);
 		assertEquals(VesselEventTypes.DELETE_CHECK_FAILED, confirm.getType());
 		assertEquals(event.getAggregateId(), confirm.getAggregateId());
 		assertEquals(event.getUserId(), confirm.getUserId());
 		assertEquals(event.getSessionId(), confirm.getSessionId());
 		assertEquals(event.getVersion(), confirm.getVersion());
-	}
+	}-*/
 
 	// Envía un evento de error de borrado y debe provocar un evento Cancelled con
 	// el item dentro
