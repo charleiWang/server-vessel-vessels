@@ -17,9 +17,7 @@ import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventFactory;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEvent;
-import es.redmic.vesselsview.model.vessel.Vessel;
 import es.redmic.vesselsview.model.vesseltracking.VesselTracking;
 import es.redmic.vesselsview.service.vesseltracking.VesselTrackingESService;
 import es.redmic.viewlib.config.MapperScanBeanItfc;
@@ -82,32 +80,6 @@ public class VesselTrackingController extends GeoDataController<VesselTracking, 
 
 		try {
 			result = service.update(mapper.getMapperFacade().map(event.getVesselTracking(), VesselTracking.class));
-		} catch (Exception e) {
-			publishFailedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.UPDATE_FAILED,
-					ExceptionType.INTERNAL_EXCEPTION.name(), null), vesseltracking_topic);
-			return;
-		}
-
-		if (result.isSuccess()) {
-			logger.info("VesselTracking modificado en la vista");
-			publishConfirmedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.UPDATE_CONFIRMED),
-					vesseltracking_topic);
-		} else {
-			publishFailedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.UPDATE_FAILED,
-					result.getExeptionType(), result.getExceptionArguments()), vesseltracking_topic);
-		}
-	}
-
-	@KafkaHandler
-	public void listen(UpdateVesselInVesselTrackingEvent event) {
-
-		logger.info("Modificar vessel en vesseltracking");
-
-		EventApplicationResult result = null;
-
-		try {
-			result = service.updateVesselInVesselTracking(event.getAggregateId(),
-					mapper.getMapperFacade().map(event.getVessel(), Vessel.class));
 		} catch (Exception e) {
 			publishFailedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.UPDATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vesseltracking_topic);

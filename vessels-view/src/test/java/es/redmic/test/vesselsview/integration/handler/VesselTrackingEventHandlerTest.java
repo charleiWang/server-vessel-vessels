@@ -57,7 +57,6 @@ import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingFai
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingFailedEvent;
@@ -173,35 +172,6 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 
 		VesselTracking vesselTracking = (VesselTracking) item.get_source();
 		assertEqualsVesselTracking(vesselTracking, event.getVesselTracking());
-	}
-
-	@Test
-	public void sendUpdateVesselInVesselTrackingEvent_UpdateItem_IfEventIsOk() throws Exception {
-
-		VesselTrackingDTO dto = getVesselTracking();
-
-		repository.save(mapper.getMapperFacade().map(dto, VesselTracking.class));
-
-		UpdateVesselInVesselTrackingEvent updateEvent = getUpdateVesselInVesselTrackingEvent();
-		updateEvent.setAggregateId(dto.getId());
-
-		ListenableFuture<SendResult<String, Event>> future = kafkaTemplate.send(VESSELTRACKING_TOPIC,
-				updateEvent.getAggregateId(), updateEvent);
-		future.addCallback(new SendListener());
-
-		Event confirm = (Event) blockingQueue.poll(50, TimeUnit.SECONDS);
-
-		GeoHitWrapper<?> item = repository.findById(dto.getId());
-		assertNotNull(item.get_source());
-
-		// Se restablece el estado de la vista
-		repository.delete(dto.getId());
-
-		assertNotNull(confirm);
-		assertEquals(VesselTrackingEventTypes.UPDATE_CONFIRMED.toString(), confirm.getType());
-
-		VesselTracking vesselTracking = (VesselTracking) item.get_source();
-		assertEqualsVesselTracking(vesselTracking, dto);
 	}
 
 	@Test(expected = ItemNotFoundException.class)
@@ -429,22 +399,6 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 		updatedEvent.setSessionId(UUID.randomUUID().toString());
 		updatedEvent.setUserId(USER_ID);
 		return updatedEvent;
-	}
-
-	protected UpdateVesselInVesselTrackingEvent getUpdateVesselInVesselTrackingEvent() {
-
-		UpdateVesselInVesselTrackingEvent event = new UpdateVesselInVesselTrackingEvent()
-				.buildFrom(getUpdateVesselTrackingEvent());
-
-		VesselTrackingDTO vesselTracking = getVesselTracking();
-		vesselTracking.getProperties().getVessel().setName("Nombre cambiado");
-		event.setVessel(vesselTracking.getProperties().getVessel());
-		event.setAggregateId(vesselTracking.getId());
-		event.setVersion(3);
-		event.setSessionId(UUID.randomUUID().toString());
-		event.setUserId(USER_ID);
-
-		return event;
 	}
 
 	protected DeleteVesselTrackingEvent getDeleteVesselTrackingEvent() {
