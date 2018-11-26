@@ -30,7 +30,6 @@ import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCon
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.EnrichUpdateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
@@ -232,19 +231,6 @@ public abstract class VesselTrackingDataUtil {
 		event.setType(VesselTrackingEventTypes.DELETE_CANCELLED);
 		event.setVesselTracking(getVesselTracking());
 		event.setExceptionType("ItemNotFound");
-		return event;
-	}
-
-	// UpdateVesselInVesselTracking
-
-	public static UpdateVesselInVesselTrackingEvent getUpdateVesselInVesselTrackingEvent() {
-
-		UpdateVesselInVesselTrackingEvent event = new UpdateVesselInVesselTrackingEvent();
-		event.setAggregateId(PREFIX + MMSI);
-		event.setType(VesselTrackingEventTypes.UPDATE_VESSEL);
-		event.setVersion(2);
-		event.setUserId(USER);
-		event.setVessel(VesselDataUtil.getVessel());
 		return event;
 	}
 

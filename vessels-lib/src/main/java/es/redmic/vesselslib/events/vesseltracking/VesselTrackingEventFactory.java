@@ -10,7 +10,6 @@ import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.exception.common.ExceptionType;
 import es.redmic.exception.common.InternalException;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
-import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingCancelledEvent;
@@ -26,7 +25,6 @@ import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCon
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEnrichedEvent;
@@ -137,26 +135,6 @@ public class VesselTrackingEventFactory {
 			logger.error("Tipo de evento no soportado");
 			throw new InternalException(ExceptionType.INTERNAL_EXCEPTION);
 		}
-	}
-
-	//////////////
-
-	public static Event getEvent(Event source, Event trigger, String type) {
-
-		if (type.equals(VesselTrackingEventTypes.UPDATE_VESSEL)) {
-
-			logger.info("Creando evento UpdateVesselInVesselTrackingEvent para: " + source.getAggregateId());
-
-			UpdateVesselInVesselTrackingEvent requestEvent = new UpdateVesselInVesselTrackingEvent();
-			requestEvent.setAggregateId(source.getAggregateId());
-			requestEvent.setUserId(trigger.getUserId());
-			requestEvent.setVersion(source.getVersion() + 1);
-			requestEvent.setVessel(((VesselEvent) trigger).getVessel());
-			return requestEvent;
-		}
-
-		logger.error("Tipo de evento no soportado");
-		throw new InternalException(ExceptionType.INTERNAL_EXCEPTION);
 	}
 
 	/////////////////
