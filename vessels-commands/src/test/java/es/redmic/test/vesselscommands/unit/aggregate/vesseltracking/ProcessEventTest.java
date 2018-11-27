@@ -16,6 +16,7 @@ import es.redmic.vesselscommands.commands.vesseltracking.CreateVesselTrackingCom
 import es.redmic.vesselscommands.commands.vesseltracking.DeleteVesselTrackingCommand;
 import es.redmic.vesselscommands.commands.vesseltracking.UpdateVesselTrackingCommand;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
+import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.VesselTrackingCreatedEvent;
@@ -27,8 +28,8 @@ import es.redmic.vesselslib.events.vesseltracking.update.VesselTrackingUpdatedEv
 @RunWith(MockitoJUnitRunner.class)
 public class ProcessEventTest extends AggregateBaseTest {
 
-	@Test
-	public void processCreateVesselTrackingCommand_ReturnVesselTrackingCreatedEvent_IfProcessIsOk() {
+	@Test // Simula un add desde ais con los datos del vessel completos
+	public void processCreateVesselTrackingCommand_ReturnVesselTrackingCreateEvent_IfVesselIsComplete() {
 
 		when(vesselTrackingsStateStore.getVesselTracking(any())).thenReturn(null);
 
@@ -44,7 +45,32 @@ public class ProcessEventTest extends AggregateBaseTest {
 		assertEquals(evt.getVesselTracking(), vesselTracking);
 		assertNotNull(evt.getId());
 		assertEquals(evt.getAggregateId(), vesselTracking.getId());
-		assertEquals(evt.getType(), VesselTrackingEventTypes.ENRICH_CREATE);
+		assertEquals(VesselTrackingEventTypes.CREATE, evt.getType());
+		assertTrue(evt.getVersion().equals(1));
+	}
+
+	@Test // Simula un add desde http solo con el id del vessel
+	public void processCreateVesselTrackingCommand_ReturnCreateVesselTrackingEnrichEvent_IfVesselIsNotComplete() {
+
+		when(vesselTrackingsStateStore.getVesselTracking(any())).thenReturn(null);
+
+		VesselTrackingDTO vesselTracking = getVesselTracking();
+
+		VesselDTO emptyVessel = new VesselDTO();
+		emptyVessel.setId(vesselTracking.getProperties().getVessel().getId());
+		vesselTracking.getProperties().setVessel(emptyVessel);
+
+		CreateVesselTrackingCommand command = new CreateVesselTrackingCommand(vesselTracking);
+
+		VesselTrackingEvent evt = agg.process(command);
+
+		assertNotNull(evt);
+		assertNotNull(evt.getDate());
+		assertNotNull(evt.getVesselTracking());
+		assertEquals(evt.getVesselTracking(), vesselTracking);
+		assertNotNull(evt.getId());
+		assertEquals(evt.getAggregateId(), vesselTracking.getId());
+		assertEquals(VesselTrackingEventTypes.ENRICH_CREATE, evt.getType());
 		assertTrue(evt.getVersion().equals(1));
 	}
 
