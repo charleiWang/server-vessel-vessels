@@ -11,6 +11,7 @@ import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingCancelledEvent;
+import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.EnrichCreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
@@ -44,11 +45,21 @@ public class VesselTrackingAggregate extends Aggregate {
 		if (vessel == null)
 			return null;
 
-		logger.info("Creando evento para enriquecer VesselTracking");
+		VesselTrackingEvent evt;
 
-		VesselTrackingEvent evt = new EnrichCreateVesselTrackingEvent(cmd.getVesselTracking());
+		// Si el único campo relleno es el id (insertando vía rest)
+		if (vessel.getMmsi() == null) {
+			logger.debug("Generando evento para enriquecer VesselTracking");
+			evt = new EnrichCreateVesselTrackingEvent(cmd.getVesselTracking());
+		} else { // Si tiene más campos rellenos, es una inserción automatizada, por lo que no se
+					// enriquece
+			logger.debug("Generando evento para crear VesselTracking");
+			evt = new CreateVesselTrackingEvent(cmd.getVesselTracking());
+		}
+
 		evt.setAggregateId(id);
 		evt.setVersion(1);
+
 		return evt;
 	}
 
