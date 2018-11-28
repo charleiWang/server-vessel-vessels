@@ -2,16 +2,10 @@ package es.redmic.vesselscommands.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
-
-import es.redmic.brokerlib.avro.geodata.tracking.vessels.AISTrackingDTO;
 import es.redmic.commandslib.service.CommandGeoServiceItfc;
 import es.redmic.exception.databinding.FieldNotValidException;
 import es.redmic.vesselscommands.commands.vesseltracking.CreateVesselTrackingCommand;
@@ -19,7 +13,6 @@ import es.redmic.vesselscommands.commands.vesseltracking.DeleteVesselTrackingCom
 import es.redmic.vesselscommands.commands.vesseltracking.UpdateVesselTrackingCommand;
 import es.redmic.vesselscommands.handler.VesselTrackingCommandHandler;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
-import es.redmic.vesselslib.dto.tracking.VesselTrackingPropertiesDTO;
 
 @Service
 public class VesselTrackingCommandService implements CommandGeoServiceItfc<VesselTrackingDTO> {
@@ -31,24 +24,9 @@ public class VesselTrackingCommandService implements CommandGeoServiceItfc<Vesse
 	@Value("${vesseltracking-activity-id}")
 	protected String activityId;
 
-	@Value("${qflag.default}")
-	private String QFLAG_DEFAUL;
-
-	@Value("${vflag.default}")
-	private String VFLAG_DEFAULT;
-
 	@Autowired
 	public VesselTrackingCommandService(VesselTrackingCommandHandler commandHandler) {
 		this.commandHandler = commandHandler;
-	}
-
-	public void create(AISTrackingDTO aisTracking) {
-
-		if (aisTracking.getMmsi() != null || aisTracking.getImo() != null) {
-			create(convertTrackToVesselTracking(aisTracking), activityId);
-		} else {
-			logger.info("Descartado Vessel sin identificador váliado");
-		}
 	}
 
 	@Override
@@ -89,42 +67,5 @@ public class VesselTrackingCommandService implements CommandGeoServiceItfc<Vesse
 
 		if (!requestId.equals(this.activityId))
 			throw new FieldNotValidException("activityId", requestId);
-	}
-
-	public VesselTrackingDTO convertTrackToVesselTracking(AISTrackingDTO aisTracking) {
-
-		if (aisTracking.getMmsi() == null)
-			throw new FieldNotValidException("mmsi", "null");
-
-		if (aisTracking.getTstamp() == null)
-			throw new FieldNotValidException("date", "null");
-
-		GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
-
-		VesselTrackingDTO vesselTracking = new VesselTrackingDTO();
-
-		Point geometry = geometryFactory
-				.createPoint(new Coordinate(aisTracking.getLongitude(), aisTracking.getLatitude()));
-
-		vesselTracking.setGeometry(geometry);
-
-		VesselTrackingPropertiesDTO properties = new VesselTrackingPropertiesDTO();
-
-		properties.setVessel(VesselCommandService.convertTrackToVessel(aisTracking));
-
-		properties.setDate(aisTracking.getTstamp());
-
-		properties.setCog(aisTracking.getCog());
-		properties.setSog(aisTracking.getSog());
-		properties.setHeading(aisTracking.getHeading());
-		properties.setNavStat(aisTracking.getNavStat());
-		properties.setDest(aisTracking.getDest());
-		properties.setEta(aisTracking.getEta());
-		properties.setQFlag(QFLAG_DEFAUL);
-		properties.setVFlag(VFLAG_DEFAULT);
-
-		vesselTracking.setProperties(properties);
-
-		return vesselTracking;
 	}
 }
