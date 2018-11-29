@@ -19,6 +19,14 @@ import es.redmic.vesselslib.utils.VesselTrackingUtil;
 @RunWith(MockitoJUnitRunner.class)
 public class VesselTrackingUtilsTest {
 
+	// @formatter:off
+ 
+	String QFLAG = "0",
+			VFLAG = "N",
+			ACTIVITY_ID = "9999";
+	
+	// @formatter:on
+
 	@Test
 	public void convertAisToVesselTracking_ReturnVesselTrackingDTO_IfAISTrackingDTOIsCorrect() {
 
@@ -46,7 +54,7 @@ public class VesselTrackingUtilsTest {
 		dto.setEta("00:00 00:00");
 		dto.setDest("Santa Cruz de Tenerife");
 
-		VesselTrackingDTO result = VesselTrackingUtil.convertTrackToVesselTracking(dto, "0", "N");
+		VesselTrackingDTO result = VesselTrackingUtil.convertTrackToVesselTracking(dto, QFLAG, VFLAG, ACTIVITY_ID);
 
 		assertTrue(result.getProperties().getDate().isEqual(dto.getTstamp()));
 		assertEquals(result.getProperties().getCog(), dto.getCog());
@@ -80,7 +88,7 @@ public class VesselTrackingUtilsTest {
 		dto.setLatitude(2.1);
 		dto.setLongitude(3.2);
 
-		VesselTrackingDTO result = VesselTrackingUtil.convertTrackToVesselTracking(dto, "0", "N");
+		VesselTrackingDTO result = VesselTrackingUtil.convertTrackToVesselTracking(dto, QFLAG, VFLAG, ACTIVITY_ID);
 
 		assertTrue(result.getProperties().getDate().isEqual(dto.getTstamp()));
 		assertNull(result.getProperties().getCog());

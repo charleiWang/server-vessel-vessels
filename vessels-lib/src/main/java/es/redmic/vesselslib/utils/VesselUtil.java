@@ -2,7 +2,6 @@ package es.redmic.vesselslib.utils;
 
 import es.redmic.vesselslib.dto.ais.AISTrackingDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
-import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 public class VesselUtil {
 
@@ -15,7 +14,7 @@ public class VesselUtil {
 	public static VesselDTO convertTrackToVessel(AISTrackingDTO aisTracking) {
 
 		VesselDTO vessel = new VesselDTO();
-
+		vessel.setId(generateId(aisTracking.getMmsi()));
 		vessel.setMmsi(aisTracking.getMmsi());
 		vessel.setName(aisTracking.getName());
 		vessel.setCallSign(aisTracking.getCallSign());
@@ -27,9 +26,7 @@ public class VesselUtil {
 		if (aisTracking.getC() != null && aisTracking.getD() != null)
 			vessel.setBeam(aisTracking.getC() + aisTracking.getD());
 
-		VesselTypeDTO vesselType = new VesselTypeDTO();
-		vesselType.setCode(aisTracking.getType().toString());
-		vessel.setType(vesselType);
+		vessel.setType(VesselTypeUtil.convertTrackToVesselType(aisTracking));
 
 		return vessel;
 	}
