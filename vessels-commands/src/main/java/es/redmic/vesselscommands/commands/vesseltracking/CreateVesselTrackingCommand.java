@@ -26,6 +26,9 @@ public class CreateVesselTrackingCommand extends Command {
 		if (vessel == null || (vessel.getMmsi() == null && vessel.getId() == null))
 			throw new FieldNotValidException("mmsi", "null");
 
+		if (vesselTracking.getProperties().getDate() == null)
+			throw new FieldNotValidException("date", "null");
+
 		// Se añade id generado a vessel para poder buscarlo
 		if (vessel != null && vessel.getId() == null) {
 			vesselTracking.getProperties().getVessel().setId(VesselUtil.generateId(vessel.getMmsi()));
@@ -33,16 +36,13 @@ public class CreateVesselTrackingCommand extends Command {
 					.setId(VesselTypeUtil.generateId(vessel.getType().getCode()));
 		}
 
-		if (vesselTracking.getProperties().getDate() == null)
-			throw new FieldNotValidException("date", "null");
-
 		if (vesselTracking.getId() == null) {
 			// Se crea un id único para vesselTracking
 			vesselTracking.setId(VesselTrackingUtil.generateId(vesselTracking.getProperties().getVessel().getMmsi(),
 					vesselTracking.getProperties().getDate().getMillis()));
 		}
 
-		if (vesselTracking.getUuid() == null) {
+		if (vesselTracking.getUuid() == null || vesselTracking.getUuid().equals(VesselTrackingUtil.UUID_DEFAULT)) {
 			vesselTracking.setUuid(UUID.randomUUID().toString());
 		}
 
