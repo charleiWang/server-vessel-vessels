@@ -81,7 +81,6 @@ public class VesselTrackingAggregate extends Aggregate {
 		if (vessel == null)
 			return null;
 
-		logger.info("Creando evento para enriquecer VesselTracking");
 		EnrichUpdateVesselTrackingEvent evt = new EnrichUpdateVesselTrackingEvent(cmd.getVesselTracking());
 
 		evt.setAggregateId(id);
