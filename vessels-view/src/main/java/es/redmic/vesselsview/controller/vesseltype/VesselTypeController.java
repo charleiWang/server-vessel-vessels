@@ -1,7 +1,5 @@
 package es.redmic.vesselsview.controller.vesseltype;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaHandler;
@@ -31,8 +29,6 @@ import es.redmic.viewlib.data.controller.DataController;
 @KafkaListener(topics = "${broker.topic.vessel-type}")
 public class VesselTypeController extends DataController<VesselType, VesselTypeDTO, SimpleQueryDTO> {
 
-	private static Logger logger = LogManager.getLogger();
-
 	@Value("${broker.topic.vessel-type}")
 	private String vessel_type_topic;
 
@@ -50,8 +46,6 @@ public class VesselTypeController extends DataController<VesselType, VesselTypeD
 	@KafkaHandler
 	public void listen(CreateVesselTypeEvent event) {
 
-		logger.info("Crear vessel type");
-
 		EventApplicationResult result = null;
 
 		try {
@@ -63,8 +57,6 @@ public class VesselTypeController extends DataController<VesselType, VesselTypeD
 		}
 
 		if (result.isSuccess()) {
-
-			logger.info("Vessel type creado de la vista");
 			publishConfirmedEvent(new CreateVesselTypeConfirmedEvent().buildFrom(event), vessel_type_topic);
 		} else {
 			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.CREATE_FAILED,
@@ -74,8 +66,6 @@ public class VesselTypeController extends DataController<VesselType, VesselTypeD
 
 	@KafkaHandler
 	public void listen(UpdateVesselTypeEvent event) {
-
-		logger.info("Modificar vessel type");
 
 		EventApplicationResult result = null;
 
@@ -88,8 +78,6 @@ public class VesselTypeController extends DataController<VesselType, VesselTypeD
 		}
 
 		if (result.isSuccess()) {
-
-			logger.info("Vessel type modificado en la vista");
 			publishConfirmedEvent(new UpdateVesselTypeConfirmedEvent().buildFrom(event), vessel_type_topic);
 		} else {
 			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.UPDATE_FAILED,
@@ -99,8 +87,6 @@ public class VesselTypeController extends DataController<VesselType, VesselTypeD
 
 	@KafkaHandler
 	public void listen(DeleteVesselTypeEvent event) {
-
-		logger.info("Eliminar vessel type");
 
 		EventApplicationResult result = null;
 
@@ -113,8 +99,6 @@ public class VesselTypeController extends DataController<VesselType, VesselTypeD
 		}
 
 		if (result.isSuccess()) {
-
-			logger.info("Vessel type eliminado de la vista");
 			publishConfirmedEvent(new DeleteVesselTypeConfirmedEvent().buildFrom(event), vessel_type_topic);
 		} else {
 			publishFailedEvent(VesselTypeEventFactory.getEvent(event, VesselTypeEventTypes.DELETE_FAILED,
