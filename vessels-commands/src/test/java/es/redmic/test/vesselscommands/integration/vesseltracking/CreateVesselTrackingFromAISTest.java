@@ -2,6 +2,7 @@ package es.redmic.test.vesselscommands.integration.vesseltracking;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.BlockingQueue;
@@ -81,11 +82,11 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 
 		kafkaTemplate.send(REALTIME_TRACKING_VESSELS_TOPIC, source.getId(), source);
 
-		Thread.sleep(1000);
+		Thread.sleep(3000);
 
 		kafkaTemplate.send(REALTIME_TRACKING_VESSELS_TOPIC, source.getId(), source);
 
-		VesselTrackingDTO vesselTracking = (VesselTrackingDTO) blockingQueue.poll(4, TimeUnit.MINUTES);
+		VesselTrackingDTO vesselTracking = (VesselTrackingDTO) blockingQueue.poll(20, TimeUnit.SECONDS);
 		assertNotNull(vesselTracking);
 
 		assertTrue(vesselTracking.getProperties().getDate().isEqual(source.getProperties().getDate()));
@@ -102,6 +103,9 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 		assertEquals(vessel.getName(), source.getProperties().getVessel().getName());
 		assertEquals(vessel.getLength(), source.getProperties().getVessel().getLength());
 		assertEquals(vessel.getBeam(), source.getProperties().getVessel().getBeam());
+
+		vesselTracking = (VesselTrackingDTO) blockingQueue.poll(20, TimeUnit.SECONDS);
+		assertNull(vesselTracking);
 	}
 
 	@KafkaHandler

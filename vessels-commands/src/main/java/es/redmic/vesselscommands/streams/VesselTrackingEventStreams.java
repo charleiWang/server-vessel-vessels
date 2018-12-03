@@ -256,7 +256,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 	@Override
 	protected void processExtraStreams(KStream<String, Event> events, KStream<String, Event> snapshotEvents) {
 
-		createTrackingFromRealtimeTrackingVessel(realtimeTracking, snapshotEvents);
+		createTrackingFromRealtimeTrackingVessel(realtimeTracking, events);
 	}
 
 	private void createTrackingFromRealtimeTrackingVessel(KStream<String, VesselTrackingDTO> realTimeTracking,
@@ -281,7 +281,6 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 			evt.setAggregateId(vesselTrackingDTO.getId());
 			evt.setVersion(1);
 			evt.setUserId(REDMIC_PROCESS);
-
 			return evt;
 		}
 		return null;
