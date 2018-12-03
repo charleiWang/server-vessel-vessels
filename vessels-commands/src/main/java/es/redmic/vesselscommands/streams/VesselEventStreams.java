@@ -19,6 +19,7 @@ import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.brokerlib.avro.common.EventTypes;
 import es.redmic.brokerlib.avro.serde.hashmap.HashMapSerde;
+import es.redmic.commandslib.exceptions.ExceptionType;
 import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
@@ -218,35 +219,23 @@ public class VesselEventStreams extends EventSourcingStreams {
 		KStream<String, Event> deleteEvents = events
 				.filter((id, event) -> (EventTypes.CHECK_DELETE.equals(event.getType())));
 
-		// TODO: Buscar la manera de comprobar si el barco está en algún track
-		deleteEvents.map(
-				(key, value) -> KeyValue.pair(key, VesselEventFactory.getEvent(value, VesselEventTypes.DELETE_CHECKED)))
-				.to(topic);
-		;
-
-		/*-deleteEvents
-				.leftJoin(aggByVessel, (deleteEvent,
-						vesselTrackingAggByVessel) -> getCheckDeleteResultEvent(deleteEvent, vesselTrackingAggByVessel))
-				.to(topic);-*/
+		// TODO: Esta funcionalidad está bloqueada. Si se desea eliminar un barco, se
+		// debe borrar todos los tracking donde está referenciado o buscar la manera de
+		// comprobar si el barco está en algún track para bloquearlo
+		deleteEvents.map((key, value) -> KeyValue.pair(key, getCheckDeleteResultEvent(value))).to(topic);
 	}
 
-	/*-@SuppressWarnings("serial")
-	private Event getCheckDeleteResultEvent(Event deleteEvent,
-			HashMap<String, AggregationVesselInVesselTrackingPostUpdateEvent> vesselTrackingAggByVessel) {
-	
-		if (vesselTrackingAggByVessel == null || vesselTrackingAggByVessel.isEmpty()) { // elemento no referenciado
-	
-			return VesselEventFactory.getEvent(deleteEvent, VesselEventTypes.DELETE_CHECKED);
-		} else { // elemento referenciado
-	
-			return VesselEventFactory.getEvent(deleteEvent, VesselEventTypes.DELETE_CHECK_FAILED,
-					ExceptionType.ITEM_REFERENCED.toString(), new HashMap<String, String>() {
-						{
-							put("id", deleteEvent.getAggregateId());
-						}
-					});
-		}
-	}-*/
+	@SuppressWarnings("serial")
+	private Event getCheckDeleteResultEvent(Event deleteEvent) {
+
+		return VesselEventFactory.getEvent(deleteEvent, VesselEventTypes.DELETE_CHECK_FAILED,
+				ExceptionType.ITEM_REFERENCED.toString(), new HashMap<String, String>() {
+					{
+						put("id", deleteEvent.getAggregateId());
+					}
+				});
+
+	}
 
 	/**
 	 * Función que a partir del último evento correcto + el evento de edición

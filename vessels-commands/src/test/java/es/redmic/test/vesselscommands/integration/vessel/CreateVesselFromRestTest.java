@@ -218,18 +218,9 @@ public class CreateVesselFromRestTest extends DocumentationCommandBaseTest {
 				.perform(delete("/"+ id)
 						.header("Authorization", "Bearer " + getTokenOAGUser())
 						.accept(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.success", is(true)));
+				.andExpect(status().isNotFound());
 		
 		// @formatter:on
-
-		DeleteVesselEvent event = (DeleteVesselEvent) blockingQueue.poll(50, TimeUnit.SECONDS);
-
-		DeleteVesselEvent expectedEvent = VesselDataUtil.getDeleteEvent(mmsi);
-		assertNotNull(event);
-		assertEquals(event.getType(), expectedEvent.getType());
-		assertEquals(event.getVersion(), expectedEvent.getVersion());
-		assertEquals(event.getAggregateId(), expectedEvent.getAggregateId());
 	}
 
 	@SuppressWarnings("unchecked")
