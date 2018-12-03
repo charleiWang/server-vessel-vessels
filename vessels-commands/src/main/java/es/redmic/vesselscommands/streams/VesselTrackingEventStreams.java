@@ -3,7 +3,6 @@ package es.redmic.vesselscommands.streams;
 import org.apache.kafka.streams.kstream.GlobalKTable;
 import org.apache.kafka.streams.kstream.JoinWindows;
 import org.apache.kafka.streams.kstream.KStream;
-import org.joda.time.DateTime;
 
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
@@ -11,6 +10,7 @@ import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.brokerlib.avro.common.EventTypes;
 import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
+import es.redmic.vesselscommands.commands.vesseltracking.CreateVesselTrackingCommand;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
@@ -276,8 +276,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 
 		if (vesselTrackingEvent == null) {
 
-			vesselTrackingDTO.getProperties().setInserted(DateTime.now());
-			vesselTrackingDTO.getProperties().setUpdated(DateTime.now());
+			vesselTrackingDTO = new CreateVesselTrackingCommand(vesselTrackingDTO).getVesselTracking();
 
 			CreateVesselTrackingEvent evt = new CreateVesselTrackingEvent(vesselTrackingDTO);
 			evt.setAggregateId(vesselTrackingDTO.getId());
