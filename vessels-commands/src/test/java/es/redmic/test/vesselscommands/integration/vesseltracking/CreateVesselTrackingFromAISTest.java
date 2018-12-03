@@ -81,7 +81,7 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 
 		kafkaTemplate.send(REALTIME_TRACKING_VESSELS_TOPIC, source.getId(), source);
 
-		Thread.sleep(10000);
+		Thread.sleep(1000);
 
 		kafkaTemplate.send(REALTIME_TRACKING_VESSELS_TOPIC, source.getId(), source);
 

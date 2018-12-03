@@ -38,7 +38,6 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 		super(config, alertService);
 		this.vesselTopic = vesselTopic + snapshotTopicSuffix;
 		this.realtimeTrackingVesselsTopic = realtimeTrackingVesselsTopic;
-		logger.info("Arrancado servicio de streaming para event sourcing de Vessel tracking con Id: " + this.serviceId);
 		init();
 	}
 
@@ -255,9 +254,9 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 	}
 
 	@Override
-	protected void processExtraStreams(KStream<String, Event> events) {
+	protected void processExtraStreams(KStream<String, Event> events, KStream<String, Event> snapshotEvents) {
 
-		createTrackingFromRealtimeTrackingVessel(realtimeTracking, events);
+		createTrackingFromRealtimeTrackingVessel(realtimeTracking, snapshotEvents);
 	}
 
 	private void createTrackingFromRealtimeTrackingVessel(KStream<String, VesselTrackingDTO> realTimeTracking,
