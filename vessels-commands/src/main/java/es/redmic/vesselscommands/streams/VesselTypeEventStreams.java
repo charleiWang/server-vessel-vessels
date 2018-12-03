@@ -33,7 +33,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		super(config, alertService);
 		this.vesselsAggByVesselTypeTopic = vesselsAggByVesselTypeTopic;
 		this.hashMapSerde = new HashMapSerde<>(schemaRegistry);
-		logger.info("Arrancado servicio de streaming para event sourcing de VesselType con Id: " + this.serviceId);
+
 		init();
 	}
 

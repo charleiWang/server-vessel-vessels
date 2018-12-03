@@ -209,7 +209,7 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselTrackingCreatedEvent event) {
 
-		logger.info("VesselTracking creado " + event.getAggregateId());
+		logger.debug("VesselTracking creado " + event.getAggregateId());
 
 		// El evento Creado se envió desde el stream
 
@@ -227,7 +227,7 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselTrackingUpdatedEvent event) {
 
-		logger.info("VesselTracking modificado " + event.getAggregateId());
+		logger.debug("VesselTracking modificado " + event.getAggregateId());
 
 		// El evento Modificado se envió desde el stream
 
@@ -244,7 +244,7 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselTrackingDeletedEvent event) {
 
-		logger.info("VesselTracking eliminado " + event.getAggregateId());
+		logger.debug("VesselTracking eliminado " + event.getAggregateId());
 
 		resolveCommand(event.getSessionId());
 	}
@@ -259,7 +259,7 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(CreateVesselTrackingCancelledEvent event) {
 
-		logger.info("Error creando VesselTracking " + event.getAggregateId());
+		logger.debug("Error creando VesselTracking " + event.getAggregateId());
 
 		resolveCommand(event.getSessionId(),
 				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
@@ -268,7 +268,7 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(UpdateVesselTrackingCancelledEvent event) {
 
-		logger.info("Error modificando VesselTracking " + event.getAggregateId());
+		logger.debug("Error modificando VesselTracking " + event.getAggregateId());
 
 		// El evento Cancelled se envía desde el stream
 
@@ -279,7 +279,7 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(DeleteVesselTrackingCancelledEvent event) {
 
-		logger.info("Error eliminando VesselTracking " + event.getAggregateId());
+		logger.debug("Error eliminando VesselTracking " + event.getAggregateId());
 
 		// El evento Cancelled se envía desde el stream
 

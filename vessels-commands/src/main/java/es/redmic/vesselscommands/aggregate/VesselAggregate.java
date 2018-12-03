@@ -44,10 +44,10 @@ public class VesselAggregate extends Aggregate {
 
 		if (cmd.getVessel().getType() != null) {
 
-			logger.info("Creando evento para enriquecer Vessel");
+			logger.debug("Creando evento para enriquecer Vessel");
 			evt = new EnrichCreateVesselEvent(cmd.getVessel());
 		} else {
-			logger.info("Creando evento para crear Vessel. Enriquecimiento descartado");
+			logger.debug("Creando evento para crear Vessel. Enriquecimiento descartado");
 			evt = new CreateVesselEvent(cmd.getVessel());
 		}
 
@@ -72,10 +72,10 @@ public class VesselAggregate extends Aggregate {
 
 		if (cmd.getVessel().getType() != null) {
 
-			logger.info("Creando evento para enriquecer Vessel");
+			logger.debug("Creando evento para enriquecer Vessel");
 			evt = new EnrichUpdateVesselEvent(cmd.getVessel());
 		} else {
-			logger.info("Creando evento para modificar Vessel. Enriquecimiento descartado");
+			logger.debug("Creando evento para modificar Vessel. Enriquecimiento descartado");
 			evt = new UpdateVesselEvent(cmd.getVessel());
 		}
 
