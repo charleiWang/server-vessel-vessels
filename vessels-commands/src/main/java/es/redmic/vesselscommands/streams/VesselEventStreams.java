@@ -268,7 +268,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 		// Join por id, mandando a kafka el evento de compensación
 		partialUpdateEvent.join(successEventsTable, (partialUpdateConfirmEvent,
 				lastSuccessEvent) -> getUpdatedEventFromPartialUpdate(partialUpdateConfirmEvent, lastSuccessEvent))
-				.to(topic);
+				.filter((k, v) -> (v != null)).to(topic);
 	}
 
 	/**
