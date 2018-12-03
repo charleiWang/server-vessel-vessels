@@ -36,40 +36,40 @@ public class VesselTypeEventFactory {
 
 		if (type.equals(VesselTypeEventTypes.DELETE)) {
 
-			logger.info("Creando evento DeleteVesselTypeEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselTypeEvent para: " + source.getAggregateId());
 			return new DeleteVesselTypeEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.DELETE_CHECKED)) {
 
-			logger.info("Creando evento DeleteVesselTypeCheckedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselTypeCheckedEvent para: " + source.getAggregateId());
 			return new DeleteVesselTypeCheckedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.CREATE_CONFIRMED)) {
 
-			logger.info("Creando evento CreateVesselTypeConfirmedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento CreateVesselTypeConfirmedEvent para: " + source.getAggregateId());
 
 			return new CreateVesselTypeConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.UPDATE_CONFIRMED)) {
 
-			logger.info("Creando evento UpdateVesselTypeConfirmedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselTypeConfirmedEvent para: " + source.getAggregateId());
 
 			return new UpdateVesselTypeConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.DELETE_CONFIRMED)) {
 
-			logger.info("Creando evento DeleteVesselTypeConfirmedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselTypeConfirmedEvent para: " + source.getAggregateId());
 
 			return new DeleteVesselTypeConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.DELETED)) {
 
-			logger.info("Creando evento VesselTypeDeletedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento VesselTypeDeletedEvent para: " + source.getAggregateId());
 			return new VesselTypeDeletedEvent().buildFrom(source);
 		}
 
@@ -82,12 +82,12 @@ public class VesselTypeEventFactory {
 		VesselTypeEvent successfulEvent = null;
 
 		if (type.equals(VesselTypeEventTypes.CREATED)) {
-			logger.info("Creando evento VesselTypeCreatedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento VesselTypeCreatedEvent para: " + source.getAggregateId());
 			successfulEvent = new VesselTypeCreatedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.UPDATED)) {
-			logger.info("Creando evento VesselTypeUpdatedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento VesselTypeUpdatedEvent para: " + source.getAggregateId());
 			successfulEvent = new VesselTypeUpdatedEvent().buildFrom(source);
 		}
 
@@ -107,29 +107,29 @@ public class VesselTypeEventFactory {
 
 		if (type.equals(VesselTypeEventTypes.CREATE_FAILED)) {
 
-			logger.info("No se pudo crear Vessel type en la vista");
+			logger.debug("No se pudo crear Vessel type en la vista");
 			failedEvent = new CreateVesselTypeFailedEvent().buildFrom(source);
 		}
 		if (type.equals(VesselTypeEventTypes.UPDATE_FAILED)) {
 
-			logger.info("No se pudo modificar Vessel type en la vista");
+			logger.debug("No se pudo modificar Vessel type en la vista");
 			failedEvent = new UpdateVesselTypeFailedEvent().buildFrom(source);
 		}
 		if (type.equals(VesselTypeEventTypes.DELETE_FAILED)) {
 
-			logger.info("No se pudo eliminar Vessel type de la vista");
+			logger.debug("No se pudo eliminar Vessel type de la vista");
 			failedEvent = new DeleteVesselTypeFailedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.DELETE_CHECK_FAILED)) {
 
-			logger.info("Checkeo de eliminación fallido, el item está referenciado");
+			logger.debug("Checkeo de eliminación fallido, el item está referenciado");
 			failedEvent = new DeleteVesselTypeCheckFailedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.CREATE_CANCELLED)) {
 
-			logger.info("Enviando evento CreateVesselTypeCancelledEvent para: " + source.getAggregateId());
+			logger.debug("Enviando evento CreateVesselTypeCancelledEvent para: " + source.getAggregateId());
 			failedEvent = new CreateVesselTypeCancelledEvent().buildFrom(source);
 		}
 
@@ -152,13 +152,13 @@ public class VesselTypeEventFactory {
 
 		if (type.equals(VesselTypeEventTypes.UPDATE_CANCELLED)) {
 
-			logger.info("Creando evento UpdateVesselTypeCancelledEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselTypeCancelledEvent para: " + source.getAggregateId());
 			cancelledEvent = new UpdateVesselTypeCancelledEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.DELETE_CANCELLED)) {
 
-			logger.info("Creando evento DeleteVesselTypeCancelledEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselTypeCancelledEvent para: " + source.getAggregateId());
 			cancelledEvent = new DeleteVesselTypeCancelledEvent().buildFrom(source);
 		}
 
