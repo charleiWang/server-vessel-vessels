@@ -200,6 +200,6 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 	}
 
 	@Override
-	protected void processExtraStreams(KStream<String, Event> events) {
+	protected void processExtraStreams(KStream<String, Event> events, KStream<String, Event> snapshotEvents) {
 	}
 }
