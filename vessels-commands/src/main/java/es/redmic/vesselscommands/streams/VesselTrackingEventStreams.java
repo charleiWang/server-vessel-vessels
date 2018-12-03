@@ -1,7 +1,9 @@
 package es.redmic.vesselscommands.streams;
 
 import org.apache.kafka.streams.kstream.GlobalKTable;
+import org.apache.kafka.streams.kstream.JoinWindows;
 import org.apache.kafka.streams.kstream.KStream;
+import org.joda.time.DateTime;
 
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
@@ -16,18 +18,26 @@ import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventFactory;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEnrichedEvent;
+import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEnrichedEvent;
 
 public class VesselTrackingEventStreams extends EventSourcingStreams {
 
 	private String vesselTopic;
 
+	private String realtimeTrackingVesselsTopic;
+
 	private GlobalKTable<String, Event> vessel;
 
-	public VesselTrackingEventStreams(StreamConfig config, String vesselTopic, AlertService alertService) {
+	private KStream<String, VesselTrackingDTO> realtimeTracking;
+
+	private final String REDMIC_PROCESS = "REDMIC_PROCESS";
+
+	public VesselTrackingEventStreams(StreamConfig config, String vesselTopic, String realtimeTrackingVesselsTopic,
+			AlertService alertService) {
 		super(config, alertService);
 		this.vesselTopic = vesselTopic + snapshotTopicSuffix;
-
+		this.realtimeTrackingVesselsTopic = realtimeTrackingVesselsTopic;
 		logger.info("Arrancado servicio de streaming para event sourcing de Vessel tracking con Id: " + this.serviceId);
 		init();
 	}
@@ -41,6 +51,8 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 	protected void createExtraStreams() {
 
 		vessel = builder.globalTable(vesselTopic);
+
+		realtimeTracking = builder.stream(realtimeTrackingVesselsTopic);
 	}
 
 	/**
@@ -240,5 +252,40 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 	@Override
 	protected void processPostUpdateStream(KStream<String, Event> events) {
 		// En series temporales no se hace postUpdate
+	}
+
+	@Override
+	protected void processExtraStreams(KStream<String, Event> events) {
+
+		createTrackingFromRealtimeTrackingVessel(realtimeTracking, events);
+	}
+
+	private void createTrackingFromRealtimeTrackingVessel(KStream<String, VesselTrackingDTO> realTimeTracking,
+			KStream<String, Event> events) {
+
+		realTimeTracking
+				.leftJoin(events,
+						(vesselTrackingDTO, vesselTrackingEvent) -> getCreateTrackingFromRealtimeTrackingVessel(
+								vesselTrackingDTO, vesselTrackingEvent),
+						JoinWindows.of(windowsTime))
+				.filter((k, v) -> (v != null)).to(topic);
+	}
+
+	private Event getCreateTrackingFromRealtimeTrackingVessel(VesselTrackingDTO vesselTrackingDTO,
+			Event vesselTrackingEvent) {
+
+		if (vesselTrackingEvent == null) {
+
+			vesselTrackingDTO.getProperties().setInserted(DateTime.now());
+			vesselTrackingDTO.getProperties().setUpdated(DateTime.now());
+
+			CreateVesselTrackingEvent evt = new CreateVesselTrackingEvent(vesselTrackingDTO);
+			evt.setAggregateId(vesselTrackingDTO.getId());
+			evt.setVersion(1);
+			evt.setUserId(REDMIC_PROCESS);
+
+			return evt;
+		}
+		return null;
 	}
 }

@@ -63,6 +63,9 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@Value("${broker.topic.vessel}")
 	private String vesselTopic;
 
+	@Value("${broker.topic.realtime.tracking.vessels}")
+	private String realtimeTrackingVesselsTopic;
+
 	@Value("${stream.windows.time.ms}")
 	private Long streamWindowsTime;
 
@@ -102,7 +105,7 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 				config
 					.serviceId(vesselTrackingEventsStreamId)
 					.windowsTime(streamWindowsTime)
-					.build(), vesselTopic, alertService);
+					.build(), vesselTopic, realtimeTrackingVesselsTopic, alertService);
 		// @formatter:on
 	}
 

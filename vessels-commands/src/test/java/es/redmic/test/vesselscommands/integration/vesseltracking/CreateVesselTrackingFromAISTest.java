@@ -14,12 +14,12 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.powermock.reflect.Whitebox;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -30,8 +30,6 @@ import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
-import es.redmic.vesselscommands.handler.VesselTrackingCommandHandler;
-import es.redmic.vesselscommands.service.VesselTrackingCommandService;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
@@ -48,9 +46,6 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 	@Value("${broker.topic.realtime.tracking.vessels}")
 	String REALTIME_TRACKING_VESSELS_TOPIC;
 
-	@Value("${broker.topic.vessel}")
-	String VESSEL_TOPIC;
-
 	private Integer mmsi = 1;
 
 	private String tstamp = "343232132";
@@ -63,10 +58,7 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
 
 	@Autowired
-	VesselTrackingCommandService service;
-
-	@Autowired
-	VesselTrackingCommandHandler vesselTrackingCommandHandler;
+	private KafkaTemplate<String, VesselTrackingDTO> kafkaTemplate;
 
 	protected static BlockingQueue<Object> blockingQueue;
 
@@ -87,8 +79,11 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 
 		VesselTrackingDTO source = VesselTrackingDataUtil.getCreateEvent(mmsi, tstamp).getVesselTracking();
 
-		// LLama directamente al servicio para evitar pasar por vessel
-		service.create(source, activityId);
+		kafkaTemplate.send(REALTIME_TRACKING_VESSELS_TOPIC, source.getId(), source);
+
+		Thread.sleep(10000);
+
+		kafkaTemplate.send(REALTIME_TRACKING_VESSELS_TOPIC, source.getId(), source);
 
 		VesselTrackingDTO vesselTracking = (VesselTrackingDTO) blockingQueue.poll(4, TimeUnit.MINUTES);
 		assertNotNull(vesselTracking);
@@ -111,9 +106,6 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 
 	@KafkaHandler
 	public void listen(CreateVesselTrackingEvent createVesselTrackingEvent) throws Exception {
-
-		// Resuelve la espera para que siga la ejecución
-		Whitebox.invokeMethod(vesselTrackingCommandHandler, "resolveCommand", createVesselTrackingEvent.getSessionId());
 
 		blockingQueue.offer(createVesselTrackingEvent.getVesselTracking());
 	}
