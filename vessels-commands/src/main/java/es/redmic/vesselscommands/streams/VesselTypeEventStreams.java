@@ -198,4 +198,8 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 	protected void processPostUpdateStream(KStream<String, Event> events) {
 		// En este caso no hay modificación de relaciones
 	}
+
+	@Override
+	protected void processExtraStreams(KStream<String, Event> events) {
+	}
 }

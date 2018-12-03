@@ -427,4 +427,8 @@ public class VesselEventStreams extends EventSourcingStreams {
 		}
 		return result;
 	}
+
+	@Override
+	protected void processExtraStreams(KStream<String, Event> events) {
+	}
 }
