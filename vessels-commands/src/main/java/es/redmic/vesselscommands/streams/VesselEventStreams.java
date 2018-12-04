@@ -22,14 +22,18 @@ import es.redmic.brokerlib.avro.serde.hashmap.HashMapSerde;
 import es.redmic.commandslib.exceptions.ExceptionType;
 import es.redmic.commandslib.streaming.common.StreamConfig;
 import es.redmic.commandslib.streaming.streams.EventSourcingStreams;
+import es.redmic.vesselscommands.commands.vessel.CreateVesselCommand;
+import es.redmic.vesselscommands.commands.vessel.UpdateVesselCommand;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 import es.redmic.vesselslib.events.vessel.VesselEventFactory;
 import es.redmic.vesselslib.events.vessel.VesselEventTypes;
 import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vessel.create.CreateVesselEnrichedEvent;
+import es.redmic.vesselslib.events.vessel.create.EnrichCreateVesselEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.AggregationVesselTypeInVesselPostUpdateEvent;
 import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
+import es.redmic.vesselslib.events.vessel.update.EnrichUpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselEnrichedEvent;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.common.VesselTypeEvent;
@@ -42,7 +46,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 	private String vesselTypeUpdatedTopic;
 
-	// private String vesselTrackingAggByVesselTopic;
+	private String realtimeVesselsTopic;
 
 	private HashMapSerde<String, AggregationVesselTypeInVesselPostUpdateEvent> hashMapSerdeAggregationVesselTypeInVessel;
 
@@ -52,15 +56,19 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 	private KStream<String, Event> vesselTypeEvents;
 
+	private KStream<String, VesselDTO> realtimeVessel;
+
+	private final String REDMIC_PROCESS = "REDMIC_PROCESS";
+
 	public VesselEventStreams(StreamConfig config, String vesselTypeTopic, String vesselsAggByVesselTypeTopic,
-			String vesselTypeUpdatedTopic, AlertService alertService) {
+			String vesselTypeUpdatedTopic, String realtimeVesselsTopic, AlertService alertService) {
 		super(config, alertService);
 		this.vesselTypeTopic = vesselTypeTopic + snapshotTopicSuffix;
 		this.vesselsAggByVesselTypeTopic = vesselsAggByVesselTypeTopic;
 		this.vesselTypeUpdatedTopic = vesselTypeUpdatedTopic;
 		this.hashMapSerdeAggregationVesselTypeInVessel = new HashMapSerde<>(schemaRegistry);
+		this.realtimeVesselsTopic = realtimeVesselsTopic;
 
-		logger.info("Arrancado servicio de streaming para event sourcing de Vessel con Id: " + this.serviceId);
 		init();
 	}
 
@@ -81,6 +89,8 @@ public class VesselEventStreams extends EventSourcingStreams {
 		vesselType = builder.globalTable(vesselTypeTopic);
 
 		vesselTypeEvents = builder.stream(vesselTypeUpdatedTopic);
+
+		realtimeVessel = builder.stream(realtimeVesselsTopic);
 	}
 
 	/**
@@ -412,7 +422,7 @@ public class VesselEventStreams extends EventSourcingStreams {
 							+ " se encuentra en mitad de un ciclo de creación o edición, por lo que no se modificó la referencia "
 							+ updateReferenceEvent.getAggregateId();
 
-					logger.info(message);
+					logger.error(message);
 					alertService.errorAlert(aggregationEvent.getAggregateId(), message);
 				}
 
@@ -429,6 +439,52 @@ public class VesselEventStreams extends EventSourcingStreams {
 	}
 
 	@Override
-	protected void processExtraStreams(KStream<String, Event> events) {
+	protected void processExtraStreams(KStream<String, Event> events, KStream<String, Event> snapshotEvents) {
+
+		createVesselFromRealtimeVessel(realtimeVessel, snapshotEvents);
+	}
+
+	private void createVesselFromRealtimeVessel(KStream<String, VesselDTO> realtimeVessel,
+			KStream<String, Event> events) {
+
+		KTable<String, Event> table = events.groupByKey().reduce((aggValue, newValue) -> newValue);
+
+		realtimeVessel
+				.leftJoin(table, (vesselDTO, vesselEvent) -> getVesselEventFromRealtimeVessel(vesselDTO, vesselEvent))
+				.filter((k, v) -> (v != null)).to(topic);
+	}
+
+	private Event getVesselEventFromRealtimeVessel(VesselDTO vesselDTO, Event vesselEvent) {
+
+		if (vesselEvent == null) {
+			return getEnrichCreateVesselEventFromRealtimeVessel(vesselDTO);
+		}
+		if (!((VesselEvent) vesselEvent).getVessel().equals(vesselDTO)) {
+			return getEnrichUpdateVesselEventFromRealtimeVessel(vesselDTO, vesselEvent);
+		}
+		return null;
+	}
+
+	private Event getEnrichCreateVesselEventFromRealtimeVessel(VesselDTO vesselDTO) {
+
+		vesselDTO = new CreateVesselCommand(vesselDTO).getVessel();
+
+		EnrichCreateVesselEvent evt = new EnrichCreateVesselEvent(vesselDTO);
+		evt.setAggregateId(vesselDTO.getId());
+		evt.setVersion(1);
+		evt.setUserId(REDMIC_PROCESS);
+		return evt;
+	}
+
+	private Event getEnrichUpdateVesselEventFromRealtimeVessel(VesselDTO vesselDTO, Event vesselEvent) {
+
+		VesselDTO vessel = new UpdateVesselCommand(((VesselEvent) vesselEvent).getVessel()).getVessel();
+		vessel.copyFromAIS(vesselDTO);
+
+		EnrichUpdateVesselEvent evt = new EnrichUpdateVesselEvent(vessel);
+		evt.setAggregateId(vesselDTO.getId());
+		evt.setVersion(vesselEvent.getVersion() + 1);
+		evt.setUserId(REDMIC_PROCESS);
+		return evt;
 	}
 }

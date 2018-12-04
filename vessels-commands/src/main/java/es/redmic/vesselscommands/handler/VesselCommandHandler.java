@@ -71,6 +71,9 @@ public class VesselCommandHandler extends CommandHandler {
 	@Value("${broker.topic.vessel-type}")
 	private String vesselTypeTopic;
 
+	@Value("${broker.topic.realtime.vessels}")
+	private String realtimeVesselsTopic;
+
 	@Value("${stream.windows.time.ms}")
 	private Long streamWindowsTime;
 
@@ -111,7 +114,7 @@ public class VesselCommandHandler extends CommandHandler {
 					.serviceId(vesselsEventsStreamId)
 					.windowsTime(streamWindowsTime)
 					.build(), vesselTypeTopic, vesselsAggByVesselTypeTopic,
-						vesselTypeUpdatedTopic, alertService);
+						vesselTypeUpdatedTopic, realtimeVesselsTopic, alertService);
 		// @formatter:on
 	}
 
@@ -210,7 +213,7 @@ public class VesselCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselCreatedEvent event) {
 
-		logger.info("Vessel creado " + event.getAggregateId());
+		logger.debug("Vessel creado " + event.getAggregateId());
 
 		// El evento Creado se envió desde el stream
 
@@ -226,7 +229,7 @@ public class VesselCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselUpdatedEvent event) {
 
-		logger.info("Vessel modificado " + event.getAggregateId());
+		logger.debug("Vessel modificado " + event.getAggregateId());
 
 		// Envía los editados satisfactoriamente para tenerlos en cuenta en el
 		// postupdate
@@ -252,7 +255,7 @@ public class VesselCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselDeletedEvent event) {
 
-		logger.info("Vessel eliminado " + event.getAggregateId());
+		logger.debug("Vessel eliminado " + event.getAggregateId());
 
 		resolveCommand(event.getSessionId());
 	}
@@ -267,7 +270,7 @@ public class VesselCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(CreateVesselCancelledEvent event) {
 
-		logger.info("Error creando Vessel " + event.getAggregateId());
+		logger.debug("Error creando Vessel " + event.getAggregateId());
 
 		resolveCommand(event.getSessionId(),
 				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
@@ -276,7 +279,7 @@ public class VesselCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(UpdateVesselCancelledEvent event) {
 
-		logger.info("Error modificando Vessel " + event.getAggregateId());
+		logger.debug("Error modificando Vessel " + event.getAggregateId());
 
 		// El evento Cancelled se envía desde el stream
 
@@ -294,7 +297,7 @@ public class VesselCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(DeleteVesselCancelledEvent event) {
 
-		logger.info("Error eliminando Vessel " + event.getAggregateId());
+		logger.debug("Error eliminando Vessel " + event.getAggregateId());
 
 		// El evento Cancelled se envía desde el stream
 
