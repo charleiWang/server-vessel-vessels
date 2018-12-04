@@ -10,7 +10,7 @@ services:
       - OAUTH_CLIENT_SECRET
       - MICROSERVICE_NAME=${UNIT_NAME}-commands
       - SPRING_KAFKA_CLIENT-ID={{.Service.Name}}-{{.Task.Slot}}
-      - JAVA_OPTS=-XX:MaxRAMFraction=2
+      - JAVA_OPTS=-Xmx1848m -Xms256m
     deploy:
       mode: replicated
       replicas: 1
@@ -24,10 +24,10 @@ services:
         window: 3m
       resources:
         limits:
-          cpus: '2'
-          memory: 1G
+          cpus: '4'
+          memory: 2G
         reservations:
-          memory: 820M
+          memory: 1639M
     networks:
       - metric-net
       - kafka-net
