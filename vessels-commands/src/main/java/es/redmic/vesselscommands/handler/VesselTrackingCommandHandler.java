@@ -69,9 +69,6 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@Value("${stream.windows.time.ms}")
 	private Long streamWindowsTime;
 
-	@Value("${process.eventsource.timeout.ms}")
-	private long processTimeoutMS;
-
 	private final String REDMIC_PROCESS = "REDMIC_PROCESS";
 
 	private VesselTrackingStateStore vesselTrackingStateStore;
@@ -134,10 +131,6 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 
 		// Emite evento para enviar a kafka
 		publishToKafka(event, vesselTrackingTopic);
-
-		// Se resuelve con un timeout mayor, establecido para procesos automáticos
-		if (event.getUserId().equals(REDMIC_PROCESS))
-			return getResult(processTimeoutMS, event.getSessionId(), completableFuture);
 
 		// Obtiene el resultado cuando se resuelva la espera
 		return getResult(event.getSessionId(), completableFuture);
@@ -213,7 +206,9 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 
 		// El evento Creado se envió desde el stream
 
-		resolveCommand(event.getSessionId());
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId());
+		}
 	}
 
 	@KafkaHandler
@@ -231,7 +226,9 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 
 		// El evento Modificado se envió desde el stream
 
-		resolveCommand(event.getSessionId());
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId());
+		}
 	}
 
 	@KafkaHandler
@@ -246,7 +243,9 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 
 		logger.debug("VesselTracking eliminado " + event.getAggregateId());
 
-		resolveCommand(event.getSessionId());
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId());
+		}
 	}
 
 	@KafkaHandler
@@ -261,8 +260,10 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 
 		logger.debug("Error creando VesselTracking " + event.getAggregateId());
 
-		resolveCommand(event.getSessionId(),
-				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId(),
+					ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		}
 	}
 
 	@KafkaHandler
@@ -272,8 +273,10 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 
 		// El evento Cancelled se envía desde el stream
 
-		resolveCommand(event.getSessionId(),
-				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId(),
+					ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		}
 	}
 
 	@KafkaHandler
@@ -283,7 +286,9 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 
 		// El evento Cancelled se envía desde el stream
 
-		resolveCommand(event.getSessionId(),
-				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId(),
+					ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		}
 	}
 }
