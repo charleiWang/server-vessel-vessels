@@ -289,4 +289,16 @@ public class VesselDTO extends CommonDTO {
 			return false;
 		return true;
 	}
+
+	public VesselDTO copyFromAIS(VesselDTO newVessel) {
+
+		this.setBeam(newVessel.getBeam());
+		this.setCallSign(newVessel.getCallSign());
+		this.setImo(newVessel.getImo());
+		this.setLength(newVessel.getLength());
+		this.setName(newVessel.getName());
+		this.setType(newVessel.getType());
+
+		return this;
+	}
 }
