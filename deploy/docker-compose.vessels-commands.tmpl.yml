@@ -24,7 +24,7 @@ services:
         window: 3m
       resources:
         limits:
-          cpus: '4'
+          cpus: '2'
           memory: 2G
         reservations:
           memory: 1639M
