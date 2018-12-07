@@ -64,6 +64,7 @@ maven-build-view:
   stage: build-services
   image: registry.gitlab.com/redmic-project/docker/maven
   variables:
+    GIT_SUBMODULE_STRATEGY: normal
     MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
     SPRING_PROFILES_ACTIVE: test
     LOGGING_LEVEL_ROOT: error
@@ -71,13 +72,15 @@ maven-build-view:
     OAUTH_CLIENT_ID: ${DEV_OAUTH_CLIENT_ID}
     OAUTH_CLIENT_SECRET: ${DEV_OAUTH_CLIENT_SECRET}
     TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
-    ELASTIC_XPACKSECURITYUSER: ${DEV_ELASTIC_XPACKSECURITYUSER}
+    ELASTIC_CLUSTERNAME: ${DEV_ELASTIC_CLUSTERNAME}
   only:
     - branches
   cache:
     paths:
       - .m2/repository/
   script:
+    - mvn -f ./elasticsearch-cluster-runner compile
+    - mvn exec:java  -Dexec.args="-numOfNode 1 -clusterName ${ELASTIC_CLUSTERNAME}" &
     - mvn -pl :${CI_PROJECT_NAME}-view verify spring-boot:repackage -B
     - "COVERAGE=$(xmllint --html --xpath '//table[@id=\"coveragetable\"]/tfoot//td[@class=\"ctr2\"][1]/text()' ${CI_PROJECT_NAME}-view/target/site/jacoco/index.html)"
     - 'echo "Coverage: ${COVERAGE}"'
@@ -209,14 +212,13 @@ deploy-view-dev:
     SPRING_PROFILES_ACTIVE: pre
     OAUTH_CLIENT_ID: ${DEV_OAUTH_CLIENT_ID}
     OAUTH_CLIENT_SECRET: ${DEV_OAUTH_CLIENT_SECRET}
-    ELASTIC_XPACKSECURITYUSER: ${DEV_ELASTIC_XPACKSECURITYUSER}
   services:
     - docker:dind
   script:
     - >
       deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
       SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE} OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
-      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} ELASTIC_XPACKSECURITYUSER=${ELASTIC_XPACKSECURITYUSER}
+      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET}
   environment:
     name: dev/${CI_PROJECT_NAME}-view
     url: https://appdev.${DEV_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/view
@@ -268,14 +270,13 @@ deploy-view-supporting-branch:
     SPRING_PROFILES_ACTIVE: pre
     OAUTH_CLIENT_ID: ${DEV_OAUTH_CLIENT_ID}
     OAUTH_CLIENT_SECRET: ${DEV_OAUTH_CLIENT_SECRET}
-    ELASTIC_XPACKSECURITYUSER: ${DEV_ELASTIC_XPACKSECURITYUSER}
   services:
     - docker:dind
   script:
     - >
       deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
       SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE} OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
-      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} ELASTIC_XPACKSECURITYUSER=${ELASTIC_XPACKSECURITYUSER}
+      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET}
   environment:
     name: dev/${CI_PROJECT_NAME}-view
     url: https://appdev.${DEV_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/view
@@ -328,14 +329,13 @@ deploy-view-pro:
     SPRING_PROFILES_ACTIVE: prod
     OAUTH_CLIENT_ID: ${PRO_OAUTH_CLIENT_ID}
     OAUTH_CLIENT_SECRET: ${PRO_OAUTH_CLIENT_SECRET}
-    ELASTIC_XPACKSECURITYUSER: ${PRO_ELASTIC_XPACKSECURITYUSER}
   services:
     - docker:dind
   script:
     - >
       deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
       SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE} OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
-      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} ELASTIC_XPACKSECURITYUSER=${ELASTIC_XPACKSECURITYUSER}
+      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET}
   environment:
     name: pro/${CI_PROJECT_NAME}-view
     url: https://${PRO_PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}/view
