@@ -13,7 +13,7 @@
 	<groupId>es.redmic.vessels</groupId>
 	<artifactId>vessels</artifactId>
 	<packaging>pom</packaging>
-	<version>0.6.0</version>
+	<version>0.7.0</version>
 	<name>vessels</name>
 
 	<properties>
@@ -27,10 +27,7 @@
 		<!-- REDMIC -->
 		<redmic.broker-lib.version>0.6.0</redmic.broker-lib.version>
 		<redmic.vessels-lib.version>0.6.0</redmic.vessels-lib.version>
-		<redmic.commands-lib.version>0.6.0</redmic.commands-lib.version>
 		<redmic.test-utils.version>0.6.0</redmic.test-utils.version>
-		<redmic.elasticsearch-lib.version>0.6.0</redmic.elasticsearch-lib.version>
-		<redmic.view-lib.version>0.6.0</redmic.view-lib.version>
 		<redmic.exceptions.version>0.6.0</redmic.exceptions.version>
 
 		<!-- OTHERS -->
