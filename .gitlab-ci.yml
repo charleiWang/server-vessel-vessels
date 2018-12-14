@@ -79,8 +79,8 @@ maven-build-view:
     paths:
       - .m2/repository/
   script:
-    - mvn -f ./elasticsearch-cluster-runner compile
-    - mvn exec:java  -Dexec.args="-numOfNode 1 -clusterName ${ELASTIC_CLUSTERNAME}" &
+    - mvn -f elasticsearch-cluster-runner compile
+    - mvn -f elasticsearch-cluster-runner exec:java -Dexec.args="-numOfNode 1 -clusterName ${ELASTIC_CLUSTERNAME}" > elasticsearch-cluster-runner-out.txt &
     - mvn -pl :${CI_PROJECT_NAME}-view verify spring-boot:repackage -B
     - "COVERAGE=$(xmllint --html --xpath '//table[@id=\"coveragetable\"]/tfoot//td[@class=\"ctr2\"][1]/text()' ${CI_PROJECT_NAME}-view/target/site/jacoco/index.html)"
     - 'echo "Coverage: ${COVERAGE}"'
@@ -92,6 +92,8 @@ maven-build-view:
     paths:
       - "${CI_PROJECT_NAME}-view/dist/*.jar"
       - "${CI_PROJECT_NAME}-view/target/generated-docs"
+      - "elasticsearch-cluster-runner-out.txt"
+    when: always
 
 docker-build-commit-non-master-branches:
   stage: package
