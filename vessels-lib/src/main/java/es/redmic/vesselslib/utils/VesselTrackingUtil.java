@@ -1,10 +1,8 @@
 package es.redmic.vesselslib.utils;
 
-import org.geotools.geometry.jts.JTSFactoryFinder;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 
 import es.redmic.exception.databinding.FieldNotValidException;
 import es.redmic.vesselslib.dto.ais.AISTrackingDTO;
@@ -29,7 +27,7 @@ public class VesselTrackingUtil {
 		if (aisTracking.getTstamp() == null)
 			throw new FieldNotValidException("date", "null");
 
-		GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+		GeometryFactory geometryFactory = new GeometryFactory();
 
 		VesselTrackingDTO vesselTracking = new VesselTrackingDTO();
 

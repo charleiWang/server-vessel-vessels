@@ -4,11 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joda.time.DateTime;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingPropertiesDTO;
@@ -261,7 +260,9 @@ public abstract class VesselTrackingDataUtil {
 		vesselTracking.setId(PREFIX + MMSI + TSTAMP);
 		vesselTracking.setUuid(UUID.randomUUID().toString());
 
-		Point geometry = JTSFactoryFinder.getGeometryFactory().createPoint(new Coordinate(44.56433, 37.94388));
+		GeometryFactory geometryFactory = new GeometryFactory();
+
+		Point geometry = geometryFactory.createPoint(new Coordinate(44.56433, 37.94388));
 		vesselTracking.setGeometry(geometry);
 
 		VesselTrackingPropertiesDTO properties = new VesselTrackingPropertiesDTO();
