@@ -8,10 +8,10 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
-import com.bedatadriven.jackson.datatype.jts.JtsModule;
 import com.fasterxml.jackson.databind.Module;
 
 import es.redmic.commandslib.config.GenerateJsonSchemaScanBean;
+import es.redmic.jts4jackson.module.JTSModule;
 import es.redmic.restlib.config.ResourceBundleMessageSource;
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -40,7 +40,7 @@ public class VesselsCommandsApplication {
 
 	@Bean
 	public Module jtsModule() {
-		return new JtsModule();
+		return new JTSModule();
 	}
 
 	@Bean
