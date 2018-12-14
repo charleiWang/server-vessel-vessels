@@ -1,0 +1,70 @@
+{
+	"settings": {
+		"analysis": {
+			"analyzer": {
+				"lower_analyzer": {
+					"type": "custom",
+					"tokenizer": "standard",
+					"filter": ["lowercase", "asciifolding"]
+				},
+				"autocomplete": {
+					"type": "custom",
+					"tokenizer": "whitespace",
+					"filter": ["lowercase", "asciifolding", "nGram_filter"]
+				}
+			},
+			"tokenizer": {},
+			"filter": {
+				"nGram_filter": {
+					"type": "nGram",
+					"min_gram": 2,
+					"max_gram": 20
+				}
+			}
+		}
+	},
+	"mappings": {
+		"vesseltype": {
+			"_all": {
+				"enabled": false
+			},
+			"dynamic": false,
+			"properties": {
+				"id": {
+					"type": "keyword"
+				},
+				"code": {
+					"type": "keyword"
+				},
+				"name": {
+					"type": "keyword",
+					"fields": {
+						"suggest": {
+							"type": "text",
+							"analyzer": "autocomplete",
+							"search_analyzer": "lower_analyzer"
+						}
+					}
+				},
+				"name_en": {
+					"type": "keyword",
+					"fields": {
+						"suggest": {
+							"type": "text",
+							"analyzer": "autocomplete",
+							"search_analyzer": "lower_analyzer"
+						}
+					}
+				},
+				"inserted": {
+					"type": "date",
+					"format": "date_time"
+				},
+				"updated": {
+					"type": "date",
+					"format": "date_time"
+				}
+			}
+		}
+	}
+}
