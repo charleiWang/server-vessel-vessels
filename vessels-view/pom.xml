@@ -17,8 +17,8 @@
 	<properties>
 		<!-- REDMIC -->
 		<redmic.elasticsearch-lib.version>0.7.0</redmic.elasticsearch-lib.version>
-		<redmic.view-lib.version>0.6.0</redmic.view-lib.version>
-		
+		<redmic.view-lib.version>0.7.0</redmic.view-lib.version>
+
 		<!-- OTROS -->
 		<elasticsearch.version>6.5.1</elasticsearch.version>
 	</properties>
