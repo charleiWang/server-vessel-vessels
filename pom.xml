@@ -25,9 +25,9 @@
 		<tomcat.version>8.5.28</tomcat.version>
 
 		<!-- REDMIC -->
-		<redmic.broker-lib.version>0.6.0</redmic.broker-lib.version>
-		<redmic.vessels-lib.version>0.6.0</redmic.vessels-lib.version>
-		<redmic.test-utils.version>0.6.0</redmic.test-utils.version>
+		<redmic.broker-lib.version>0.7.0</redmic.broker-lib.version>
+		<redmic.vessels-lib.version>0.7.0</redmic.vessels-lib.version>
+		<redmic.test-utils.version>0.7.0</redmic.test-utils.version>
 		<redmic.exceptions.version>0.6.0</redmic.exceptions.version>
 
 		<!-- OTHERS -->

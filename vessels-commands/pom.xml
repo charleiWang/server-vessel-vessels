@@ -15,7 +15,7 @@
 	<name>Vessels-management</name>
 	<description>Vessels management microservice (add/edit/delete vessels)</description>
 	<properties>
-		<redmic.commands-lib.version>0.6.0</redmic.commands-lib.version>
+		<redmic.commands-lib.version>0.7.0</redmic.commands-lib.version>
 	</properties>
 	
 	<dependencies>
