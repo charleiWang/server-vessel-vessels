@@ -7,9 +7,8 @@ import java.util.UUID;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Point;
 
 import es.redmic.exception.common.ExceptionType;
 import es.redmic.test.vesselscommands.integration.vessel.VesselDataUtil;
