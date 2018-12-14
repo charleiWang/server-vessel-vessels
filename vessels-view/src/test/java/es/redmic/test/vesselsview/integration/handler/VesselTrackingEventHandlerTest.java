@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.junit.Before;
@@ -21,6 +20,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,8 +40,6 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
 
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
@@ -349,7 +349,9 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 		vesselTracking.setId(PREFIX + MMSI + TSTAMP);
 		vesselTracking.setUuid(_UUID);
 
-		Point geometry = JTSFactoryFinder.getGeometryFactory().createPoint(new Coordinate(44.56433, 37.94388));
+		GeometryFactory geometryFactory = new GeometryFactory();
+
+		Point geometry = geometryFactory.createPoint(new Coordinate(44.56433, 37.94388));
 		vesselTracking.setGeometry(geometry);
 
 		VesselTrackingPropertiesDTO properties = new VesselTrackingPropertiesDTO();
