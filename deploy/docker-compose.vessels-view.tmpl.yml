@@ -30,7 +30,7 @@ services:
         reservations:
           memory: 615M
     networks:
-      - elastic-net
+      - elastic6-net
       - metric-net
       - kafka-net
       - redmic-net
@@ -43,7 +43,7 @@ services:
       start_period: 2m
 
 networks:
-  elastic-net:
+  elastic6-net:
     external: true
 
   metric-net:
