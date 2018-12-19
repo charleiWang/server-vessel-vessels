@@ -60,6 +60,7 @@ import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFai
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingFailedEvent;
+import es.redmic.vesselslib.utils.VesselTrackingUtil;
 import es.redmic.vesselsview.VesselsViewApplication;
 import es.redmic.vesselsview.model.vesseltracking.VesselTracking;
 import es.redmic.vesselsview.repository.vesseltracking.VesselTrackingESRepository;
@@ -128,6 +129,36 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 		CreateVesselTrackingEvent event = getCreateVesselTrackingEvent();
 
 		repository.delete(event.getVesselTracking().getId());
+
+		ListenableFuture<SendResult<String, Event>> future = kafkaTemplate.send(VESSELTRACKING_TOPIC,
+				event.getAggregateId(), event);
+		future.addCallback(new SendListener());
+
+		Event confirm = (Event) blockingQueue.poll(50, TimeUnit.SECONDS);
+
+		GeoHitWrapper<?> item = repository.findById(event.getVesselTracking().getId());
+		assertNotNull(item.get_source());
+
+		// Se restablece el estado de la vista
+		repository.delete(event.getVesselTracking().getId());
+
+		assertNotNull(confirm);
+		assertEquals(VesselTrackingEventTypes.CREATE_CONFIRMED, confirm.getType());
+
+		VesselTracking vesselTracking = (VesselTracking) item.get_source();
+		assertEqualsVesselTracking(vesselTracking, event.getVesselTracking());
+	}
+
+	@Test
+	public void sendVesselTrackingCreatedEvent_SaveItem_IfItemIsNotProcessed() throws Exception {
+
+		CreateVesselTrackingEvent event = getCreateVesselTrackingEvent();
+
+		event.getVesselTracking().setUuid(VesselTrackingUtil.UUID_DEFAULT);
+
+		repository.save(mapper.getMapperFacade().map(event.getVesselTracking(), VesselTracking.class));
+
+		event.getVesselTracking().setUuid(UUID.randomUUID().toString());
 
 		ListenableFuture<SendResult<String, Event>> future = kafkaTemplate.send(VESSELTRACKING_TOPIC,
 				event.getAggregateId(), event);
