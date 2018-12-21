@@ -1,4 +1,5 @@
 {
+	"index_patterns": ["tracking-vessel*"],
 	"settings": {
 		"analysis": {
 			"analyzer": {
@@ -41,7 +42,7 @@
 		}
 	},
 	"mappings": {
-		"tracking": {
+		"_doc": {
 			"_all": {
 				"enabled": false
 			},
@@ -189,5 +190,9 @@
 				}
 			}
 		}
-	}
+	},
+	"aliases" : {
+        "tracking-vessel" : {},
+        "{index}-alias" : {} 
+    }
 }
