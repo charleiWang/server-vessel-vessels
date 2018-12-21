@@ -128,8 +128,6 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 
 		CreateVesselTrackingEvent event = getCreateVesselTrackingEvent();
 
-		repository.delete(event.getVesselTracking().getId());
-
 		ListenableFuture<SendResult<String, Event>> future = kafkaTemplate.send(VESSELTRACKING_TOPIC,
 				event.getAggregateId(), event);
 		future.addCallback(new SendListener());
