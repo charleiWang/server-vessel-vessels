@@ -14,6 +14,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.joda.time.format.DateTimeFormat;
 import org.springframework.stereotype.Repository;
 
 import es.redmic.elasticsearchlib.geodata.repository.RWGeoDataESRepository;
@@ -29,20 +30,22 @@ import es.redmic.viewlib.geodata.repository.IGeoDataRepository;
 public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTracking, DataQueryDTO>
 		implements IGeoDataRepository<VesselTracking, DataQueryDTO> {
 
-	private static String[] INDEX = { "vessel" };
-	private static String[] TYPE = { "tracking" };
+	private static String[] INDEX = { "tracking-vessel" };
+	private static String[] TYPE = { "_doc" };
 
 	// @formatter:off
  
-		private final String ID_PROPERTY = "id",
-				UUID_PROPERTY = "uuid",
-				MMSI_PROPERTY = "properties.vessel.mmsi",
-				DATE_PROPERTY = "properties.date",
-				VESSEL_PROPERTY = "properties.vessel";
+	private final String ID_PROPERTY = "id",
+			UUID_PROPERTY = "uuid",
+			MMSI_PROPERTY = "properties.vessel.mmsi",
+			DATE_PROPERTY = "properties.date",
+			VESSEL_PROPERTY = "properties.vessel";
+	
+	protected static final Boolean ROLLOVER_INDEX = true;
 	// @formatter:on
 
 	public VesselTrackingESRepository() {
-		super(INDEX, TYPE);
+		super(INDEX, TYPE, ROLLOVER_INDEX);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -82,17 +85,20 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 				mmsiTerm = QueryBuilders.boolQuery()
 						.must(QueryBuilders.termQuery(MMSI_PROPERTY, modelToIndex.getProperties().getVessel().getMmsi()))
 						.must(QueryBuilders.termQuery(DATE_PROPERTY, modelToIndex.getProperties().getDate())),
-				uuidTerm = QueryBuilders.boolQuery()
+				auxTerm = QueryBuilders.boolQuery()
 					.must(QueryBuilders.termQuery(ID_PROPERTY, modelToIndex.getId()))
-					.must(QueryBuilders.termQuery(UUID_PROPERTY, modelToIndex.getUuid()));
+					.must(QueryBuilders.termQuery(UUID_PROPERTY, modelToIndex.getUuid())),
+				uuidTerm = null;
 		
-		if (!notProcessed) {
-			QueryBuilder aux = uuidTerm;
+		if (!notProcessed) { // Si para este id existe un item ya metido, debe ser un item no procesado.
 			uuidTerm = QueryBuilders.boolQuery()
 					.should(QueryBuilders.boolQuery()
 							.must(QueryBuilders.termQuery(ID_PROPERTY, modelToIndex.getId()))
 							.mustNot(QueryBuilders.termQuery(UUID_PROPERTY, VesselTrackingUtil.UUID_DEFAULT)))
-					.should(aux);
+					.should(auxTerm);
+		}
+		else {
+			uuidTerm = auxTerm;
 		}
 		
 		SearchRequestBuilder requestBuilderId = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
@@ -108,23 +114,33 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 			.add(requestBuilderUuid);
 		
 		MultiSearchResponse sr = multiSearchRequestBuilder.get();
-
+		
 		// @formatter:on
 
 		Map<String, String> arguments = new HashMap<>();
 
 		Item[] responses = sr.getResponses();
 
-		if (responses != null && responses[0].getResponse().getHits().getTotalHits() > 0) {
+		if (responses == null) {
+			return new EventApplicationResult(true);
+		}
+
+		// Si el índice no existe, se da por hecho que no existe el item con esa fecha
+		// en elastic
+		if (indexNoExistResponse(responses)) {
+			return new EventApplicationResult(true);
+		}
+
+		if (responses[0].getResponse().getHits().getTotalHits() > 0) {
 			arguments.put(ID_PROPERTY, modelToIndex.getId());
 		}
 
-		if (responses != null && responses[1].getResponse().getHits().getTotalHits() > 0) {
+		if (responses[1].getResponse().getHits().getTotalHits() > 0) {
 			arguments.put(MMSI_PROPERTY, modelToIndex.getProperties().getVessel().getMmsi().toString());
 			arguments.put(DATE_PROPERTY, modelToIndex.getProperties().getDate().toString());
 		}
 
-		if (responses != null && responses[2].getResponse().getHits().getTotalHits() > 0) {
+		if (responses[2].getResponse().getHits().getTotalHits() > 0) {
 			arguments.put(UUID_PROPERTY, modelToIndex.getUuid().toString());
 		} else if (!notProcessed) { // Si no es un item no procesado y el uuid del item almacenado no es diferente a
 									// not_process entonces no se tienen en cuenta los conflictos
@@ -204,4 +220,10 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 	protected EventApplicationResult checkDeleteConstraintsFulfilled(String modelToIndexId) {
 		return new EventApplicationResult(true);
 	}
+
+	@Override
+	protected String getIndex(final VesselTracking modelToIndex) {
+		return getIndex()[0] + "-"
+				+ modelToIndex.getProperties().getDate().toString(DateTimeFormat.forPattern("yyyy-MM-dd"));
+	};
 }
