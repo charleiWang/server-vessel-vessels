@@ -48,6 +48,7 @@ public class VesselTrackingController extends GeoDataController<VesselTracking, 
 		try {
 			result = service.save(mapper.getMapperFacade().map(event.getVesselTracking(), VesselTracking.class));
 		} catch (Exception e) {
+			e.printStackTrace();
 			publishFailedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.CREATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vesseltracking_topic);
 			return;
@@ -70,6 +71,7 @@ public class VesselTrackingController extends GeoDataController<VesselTracking, 
 		try {
 			result = service.update(mapper.getMapperFacade().map(event.getVesselTracking(), VesselTracking.class));
 		} catch (Exception e) {
+			e.printStackTrace();
 			publishFailedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.UPDATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vesseltracking_topic);
 			return;
@@ -92,6 +94,7 @@ public class VesselTrackingController extends GeoDataController<VesselTracking, 
 		try {
 			result = service.delete(event.getAggregateId());
 		} catch (Exception e) {
+			e.printStackTrace();
 			publishFailedEvent(VesselTrackingEventFactory.getEvent(event, VesselTrackingEventTypes.DELETE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vesseltracking_topic);
 			return;
