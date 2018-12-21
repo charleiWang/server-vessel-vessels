@@ -1,8 +1,8 @@
 package es.redmic.vesselscommands.streams;
 
 import org.apache.kafka.streams.kstream.GlobalKTable;
-import org.apache.kafka.streams.kstream.JoinWindows;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.KTable;
 
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
@@ -262,11 +262,11 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 	private void createTrackingFromRealtimeTrackingVessel(KStream<String, VesselTrackingDTO> realTimeTracking,
 			KStream<String, Event> events) {
 
-		realTimeTracking
-				.leftJoin(events,
-						(vesselTrackingDTO, vesselTrackingEvent) -> getCreateTrackingFromRealtimeTrackingVessel(
-								vesselTrackingDTO, vesselTrackingEvent),
-						JoinWindows.of(windowsTime))
+		KTable<String, Event> table = events.groupByKey().reduce((aggValue, newValue) -> newValue);
+
+		realTimeTracking.leftJoin(table,
+				(vesselTrackingDTO, vesselTrackingEvent) -> getCreateTrackingFromRealtimeTrackingVessel(
+						vesselTrackingDTO, vesselTrackingEvent))
 				.filter((k, v) -> (v != null)).to(topic);
 	}
 
