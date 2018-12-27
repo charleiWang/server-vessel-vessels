@@ -1,52 +1,6 @@
 package es.redmic.test.vesselscommands.integration.vessel;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.annotation.KafkaHandler;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import es.redmic.brokerlib.alert.AlertType;
-import es.redmic.brokerlib.alert.Message;
-import es.redmic.brokerlib.avro.common.Event;
-import es.redmic.exception.common.ExceptionType;
-import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
-import es.redmic.test.vesselscommands.integration.vesseltype.VesselTypeDataUtil;
-import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
-import es.redmic.vesselscommands.VesselsCommandsApplication;
-import es.redmic.vesselslib.events.vessel.VesselEventTypes;
-import es.redmic.vesselslib.events.vessel.common.VesselCancelledEvent;
-import es.redmic.vesselslib.events.vessel.create.CreateVesselEvent;
-import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
-import es.redmic.vesselslib.events.vessel.partialupdate.vesseltype.UpdateVesselTypeInVesselEvent;
-import es.redmic.vesselslib.events.vessel.update.UpdateVesselConfirmedEvent;
-import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
-import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
-import es.redmic.vesselslib.events.vesseltype.update.VesselTypeUpdatedEvent;
-
-@RunWith(SpringJUnit4ClassRunner.class)
+/*-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
 @DirtiesContext
@@ -211,4 +165,4 @@ public class VesselPostUpdateHandlerTest extends KafkaBaseIntegrationTest {
 	public void defaultEvent(Object def) {
 
 	}
-}
+}-*/

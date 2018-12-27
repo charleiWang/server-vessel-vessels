@@ -38,12 +38,10 @@ import es.redmic.exception.data.DeleteItemException;
 import es.redmic.exception.data.ItemAlreadyExistException;
 import es.redmic.exception.data.ItemNotFoundException;
 import es.redmic.test.vesselscommands.integration.KafkaEmbeddedConfig;
-import es.redmic.test.vesselscommands.integration.vessel.VesselDataUtil;
 import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.handler.VesselTypeCommandHandler;
 import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
-import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vesseltype.VesselTypeEventTypes;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeCancelledEvent;
 import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
@@ -267,32 +265,32 @@ public class VesselTypeCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 	// Envía un evento de comprobación de que el elemento puede ser borrado y debe
 	// provocar un evento DeleteVesselTypeCheckFailedEvent ya que está referenciado
-	@Test
+	/*-@Test
 	public void checkDeleteVesselTypeEvent_SendDeleteVesselTypeCheckFailedEvent_IfReceivesSuccess()
 			throws InterruptedException {
-
+	
 		logger.debug("----> DeleteVesselTypeCheckFailedEvent");
-
+	
 		CheckDeleteVesselTypeEvent event = VesselTypeDataUtil.getCheckDeleteVesselTypeEvent(code + "5a");
-
+	
 		VesselCreatedEvent vesselWithVesselTypeEvent = VesselDataUtil.getVesselCreatedEvent(1);
 		vesselWithVesselTypeEvent.getVessel().setType(VesselTypeDataUtil.getVesselType(code + "5a"));
-
+	
 		kafkaTemplate.send(vessel_topic, vesselWithVesselTypeEvent.getAggregateId(), vesselWithVesselTypeEvent);
-
+	
 		Thread.sleep(4000);
-
+	
 		kafkaTemplate.send(vessel_type_topic, event.getAggregateId(), event);
-
+	
 		Event confirm = (Event) blockingQueue.poll(60, TimeUnit.SECONDS);
-
+	
 		assertNotNull(confirm);
 		assertEquals(VesselTypeEventTypes.DELETE_CHECK_FAILED, confirm.getType());
 		assertEquals(event.getAggregateId(), confirm.getAggregateId());
 		assertEquals(event.getUserId(), confirm.getUserId());
 		assertEquals(event.getSessionId(), confirm.getSessionId());
 		assertEquals(event.getVersion(), confirm.getVersion());
-	}
+	}-*/
 
 	// Envía un evento de error de borrado y debe provocar un evento Cancelled con
 	// el item dentro
