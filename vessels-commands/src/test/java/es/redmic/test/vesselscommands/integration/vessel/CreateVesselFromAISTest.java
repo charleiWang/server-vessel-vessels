@@ -102,14 +102,20 @@ public class CreateVesselFromAISTest extends KafkaBaseIntegrationTest {
 		// Al estar ya añadido, si
 		// llega de nuevo el mismo barco, lo descartará y no llegará nada
 
-		kafkaTemplate.send(REALTIME_VESSELS_TOPIC, source.getId(), source);
+		VesselDTO source2 = VesselDataUtil.getVessel(mmsi);
+
+		kafkaTemplate.send(REALTIME_VESSELS_TOPIC, source2.getId(), source2);
 
 		vessel = (VesselDTO) blockingQueue.poll(30, TimeUnit.SECONDS);
 		assertNull(vessel);
 
 		// En este caso se cambia el nombre y se comprueba que genera un
 		// evento para modificarlo
-		source.setName("Otro");
+		source2.setName("Otro");
+
+		kafkaTemplate.send(REALTIME_VESSELS_TOPIC, source2.getId(), source2);
+
+		Thread.sleep(1000);
 
 		kafkaTemplate.send(REALTIME_VESSELS_TOPIC, source.getId(), source);
 
@@ -118,6 +124,9 @@ public class CreateVesselFromAISTest extends KafkaBaseIntegrationTest {
 		vessel = (VesselDTO) blockingQueue.poll(30, TimeUnit.SECONDS);
 		assertNotNull(vessel);
 		assertEquals("Otro", vessel.getName());
+
+		vessel = (VesselDTO) blockingQueue.poll(30, TimeUnit.SECONDS);
+		assertNull(vessel);
 	}
 
 	@KafkaHandler
