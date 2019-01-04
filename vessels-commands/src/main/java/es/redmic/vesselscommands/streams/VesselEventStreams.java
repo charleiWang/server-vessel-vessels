@@ -454,12 +454,14 @@ public class VesselEventStreams extends EventSourcingStreams {
 			return getEnrichCreateVesselEventFromRealtimeVessel(vesselDTO);
 		}
 
-		VesselDTO currentVesselDTO = ((VesselEvent) vesselEvent).getVessel();
+		if (VesselEventTypes.isUpdatable(vesselEvent.getType())) {
 
-		if (VesselEventTypes.isSnapshot(vesselEvent.getType()) && currentVesselDTO != null
-				&& !currentVesselDTO.equals(vesselDTO)) {
-			logger.info("Modificando barco vía stream " + currentVesselDTO.getId());
-			return getEnrichUpdateVesselEventFromRealtimeVessel(vesselDTO, vesselEvent);
+			VesselDTO currentVesselDTO = ((VesselEvent) vesselEvent).getVessel();
+
+			if (currentVesselDTO != null && !currentVesselDTO.equals(vesselDTO)) {
+				logger.info("Modificando barco vía stream " + currentVesselDTO.getId());
+				return getEnrichUpdateVesselEventFromRealtimeVessel(vesselDTO, vesselEvent);
+			}
 		}
 		return null;
 	}
