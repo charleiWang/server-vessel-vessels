@@ -8,6 +8,9 @@ import org.apache.kafka.streams.kstream.JoinWindows;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import es.redmic.brokerlib.alert.AlertService;
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
@@ -460,6 +463,16 @@ public class VesselEventStreams extends EventSourcingStreams {
 
 			if (currentVesselDTO != null && !currentVesselDTO.equals(vesselDTO)) {
 				logger.info("Modificando barco vía stream " + currentVesselDTO.getId());
+
+				ObjectMapper mapper = new ObjectMapper();
+				try {
+					logger.info("current " + mapper.writeValueAsString(currentVesselDTO));
+					logger.info("new " + mapper.writeValueAsString(vesselDTO));
+				} catch (JsonProcessingException e) {
+
+					e.printStackTrace();
+				}
+
 				return getEnrichUpdateVesselEventFromRealtimeVessel(vesselDTO, vesselEvent);
 			}
 		}
