@@ -26,7 +26,7 @@ import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -81,7 +81,7 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 	protected static Logger logger = LogManager.getLogger();
 
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(KafkaEmbeddedConfig.NUM_BROKERS, true,
+	public static EmbeddedKafkaRule embeddedKafka = new EmbeddedKafkaRule(KafkaEmbeddedConfig.NUM_BROKERS, true,
 			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
 
 	private static final Integer mmsi = 1234;
@@ -106,7 +106,8 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 	@PostConstruct
 	public void VesselCommandHandlerTestPostConstruct() throws Exception {
 
-		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+		createSchemaRegistryRestApp(embeddedKafka.getEmbeddedKafka().getZookeeperConnectionString(),
+				embeddedKafka.getEmbeddedKafka().getBrokersAsString());
 	}
 
 	@Before
@@ -243,27 +244,6 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 		assertNotNull(confirm);
 		assertEquals(VesselEventTypes.UPDATED, confirm.getType());
 		assertEquals(updateVesselEvent.getVessel(), ((VesselUpdatedEvent) confirm).getVessel());
-	}
-
-	// Envía un evento de comprobación de que el elemento puede ser borrado y debe
-	// provocar un evento DeleteVesselCheckedEvent ya que no está referenciado
-	@Test
-	public void checkDeleteVesselEvent_SendDeleteVesselCheckedEvent_IfReceivesSuccess() throws InterruptedException {
-
-		logger.debug("----> CheckDeleteVesselEvent");
-
-		CheckDeleteVesselEvent event = VesselDataUtil.getCheckDeleteVesselEvent(mmsi + 33);
-
-		kafkaTemplate.send(vessel_topic, event.getAggregateId(), event);
-
-		Event confirm = (Event) blockingQueue.poll(60, TimeUnit.SECONDS);
-
-		assertNotNull(confirm);
-		assertEquals(VesselEventTypes.DELETE_CHECKED, confirm.getType());
-		assertEquals(event.getAggregateId(), confirm.getAggregateId());
-		assertEquals(event.getUserId(), confirm.getUserId());
-		assertEquals(event.getSessionId(), confirm.getSessionId());
-		assertEquals(event.getVersion(), confirm.getVersion());
 	}
 
 	// Envía un evento de confirmación de borrado y debe provocar un evento Deleted

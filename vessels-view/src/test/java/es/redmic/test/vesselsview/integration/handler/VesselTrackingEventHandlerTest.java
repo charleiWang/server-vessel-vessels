@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.junit.Before;
@@ -21,6 +20,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +31,7 @@ import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -38,8 +40,6 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
 
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.listener.SendListener;
@@ -57,10 +57,10 @@ import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingFai
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingFailedEvent;
+import es.redmic.vesselslib.utils.VesselTrackingUtil;
 import es.redmic.vesselsview.VesselsViewApplication;
 import es.redmic.vesselsview.model.vesseltracking.VesselTracking;
 import es.redmic.vesselsview.repository.vesseltracking.VesselTrackingESRepository;
@@ -103,12 +103,13 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 	VesselTrackingESRepository repository;
 
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1);
+	public static EmbeddedKafkaRule embeddedKafka = new EmbeddedKafkaRule(1);
 
 	@PostConstruct
 	public void VesselTrackingEventHandlerTestPostConstruct() throws Exception {
 
-		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+		createSchemaRegistryRestApp(embeddedKafka.getEmbeddedKafka().getZookeeperConnectionString(),
+				embeddedKafka.getEmbeddedKafka().getBrokersAsString());
 	}
 
 	@BeforeClass
@@ -127,7 +128,35 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 
 		CreateVesselTrackingEvent event = getCreateVesselTrackingEvent();
 
+		ListenableFuture<SendResult<String, Event>> future = kafkaTemplate.send(VESSELTRACKING_TOPIC,
+				event.getAggregateId(), event);
+		future.addCallback(new SendListener());
+
+		Event confirm = (Event) blockingQueue.poll(50, TimeUnit.SECONDS);
+
+		GeoHitWrapper<?> item = repository.findById(event.getVesselTracking().getId());
+		assertNotNull(item.get_source());
+
+		// Se restablece el estado de la vista
 		repository.delete(event.getVesselTracking().getId());
+
+		assertNotNull(confirm);
+		assertEquals(VesselTrackingEventTypes.CREATE_CONFIRMED, confirm.getType());
+
+		VesselTracking vesselTracking = (VesselTracking) item.get_source();
+		assertEqualsVesselTracking(vesselTracking, event.getVesselTracking());
+	}
+
+	@Test
+	public void sendVesselTrackingCreatedEvent_SaveItem_IfItemIsNotProcessed() throws Exception {
+
+		CreateVesselTrackingEvent event = getCreateVesselTrackingEvent();
+
+		event.getVesselTracking().setUuid(VesselTrackingUtil.UUID_DEFAULT);
+
+		repository.save(mapper.getMapperFacade().map(event.getVesselTracking(), VesselTracking.class));
+
+		event.getVesselTracking().setUuid(UUID.randomUUID().toString());
 
 		ListenableFuture<SendResult<String, Event>> future = kafkaTemplate.send(VESSELTRACKING_TOPIC,
 				event.getAggregateId(), event);
@@ -172,35 +201,6 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 
 		VesselTracking vesselTracking = (VesselTracking) item.get_source();
 		assertEqualsVesselTracking(vesselTracking, event.getVesselTracking());
-	}
-
-	@Test
-	public void sendUpdateVesselInVesselTrackingEvent_UpdateItem_IfEventIsOk() throws Exception {
-
-		VesselTrackingDTO dto = getVesselTracking();
-
-		repository.save(mapper.getMapperFacade().map(dto, VesselTracking.class));
-
-		UpdateVesselInVesselTrackingEvent updateEvent = getUpdateVesselInVesselTrackingEvent();
-		updateEvent.setAggregateId(dto.getId());
-
-		ListenableFuture<SendResult<String, Event>> future = kafkaTemplate.send(VESSELTRACKING_TOPIC,
-				updateEvent.getAggregateId(), updateEvent);
-		future.addCallback(new SendListener());
-
-		Event confirm = (Event) blockingQueue.poll(50, TimeUnit.SECONDS);
-
-		GeoHitWrapper<?> item = repository.findById(dto.getId());
-		assertNotNull(item.get_source());
-
-		// Se restablece el estado de la vista
-		repository.delete(dto.getId());
-
-		assertNotNull(confirm);
-		assertEquals(VesselTrackingEventTypes.UPDATE_CONFIRMED.toString(), confirm.getType());
-
-		VesselTracking vesselTracking = (VesselTracking) item.get_source();
-		assertEqualsVesselTracking(vesselTracking, dto);
 	}
 
 	@Test(expected = ItemNotFoundException.class)
@@ -378,7 +378,9 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 		vesselTracking.setId(PREFIX + MMSI + TSTAMP);
 		vesselTracking.setUuid(_UUID);
 
-		Point geometry = JTSFactoryFinder.getGeometryFactory().createPoint(new Coordinate(44.56433, 37.94388));
+		GeometryFactory geometryFactory = new GeometryFactory();
+
+		Point geometry = geometryFactory.createPoint(new Coordinate(44.56433, 37.94388));
 		vesselTracking.setGeometry(geometry);
 
 		VesselTrackingPropertiesDTO properties = new VesselTrackingPropertiesDTO();
@@ -394,6 +396,8 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 		properties.setNavStat(33);
 		properties.setDest("Santa Cruz de Tenerife");
 		properties.setEta("00:00 00:00");
+		properties.setQFlag("0");
+		properties.setVFlag("N");
 
 		return vesselTracking;
 	}
@@ -426,22 +430,6 @@ public class VesselTrackingEventHandlerTest extends DocumentationViewBaseTest {
 		updatedEvent.setSessionId(UUID.randomUUID().toString());
 		updatedEvent.setUserId(USER_ID);
 		return updatedEvent;
-	}
-
-	protected UpdateVesselInVesselTrackingEvent getUpdateVesselInVesselTrackingEvent() {
-
-		UpdateVesselInVesselTrackingEvent event = new UpdateVesselInVesselTrackingEvent()
-				.buildFrom(getUpdateVesselTrackingEvent());
-
-		VesselTrackingDTO vesselTracking = getVesselTracking();
-		vesselTracking.getProperties().getVessel().setName("Nombre cambiado");
-		event.setVessel(vesselTracking.getProperties().getVessel());
-		event.setAggregateId(vesselTracking.getId());
-		event.setVersion(3);
-		event.setSessionId(UUID.randomUUID().toString());
-		event.setUserId(USER_ID);
-
-		return event;
 	}
 
 	protected DeleteVesselTrackingEvent getDeleteVesselTrackingEvent() {

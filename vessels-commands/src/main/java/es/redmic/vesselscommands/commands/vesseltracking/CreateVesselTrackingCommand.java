@@ -6,13 +6,13 @@ import org.joda.time.DateTime;
 
 import es.redmic.commandslib.commands.Command;
 import es.redmic.exception.databinding.FieldNotValidException;
-import es.redmic.vesselscommands.commands.vessel.CreateVesselCommand;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.utils.VesselTrackingUtil;
+import es.redmic.vesselslib.utils.VesselTypeUtil;
+import es.redmic.vesselslib.utils.VesselUtil;
 
 public class CreateVesselTrackingCommand extends Command {
-
-	private final String PREFIX = "vesseltracking-mmsi-tstamp-";
 
 	private VesselTrackingDTO vesselTracking;
 
@@ -23,24 +23,26 @@ public class CreateVesselTrackingCommand extends Command {
 
 		VesselDTO vessel = vesselTracking.getProperties().getVessel();
 
-		// Se añade id generado a vessel para poder buscarlo
-		if (vessel != null && vessel.getId() == null) {
-			vesselTracking.getProperties().getVessel().setId(new CreateVesselCommand(vessel).getVessel().getId());
-		}
-
-		if (vessel.getMmsi() == null)
+		if (vessel == null || (vessel.getMmsi() == null && vessel.getId() == null))
 			throw new FieldNotValidException("mmsi", "null");
 
 		if (vesselTracking.getProperties().getDate() == null)
 			throw new FieldNotValidException("date", "null");
 
-		if (vesselTracking.getId() == null) {
-			// Se crea un id único para vesselTracking
-			vesselTracking.setId(PREFIX + vesselTracking.getProperties().getVessel().getMmsi() + "-"
-					+ vesselTracking.getProperties().getDate().getMillis());
+		// Se añade id generado a vessel para poder buscarlo
+		if (vessel != null && vessel.getId() == null) {
+			vesselTracking.getProperties().getVessel().setId(VesselUtil.generateId(vessel.getMmsi()));
+			vesselTracking.getProperties().getVessel().getType()
+					.setId(VesselTypeUtil.generateId(vessel.getType().getCode()));
 		}
 
-		if (vesselTracking.getUuid() == null) {
+		if (vesselTracking.getId() == null) {
+			// Se crea un id único para vesselTracking
+			vesselTracking.setId(VesselTrackingUtil.generateId(vesselTracking.getProperties().getVessel().getMmsi(),
+					vesselTracking.getProperties().getDate().getMillis()));
+		}
+
+		if (vesselTracking.getUuid() == null || vesselTracking.getUuid().equals(VesselTrackingUtil.UUID_DEFAULT)) {
 			vesselTracking.setUuid(UUID.randomUUID().toString());
 		}
 

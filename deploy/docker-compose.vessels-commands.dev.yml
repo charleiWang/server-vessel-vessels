@@ -1,12 +1,5 @@
 version: '3.5'
 
-services:
-  vessels-commands:
-    ports:
-      - target: ${COMMANDS_PORT}
-        published: ${COMMANDS_PORT}
-        mode: host
-
 volumes:
   commands-vol:
-    name: ${UNIT_NAME}-commands-vol
+    name: "${UNIT_NAME}-commands-{{.Task.Slot}}-vol"

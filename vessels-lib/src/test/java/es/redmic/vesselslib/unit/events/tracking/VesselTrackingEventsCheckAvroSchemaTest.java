@@ -24,7 +24,6 @@ import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCon
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.EnrichUpdateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
@@ -323,21 +322,6 @@ public class VesselTrackingEventsCheckAvroSchemaTest extends VesselAvroBaseTest 
 
 		assertTrue("El objeto obtenido debe ser una instancia de CreateVesselTrackingCancelledEvent",
 				DeleteVesselTrackingCancelledEvent.class.isInstance(result));
-
-		assertEquals(result, event);
-	}
-
-	// UpdateVesselTrackingTypeInVesselTracking
-
-	@Test
-	public void UpdateVesselInVesselTrackingEventSerializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect() {
-
-		UpdateVesselInVesselTrackingEvent event = VesselTrackingDataUtil.getUpdateVesselInVesselTrackingEvent();
-
-		Object result = serializerAndDeserializer(event);
-
-		assertTrue("El objeto obtenido debe ser una instancia de UpdateVesselInVesselTrackingEvent",
-				UpdateVesselInVesselTrackingEvent.class.isInstance(result));
 
 		assertEquals(result, event);
 	}

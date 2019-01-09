@@ -285,8 +285,33 @@ public class VesselDTO extends CommonDTO {
 		if (type == null) {
 			if (other.type != null)
 				return false;
-		} else if (!type.equals(other.type))
-			return false;
+		} else {
+			// vessel type solo se tiene en cuenta id y code
+			VesselTypeDTO otherType = other.type;
+			if (type.getId() == null) {
+				if (otherType.getId() != null)
+					return false;
+			} else if (!type.getId().equals(otherType.getId()))
+				return false;
+
+			if (type.getCode() == null) {
+				if (otherType.getCode() != null)
+					return false;
+			} else if (!type.getCode().equals(otherType.getCode()))
+				return false;
+		}
 		return true;
+	}
+
+	public VesselDTO copyFromAIS(VesselDTO newVessel) {
+
+		this.setBeam(newVessel.getBeam());
+		this.setCallSign(newVessel.getCallSign());
+		this.setImo(newVessel.getImo());
+		this.setLength(newVessel.getLength());
+		this.setName(newVessel.getName());
+		this.setType(newVessel.getType());
+
+		return this;
 	}
 }

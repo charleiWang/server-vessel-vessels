@@ -1,5 +1,8 @@
 package es.redmic.vesselslib.unit.dto.vessel;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -112,5 +115,31 @@ public class VesselCheckDTOValidationTest extends DTOBaseTest<VesselDTO> {
 		dto.setType(null);
 
 		checkDTOHasError(dto, NOT_NULL_MESSAGE_TEMPLATE);
+	}
+
+	@Test
+	public void equal_ReturnTrue_IfDTOsAreEqual() {
+
+		assertTrue(dto.equals(dto));
+	}
+
+	@Test
+	public void equal_ReturnFalse_IfDTOsAreDiferent() {
+
+		VesselDTO vesselDTO = new VesselDTO();
+		vesselDTO.copyFromAIS(dto);
+
+		assertFalse(dto.equals(vesselDTO));
+	}
+
+	@Test
+	public void equal_ReturnTrue_IfDTOsAreCopy() {
+
+		VesselDTO vesselDTO = new VesselDTO();
+		vesselDTO.copyFromAIS(dto);
+		vesselDTO.setMmsi(dto.getMmsi());
+		vesselDTO.setId(dto.getId());
+
+		assertTrue(dto.equals(vesselDTO));
 	}
 }

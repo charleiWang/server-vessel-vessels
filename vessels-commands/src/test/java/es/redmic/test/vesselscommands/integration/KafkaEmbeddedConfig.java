@@ -14,6 +14,7 @@ public class KafkaEmbeddedConfig {
 		"vessel-type",
 		"vessel",
 		"realtime.tracking.vessels",
+		"realtime.vessels",
 		"vessel-type-updated",
 		"tracking-agg-by-vessel",
 		"vessel-updated",

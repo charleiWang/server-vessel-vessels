@@ -1,7 +1,5 @@
 package es.redmic.vesselsview.controller.vessel;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaHandler;
@@ -31,8 +29,6 @@ import es.redmic.viewlib.data.controller.DataController;
 @KafkaListener(topics = "${broker.topic.vessel}")
 public class VesselController extends DataController<Vessel, VesselDTO, MetadataQueryDTO> {
 
-	private static Logger logger = LogManager.getLogger();
-
 	@Value("${broker.topic.vessel}")
 	private String vessel_topic;
 
@@ -50,21 +46,17 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 	@KafkaHandler
 	public void listen(CreateVesselEvent event) {
 
-		logger.info("Crear vessel");
-
 		EventApplicationResult result = null;
 
 		try {
 			result = service.save(mapper.getMapperFacade().map(event.getVessel(), Vessel.class));
 		} catch (Exception e) {
-			logger.error(
-					"Error al procesar CreateVesselEvent para vessel " + event.getAggregateId() + " " + e.getMessage());
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.CREATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
-			logger.info("Vessel creado en la vista");
 			publishConfirmedEvent(new CreateVesselConfirmedEvent().buildFrom(event), vessel_topic);
 		} else {
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.CREATE_FAILED,
@@ -75,8 +67,6 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 	@KafkaHandler
 	public void listen(UpdateVesselEvent event) {
 
-		logger.info("Modificar vessel");
-
 		EventApplicationResult result = null;
 
 		try {
@@ -84,10 +74,10 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 		} catch (Exception e) {
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.UPDATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
-			logger.info("Vessel modificado en la vista");
 			publishConfirmedEvent(new UpdateVesselConfirmedEvent().buildFrom(event), vessel_topic);
 		} else {
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.UPDATE_FAILED,
@@ -98,8 +88,6 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 	@KafkaHandler
 	public void listen(UpdateVesselTypeInVesselEvent event) {
 
-		logger.info("Modificar vesseltype en vessel");
-
 		EventApplicationResult result = null;
 
 		try {
@@ -108,10 +96,10 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 		} catch (Exception e) {
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.UPDATE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
-			logger.info("Vessel modificado en la vista");
 			publishConfirmedEvent(new UpdateVesselConfirmedEvent().buildFrom(event), vessel_topic);
 		} else {
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.UPDATE_FAILED,
@@ -122,8 +110,6 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 	@KafkaHandler
 	public void listen(DeleteVesselEvent event) {
 
-		logger.info("Eliminar vessel");
-
 		EventApplicationResult result = null;
 
 		try {
@@ -131,11 +117,10 @@ public class VesselController extends DataController<Vessel, VesselDTO, Metadata
 		} catch (Exception e) {
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.DELETE_FAILED,
 					ExceptionType.INTERNAL_EXCEPTION.name(), null), vessel_topic);
+			return;
 		}
 
 		if (result.isSuccess()) {
-
-			logger.info("Vessel eliminado de la vista");
 			publishConfirmedEvent(new DeleteVesselConfirmedEvent().buildFrom(event), vessel_topic);
 		} else {
 			publishFailedEvent(VesselEventFactory.getEvent(event, VesselEventTypes.DELETE_FAILED,

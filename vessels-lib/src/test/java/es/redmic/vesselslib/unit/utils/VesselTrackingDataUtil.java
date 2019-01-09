@@ -4,11 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joda.time.DateTime;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingPropertiesDTO;
@@ -30,7 +29,6 @@ import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCon
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.EnrichUpdateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
@@ -235,19 +233,6 @@ public abstract class VesselTrackingDataUtil {
 		return event;
 	}
 
-	// UpdateVesselInVesselTracking
-
-	public static UpdateVesselInVesselTrackingEvent getUpdateVesselInVesselTrackingEvent() {
-
-		UpdateVesselInVesselTrackingEvent event = new UpdateVesselInVesselTrackingEvent();
-		event.setAggregateId(PREFIX + MMSI);
-		event.setType(VesselTrackingEventTypes.UPDATE_VESSEL);
-		event.setVersion(2);
-		event.setUserId(USER);
-		event.setVessel(VesselDataUtil.getVessel());
-		return event;
-	}
-
 	//////////////////////
 
 	public static VesselTrackingDTO getVesselTracking() {
@@ -275,7 +260,9 @@ public abstract class VesselTrackingDataUtil {
 		vesselTracking.setId(PREFIX + MMSI + TSTAMP);
 		vesselTracking.setUuid(UUID.randomUUID().toString());
 
-		Point geometry = JTSFactoryFinder.getGeometryFactory().createPoint(new Coordinate(44.56433, 37.94388));
+		GeometryFactory geometryFactory = new GeometryFactory();
+
+		Point geometry = geometryFactory.createPoint(new Coordinate(44.56433, 37.94388));
 		vesselTracking.setGeometry(geometry);
 
 		VesselTrackingPropertiesDTO properties = new VesselTrackingPropertiesDTO();
@@ -291,6 +278,8 @@ public abstract class VesselTrackingDataUtil {
 		properties.setNavStat(33);
 		properties.setDest("Santa Cruz de Tenerife");
 		properties.setEta("00:00 00:00");
+		properties.setQFlag("0");
+		properties.setVFlag("N");
 
 		return vesselTracking;
 	}

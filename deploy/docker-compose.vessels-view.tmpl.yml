@@ -8,11 +8,30 @@ services:
       - SPRING_PROFILES_ACTIVE
       - OAUTH_CLIENT_ID
       - OAUTH_CLIENT_SECRET
-      - ELASTIC_XPACKSECURITYUSER
+      - ELASTIC_CLUSTERNAME
       - MICROSERVICE_NAME=${UNIT_NAME}-view
-      - JAVA_OPTS=-XX:MaxRAMFraction=2
+      - SPRING_KAFKA_CLIENT-ID={{.Service.Name}}-{{.Task.Slot}}
+      - JAVA_OPTS=-Xmx568m -Xms256m
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        traefik.port: "${VIEW_PORT}"
+        traefik.docker.network: traefik-net
+        traefik.frontend.rule: PathPrefix:/api/${UNIT_NAME}/view
+        traefik.backend: ${UNIT_NAME}-view
+      restart_policy:
+        delay: 1m
+        window: 3m
+      resources:
+        limits:
+          cpus: '1'
+          memory: 768M
+        reservations:
+          memory: 615M
     networks:
-      - elastic-net
+      - elastic6-net
+      - metric-net
       - kafka-net
       - redmic-net
       - traefik-net
@@ -40,7 +59,10 @@ services:
           memory: 615M
 
 networks:
-  elastic-net:
+  elastic6-net:
+    external: true
+
+  metric-net:
     external: true
 
   kafka-net:

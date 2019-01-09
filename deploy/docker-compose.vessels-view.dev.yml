@@ -1,8 +1,1 @@
 version: '3.5'
-
-services:
-  vessels-view:
-    ports:
-      - target: ${VIEW_PORT}
-        published: ${VIEW_PORT}
-        mode: host

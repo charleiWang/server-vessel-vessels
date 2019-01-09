@@ -7,15 +7,14 @@ import es.redmic.vesselscommands.commands.vesseltracking.DeleteVesselTrackingCom
 import es.redmic.vesselscommands.commands.vesseltracking.UpdateVesselTrackingCommand;
 import es.redmic.vesselscommands.statestore.VesselTrackingStateStore;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
-import es.redmic.vesselslib.dto.tracking.VesselTrackingPropertiesDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingCancelledEvent;
+import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.EnrichCreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.EnrichUpdateVesselTrackingEvent;
 
 public class VesselTrackingAggregate extends Aggregate {
@@ -46,11 +45,21 @@ public class VesselTrackingAggregate extends Aggregate {
 		if (vessel == null)
 			return null;
 
-		logger.info("Creando evento para enriquecer VesselTracking");
+		VesselTrackingEvent evt;
 
-		VesselTrackingEvent evt = new EnrichCreateVesselTrackingEvent(cmd.getVesselTracking());
+		// Si el único campo relleno es el id (insertando vía rest)
+		if (vessel.getMmsi() == null) {
+			logger.debug("Generando evento para enriquecer VesselTracking");
+			evt = new EnrichCreateVesselTrackingEvent(cmd.getVesselTracking());
+		} else { // Si tiene más campos rellenos, es una inserción automatizada, por lo que no se
+					// enriquece
+			logger.debug("Generando evento para crear VesselTracking");
+			evt = new CreateVesselTrackingEvent(cmd.getVesselTracking());
+		}
+
 		evt.setAggregateId(id);
 		evt.setVersion(1);
+
 		return evt;
 	}
 
@@ -72,7 +81,6 @@ public class VesselTrackingAggregate extends Aggregate {
 		if (vessel == null)
 			return null;
 
-		logger.info("Creando evento para enriquecer VesselTracking");
 		EnrichUpdateVesselTrackingEvent evt = new EnrichUpdateVesselTrackingEvent(cmd.getVesselTracking());
 
 		evt.setAggregateId(id);
@@ -159,19 +167,6 @@ public class VesselTrackingAggregate extends Aggregate {
 
 	public void apply(VesselTrackingDeletedEvent event) {
 		this.deleted = true;
-		super.apply(event);
-	}
-
-	public void apply(UpdateVesselInVesselTrackingEvent event) {
-		if (this.vesselTracking == null)
-			this.vesselTracking = new VesselTrackingDTO();
-
-		VesselTrackingPropertiesDTO properties = new VesselTrackingPropertiesDTO();
-
-		properties.setVessel(event.getVessel());
-
-		this.vesselTracking.setProperties(properties);
-
 		super.apply(event);
 	}
 

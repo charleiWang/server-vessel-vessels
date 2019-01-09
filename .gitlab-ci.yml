@@ -64,6 +64,7 @@ maven-build-view:
   stage: build-services
   image: registry.gitlab.com/redmic-project/docker/maven
   variables:
+    GIT_SUBMODULE_STRATEGY: normal
     MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
     SPRING_PROFILES_ACTIVE: test
     LOGGING_LEVEL_ROOT: error
@@ -71,13 +72,15 @@ maven-build-view:
     OAUTH_CLIENT_ID: ${DEV_OAUTH_CLIENT_ID}
     OAUTH_CLIENT_SECRET: ${DEV_OAUTH_CLIENT_SECRET}
     TEST_USER_PASSWORD: ${TEST_USER_PASSWORD}
-    ELASTIC_XPACKSECURITYUSER: ${DEV_ELASTIC_XPACKSECURITYUSER}
+    ELASTIC_CLUSTERNAME: ${DEV_ELASTIC_CLUSTERNAME}
   only:
     - branches
   cache:
     paths:
       - .m2/repository/
   script:
+    - mvn -f elasticsearch-cluster-runner compile
+    - mvn -f elasticsearch-cluster-runner exec:java -Dexec.args="-numOfNode 1 -clusterName ${ELASTIC_CLUSTERNAME}" > elasticsearch-cluster-runner-out.txt &
     - mvn -pl :${CI_PROJECT_NAME}-view verify spring-boot:repackage -B
     - "COVERAGE=$(xmllint --html --xpath '//table[@id=\"coveragetable\"]/tfoot//td[@class=\"ctr2\"][1]/text()' ${CI_PROJECT_NAME}-view/target/site/jacoco/index.html)"
     - 'echo "Coverage: ${COVERAGE}"'
@@ -89,6 +92,8 @@ maven-build-view:
     paths:
       - "${CI_PROJECT_NAME}-view/dist/*.jar"
       - "${CI_PROJECT_NAME}-view/target/generated-docs"
+      - "elasticsearch-cluster-runner-out.txt"
+    when: always
 
 docker-build-commit-non-master-branches:
   stage: package
@@ -210,7 +215,7 @@ deploy-view-dev:
     SPRING_PROFILES_ACTIVE: pre
     OAUTH_CLIENT_ID: ${DEV_OAUTH_CLIENT_ID}
     OAUTH_CLIENT_SECRET: ${DEV_OAUTH_CLIENT_SECRET}
-    ELASTIC_XPACKSECURITYUSER: ${DEV_ELASTIC_XPACKSECURITYUSER}
+    ELASTIC_CLUSTERNAME: ${DEV_ELASTIC_CLUSTERNAME}
     PUBLIC_HOSTNAME: ${DEV_PUBLIC_HOSTNAME}
   services:
     - docker:dind
@@ -218,7 +223,7 @@ deploy-view-dev:
     - >
       deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
       SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE} OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
-      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} ELASTIC_XPACKSECURITYUSER=${ELASTIC_XPACKSECURITYUSER}
+      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} ELASTIC_CLUSTERNAME=${ELASTIC_CLUSTERNAME}
       PUBLIC_HOSTNAME=${PUBLIC_HOSTNAME}
   environment:
     name: dev/${CI_PROJECT_NAME}-view
@@ -272,7 +277,7 @@ deploy-view-supporting-branch:
     SPRING_PROFILES_ACTIVE: pre
     OAUTH_CLIENT_ID: ${DEV_OAUTH_CLIENT_ID}
     OAUTH_CLIENT_SECRET: ${DEV_OAUTH_CLIENT_SECRET}
-    ELASTIC_XPACKSECURITYUSER: ${DEV_ELASTIC_XPACKSECURITYUSER}
+    ELASTIC_CLUSTERNAME: ${DEV_ELASTIC_CLUSTERNAME}
     PUBLIC_HOSTNAME: ${DEV_PUBLIC_HOSTNAME}
   services:
     - docker:dind
@@ -280,7 +285,7 @@ deploy-view-supporting-branch:
     - >
       deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
       SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE} OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
-      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} ELASTIC_XPACKSECURITYUSER=${ELASTIC_XPACKSECURITYUSER}
+      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} ELASTIC_CLUSTERNAME=${DEV_ELASTIC_CLUSTERNAME}
       PUBLIC_HOSTNAME=${PUBLIC_HOSTNAME}
   environment:
     name: dev/${CI_PROJECT_NAME}-view
@@ -335,7 +340,7 @@ deploy-view-pro:
     SPRING_PROFILES_ACTIVE: prod
     OAUTH_CLIENT_ID: ${PRO_OAUTH_CLIENT_ID}
     OAUTH_CLIENT_SECRET: ${PRO_OAUTH_CLIENT_SECRET}
-    ELASTIC_XPACKSECURITYUSER: ${PRO_ELASTIC_XPACKSECURITYUSER}
+    ELASTIC_CLUSTERNAME: ${PRO_ELASTIC_CLUSTERNAME}
     PUBLIC_HOSTNAME: ${PRO_PUBLIC_HOSTNAME}
   services:
     - docker:dind
@@ -343,7 +348,7 @@ deploy-view-pro:
     - >
       deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
       SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE} OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
-      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} ELASTIC_XPACKSECURITYUSER=${ELASTIC_XPACKSECURITYUSER}
+      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} ELASTIC_CLUSTERNAME=${ELASTIC_CLUSTERNAME}
       PUBLIC_HOSTNAME=${PUBLIC_HOSTNAME}
   environment:
     name: pro/${CI_PROJECT_NAME}-view

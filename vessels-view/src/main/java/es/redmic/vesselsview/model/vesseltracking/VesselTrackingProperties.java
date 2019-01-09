@@ -2,6 +2,7 @@ package es.redmic.vesselsview.model.vesseltracking;
 
 import org.joda.time.DateTime;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -33,6 +34,10 @@ public class VesselTrackingProperties extends Properties {
 	private String dest;
 
 	private String eta;
+
+	private String qFlag;
+
+	private String vFlag;
 
 	public Vessel getVessel() {
 		return vessel;
@@ -96,6 +101,26 @@ public class VesselTrackingProperties extends Properties {
 
 	public void setEta(String eta) {
 		this.eta = eta;
+	}
+
+	@JsonProperty(value = "qFlag")
+	public String getQFlag() {
+		return qFlag;
+	}
+
+	@JsonProperty(value = "qFlag")
+	public void setQFlag(String qFlag) {
+		this.qFlag = qFlag;
+	}
+
+	@JsonProperty(value = "vFlag")
+	public String getVFlag() {
+		return vFlag;
+	}
+
+	@JsonProperty(value = "vFlag")
+	public void setVFlag(String vFlag) {
+		this.vFlag = vFlag;
 	}
 
 	@Override

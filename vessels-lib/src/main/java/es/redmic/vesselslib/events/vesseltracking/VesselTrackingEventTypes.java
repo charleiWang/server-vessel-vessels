@@ -18,4 +18,9 @@ public abstract class VesselTrackingEventTypes extends EventTypes {
 
 		return EventTypes.isSnapshot(eventType);
 	}
+
+	public static boolean isUpdatable(String eventType) {
+
+		return EventTypes.isUpdatable(eventType);
+	}
 }

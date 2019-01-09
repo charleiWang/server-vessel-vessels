@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import es.redmic.brokerlib.avro.common.Event;
 import es.redmic.brokerlib.avro.common.EventError;
-import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventFactory;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
@@ -24,14 +23,12 @@ import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCon
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEnrichedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.VesselTrackingUpdatedEvent;
-import es.redmic.vesselslib.unit.utils.VesselDataUtil;
 import es.redmic.vesselslib.unit.utils.VesselTrackingDataUtil;
 
 public class VesselTrackingEventFactoryTest {
@@ -186,26 +183,6 @@ public class VesselTrackingEventFactoryTest {
 		assertNotNull(event.getVesselTracking());
 
 		checkMetadataFields(source, event);
-	}
-
-	///////////////////
-
-	@Test
-	public void GetEvent_ReturnUpdateVesselInVesselTrackingEvent_IfTypeIsUpdatedVessel() {
-
-		Event source = VesselTrackingDataUtil.getVesselTrackingUpdatedEvent();
-		VesselUpdatedEvent vesselUpdated = VesselDataUtil.getVesselUpdatedEvent();
-
-		UpdateVesselInVesselTrackingEvent event = (UpdateVesselInVesselTrackingEvent) VesselTrackingEventFactory
-				.getEvent(source, vesselUpdated, VesselTrackingEventTypes.UPDATE_VESSEL);
-
-		assertEquals(VesselTrackingEventTypes.UPDATE_VESSEL, event.getType());
-		assertNotNull(event.getVessel());
-		assertEquals(source.getAggregateId(), event.getAggregateId());
-		assertEquals(vesselUpdated.getUserId(), event.getUserId());
-
-		Integer versionExpected = source.getVersion() + 1;
-		assertEquals(versionExpected.toString(), event.getVersion().toString());
 	}
 
 	///////////////////
