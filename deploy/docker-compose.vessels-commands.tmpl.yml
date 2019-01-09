@@ -17,11 +17,30 @@ services:
     volumes:
       - commands-vol:/tmp/kafka
     healthcheck:
-      test: wget --spider -S -t 3 http://localhost:${COMMANDS_PORT}/api/${UNIT_NAME}/commands/actuator/health
+      test: wget --spider -q http://localhost:${COMMANDS_PORT}/api/${UNIT_NAME}/commands/actuator/health
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 2m
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        traefik.frontend.rule: Host:${PUBLIC_HOSTNAME};PathPrefix:/api/${UNIT_NAME}/commands
+        traefik.backend: ${UNIT_NAME}-commands
+        traefik.port: "${COMMANDS_PORT}"
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        delay: 1m
+        window: 3m
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          memory: 820M
 
 networks:
   kafka-net:
