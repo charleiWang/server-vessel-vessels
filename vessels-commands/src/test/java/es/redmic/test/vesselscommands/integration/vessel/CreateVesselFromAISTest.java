@@ -117,6 +117,8 @@ public class CreateVesselFromAISTest extends KafkaBaseIntegrationTest {
 
 		Thread.sleep(1000);
 
+		source.getType().setName(null);
+		source.getType().setName_en(null);
 		kafkaTemplate.send(REALTIME_VESSELS_TOPIC, source.getId(), source);
 
 		Thread.sleep(3000);
