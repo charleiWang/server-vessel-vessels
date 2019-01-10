@@ -28,7 +28,7 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 	@JsonIgnore
 	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse(
 			"{\"type\":\"record\",\"name\":\"VesselTrackingPropertiesDTO\",\"namespace\":\"es.redmic.vesselslib.dto.tracking\",\"fields\":["
-					+ "{\"name\":\"vessel\",\"type\":[{\"name\":\"VesselDTO\",\"type\":\"record\",\"namespace\":\"es.redmic.vesselslib.dto.vessel\",\"fields\":["
+					+ "{\"name\":\"vessel\",\"type\":{\"name\":\"VesselDTO\",\"type\":\"record\",\"namespace\":\"es.redmic.vesselslib.dto.vessel\",\"fields\":["
 						+ "{\"name\":\"mmsi\",\"type\":\"int\"},"
 						+ "{\"name\":\"imo\",\"type\":[\"int\", \"null\"]},"
 						+ "{\"name\":\"type\",\"type\":[{ \"name\":\"VesselTypeDTO\", \"type\":\"record\","
@@ -45,7 +45,7 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 							+ "\"default\": null},"
 						+ "{\"name\":\"updated\",\"type\":[\"null\",{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}],"
 							+ "\"default\": null},"
-						+ "{\"name\":\"id\",\"type\":\"string\"}]}]},"
+						+ "{\"name\":\"id\",\"type\":\"string\"}]}},"
 						
 					+ "{\"name\":\"date\",\"type\":{ \"type\":\"long\",\"logicalType\":\"timestamp-millis\"}},"
 					+ "{\"name\":\"cog\",\"type\":[\"double\", \"null\"]},"
