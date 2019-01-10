@@ -28,7 +28,7 @@ public class VesselTrackingPropertiesDTO extends PropertiesDTO {
 	@JsonIgnore
 	public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse(
 			"{\"type\":\"record\",\"name\":\"VesselTrackingPropertiesDTO\",\"namespace\":\"es.redmic.vesselslib.dto.tracking\",\"fields\":["
-					+ "{\"name\":\"vessel\",\"type\":[{\"type\":\"record\",\"name\":\"VesselDTO\",\"namespace\":\"es.redmic.vesselslib.dto.vessel\",\"fields\":["
+					+ "{\"name\":\"vessel\",\"type\":[{\"name\":\"VesselDTO\",\"type\":\"record\",\"namespace\":\"es.redmic.vesselslib.dto.vessel\",\"fields\":["
 						+ "{\"name\":\"mmsi\",\"type\":\"int\"},"
 						+ "{\"name\":\"imo\",\"type\":[\"int\", \"null\"]},"
 						+ "{\"name\":\"type\",\"type\":[{ \"name\":\"VesselTypeDTO\", \"type\":\"record\","
