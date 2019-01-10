@@ -283,6 +283,9 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 			evt.setUserId(REDMIC_PROCESS);
 			return evt;
 		}
+
+		logger.info("Descartando tracking ya que existe un evento de tipo " + vesselTrackingEvent.getType()
+				+ " para este id " + vesselTrackingEvent.getAggregateId());
 		return null;
 	}
 }
