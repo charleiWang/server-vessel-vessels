@@ -1,5 +1,12 @@
 version: '3.5'
 
+services:
+  vessels-commands:
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+
 volumes:
   commands-vol:
     name: "${UNIT_NAME}-commands-{{.Task.Slot}}-vol"
