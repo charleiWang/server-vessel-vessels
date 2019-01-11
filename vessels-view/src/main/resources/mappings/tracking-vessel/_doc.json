@@ -43,15 +43,15 @@
 	},
 	"mappings": {
 		"_doc": {
-			"_all": {
-				"enabled": false
-			},
 			"dynamic": "false",
 			"properties": {
 				"geometry": {
-					"precision": "50.0m",
-					"tree": "quadtree",
-					"type": "geo_shape"
+					"dynamic": "false",
+					"properties": {
+						"coordinates": {
+							"type": "geo_point"
+						}
+					}
 				},
 				"id": {
 					"type": "keyword"
@@ -192,7 +192,6 @@
 		}
 	},
 	"aliases" : {
-        "tracking-vessel" : {},
-        "{index}-alias" : {} 
+        "tracking-vessel" : {}
     }
 }
