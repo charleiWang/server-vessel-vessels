@@ -9,6 +9,8 @@ services:
       - OAUTH_CLIENT_ID
       - OAUTH_CLIENT_SECRET
       - ELASTIC_CLUSTERNAME
+      - ELASTIC_USER
+      - ELASTIC_PASSWORD
       - MICROSERVICE_NAME=${UNIT_NAME}-view
       - SPRING_KAFKA_CLIENT-ID={{.Service.Name}}-{{.Task.Slot}}
       - JAVA_OPTS=-Xmx568m -Xms256m
