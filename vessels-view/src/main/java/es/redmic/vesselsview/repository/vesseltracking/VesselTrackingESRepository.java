@@ -6,19 +6,22 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elasticsearch.action.search.MultiSearchRequestBuilder;
+import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.MultiSearchResponse.Item;
-import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.stereotype.Repository;
 
 import es.redmic.elasticsearchlib.geodata.repository.RWGeoDataESRepository;
 import es.redmic.exception.common.ExceptionType;
+import es.redmic.exception.elasticsearch.ESQueryException;
 import es.redmic.models.es.common.dto.EventApplicationResult;
 import es.redmic.models.es.common.query.dto.DataQueryDTO;
 import es.redmic.vesselslib.utils.VesselTrackingUtil;
@@ -31,7 +34,7 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 		implements IGeoDataRepository<VesselTracking, DataQueryDTO> {
 
 	private static String[] INDEX = { "tracking-vessel" };
-	private static String[] TYPE = { "_doc" };
+	private static String TYPE = "_doc";
 
 	// @formatter:off
  
@@ -57,8 +60,8 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 			doc = jsonBuilder().startObject().field(VESSEL_PROPERTY, objectMapper.convertValue(vessel, Map.class))
 					.endObject();
 		} catch (IllegalArgumentException | IOException e1) {
-			LOGGER.debug("Error modificando el item con id " + vesselTrackingId + " en " + getIndex()[0] + " "
-					+ getType()[0]);
+			LOGGER.debug(
+					"Error modificando el item con id " + vesselTrackingId + " en " + getIndex()[0] + " " + getType());
 			return new EventApplicationResult(ExceptionType.ES_UPDATE_DOCUMENT.toString());
 		}
 
@@ -101,19 +104,24 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 			uuidTerm = auxTerm;
 		}
 		
-		SearchRequestBuilder requestBuilderId = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(idTerm).setSize(1),
-			requestBuilderMmsi = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(mmsiTerm).setSize(1),
-			requestBuilderUuid = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(uuidTerm).setSize(1);
-
-		MultiSearchRequestBuilder multiSearchRequestBuilder = ESProvider.getClient().prepareMultiSearch()
-			.add(requestBuilderId)
-			.add(requestBuilderMmsi)
-			.add(requestBuilderUuid);
+		MultiSearchRequest request = new MultiSearchRequest();
 		
-		MultiSearchResponse sr = multiSearchRequestBuilder.get();
+		SearchSourceBuilder requestBuilderId = new SearchSourceBuilder().query(idTerm).size(1),
+			requestBuilderMmsi = new SearchSourceBuilder().query(mmsiTerm).size(1),
+			requestBuilderUuid = new SearchSourceBuilder().query(uuidTerm).size(1);
+
+		request
+			.add(new SearchRequest().indices(getIndex()).source(requestBuilderId))
+			.add(new SearchRequest().indices(getIndex()).source(requestBuilderMmsi))
+			.add(new SearchRequest().indices(getIndex()).source(requestBuilderUuid));
+		
+		MultiSearchResponse sr;
+		try {
+			sr = ESProvider.getClient().msearch(request, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new ESQueryException();
+		}
 		
 		// @formatter:on
 
@@ -176,23 +184,28 @@ public class VesselTrackingESRepository extends RWGeoDataESRepository<VesselTrac
 					.must(QueryBuilders.termQuery(ID_PROPERTY, modelToIndex.getId()))
 					.mustNot(QueryBuilders.termQuery(UUID_PROPERTY, modelToIndex.getUuid()));
 		
-		SearchRequestBuilder requestBuilderMmsi = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(mmsiTerm).setSize(1),
+		MultiSearchRequest request = new MultiSearchRequest();
+		
+		SearchSourceBuilder requestBuilderMmsi = new SearchSourceBuilder().query(mmsiTerm).size(1),
 				requestBuilderId = null;
 		
 		if (idTerm != null) {
-			requestBuilderId = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(idTerm).setSize(1);
+			requestBuilderId = new SearchSourceBuilder().query(idTerm).size(1);
 		}
 
-		MultiSearchRequestBuilder multiSearchRequestBuilder = ESProvider.getClient().prepareMultiSearch()
-			.add(requestBuilderMmsi);
+		request.add(new SearchRequest().indices(getIndex()).source(requestBuilderMmsi));
 		
 		if (requestBuilderId != null) {
-			multiSearchRequestBuilder.add(requestBuilderId);
+			request.add(new SearchRequest().indices(getIndex()).source(requestBuilderId));
 		}
 		
-		MultiSearchResponse sr = multiSearchRequestBuilder.get();
+		MultiSearchResponse sr;
+		try {
+			sr = ESProvider.getClient().msearch(request, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new ESQueryException();
+		}
 
 		// @formatter:on
 
