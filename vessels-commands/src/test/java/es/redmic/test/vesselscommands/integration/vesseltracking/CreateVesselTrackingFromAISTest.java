@@ -33,7 +33,7 @@ import es.redmic.testutils.kafka.KafkaBaseIntegrationTest;
 import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
-import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
+import es.redmic.vesselslib.events.vesseltracking.create.EnrichCreateVesselTrackingEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(properties = { "spring.kafka.consumer.group-id=CreateVesselTrackingFromAIS",
@@ -109,9 +109,9 @@ public class CreateVesselTrackingFromAISTest extends KafkaBaseIntegrationTest {
 	}
 
 	@KafkaHandler
-	public void listen(CreateVesselTrackingEvent createVesselTrackingEvent) throws Exception {
+	public void listen(EnrichCreateVesselTrackingEvent enrichCreateVesselTrackingEvent) throws Exception {
 
-		blockingQueue.offer(createVesselTrackingEvent.getVesselTracking());
+		blockingQueue.offer(enrichCreateVesselTrackingEvent.getVesselTracking());
 	}
 
 	@KafkaHandler(isDefault = true)

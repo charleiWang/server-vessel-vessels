@@ -18,7 +18,7 @@ import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventFactory;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEnrichedEvent;
-import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingEvent;
+import es.redmic.vesselslib.events.vesseltracking.create.EnrichCreateVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEnrichedEvent;
 
 public class VesselTrackingEventStreams extends EventSourcingStreams {
@@ -277,7 +277,7 @@ public class VesselTrackingEventStreams extends EventSourcingStreams {
 
 			vesselTrackingDTO = new CreateVesselTrackingCommand(vesselTrackingDTO).getVesselTracking();
 
-			CreateVesselTrackingEvent evt = new CreateVesselTrackingEvent(vesselTrackingDTO);
+			EnrichCreateVesselTrackingEvent evt = new EnrichCreateVesselTrackingEvent(vesselTrackingDTO);
 			evt.setAggregateId(vesselTrackingDTO.getId());
 			evt.setVersion(1);
 			evt.setUserId(REDMIC_PROCESS);
