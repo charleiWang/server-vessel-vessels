@@ -7,7 +7,7 @@ stages:
 
 maven-build-lib:
   stage: build-lib
-  image: registry.gitlab.com/redmic-project/docker/maven
+  image: registry.gitlab.com/redmic-project/docker/maven:${MAVEN_IMAGE_TAG}
   variables:
     MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
     SPRING_PROFILES_ACTIVE: test
@@ -32,7 +32,7 @@ maven-build-lib:
 
 maven-build-commands:
   stage: build-services
-  image: registry.gitlab.com/redmic-project/docker/maven
+  image: registry.gitlab.com/redmic-project/docker/maven:${MAVEN_IMAGE_TAG}
   variables:
     MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
     SPRING_PROFILES_ACTIVE: test
@@ -62,7 +62,7 @@ maven-build-commands:
 
 maven-build-view:
   stage: build-services
-  image: registry.gitlab.com/redmic-project/docker/maven
+  image: registry.gitlab.com/redmic-project/docker/maven:${MAVEN_IMAGE_TAG}
   variables:
     GIT_SUBMODULE_STRATEGY: normal
     MAVEN_OPTS: -Dmaven.repo.local=.m2/repository
@@ -144,6 +144,7 @@ docker-tag-already-built-image:
     - tags
   script:
     - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - docker pull ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
     - docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
     - docker push ${CI_REGISTRY_IMAGE}
 
@@ -175,7 +176,7 @@ container-scanning:
 
 deploy-commands-dev:
   stage: deploy
-  image: registry.gitlab.com/redmic-project/docker/docker-deploy
+  image: registry.gitlab.com/redmic-project/docker/docker-deploy:${DOCKER_DEPLOY_IMAGE_TAG}
   variables:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${DEV_SSH_REMOTE}
@@ -203,7 +204,7 @@ deploy-commands-dev:
 
 deploy-view-dev:
   stage: deploy
-  image: registry.gitlab.com/redmic-project/docker/docker-deploy
+  image: registry.gitlab.com/redmic-project/docker/docker-deploy:${DOCKER_DEPLOY_IMAGE_TAG}
   variables:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${DEV_SSH_REMOTE}
@@ -235,7 +236,7 @@ deploy-view-dev:
 
 deploy-commands-supporting-branch:
   stage: deploy
-  image: registry.gitlab.com/redmic-project/docker/docker-deploy
+  image: registry.gitlab.com/redmic-project/docker/docker-deploy:${DOCKER_DEPLOY_IMAGE_TAG}
   variables:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${DEV_SSH_REMOTE}
@@ -267,7 +268,7 @@ deploy-commands-supporting-branch:
 
 deploy-view-supporting-branch:
   stage: deploy
-  image: registry.gitlab.com/redmic-project/docker/docker-deploy
+  image: registry.gitlab.com/redmic-project/docker/docker-deploy:${DOCKER_DEPLOY_IMAGE_TAG}
   variables:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${DEV_SSH_REMOTE}
@@ -303,7 +304,7 @@ deploy-view-supporting-branch:
 
 deploy-commands-pro:
   stage: deploy
-  image: registry.gitlab.com/redmic-project/docker/docker-deploy
+  image: registry.gitlab.com/redmic-project/docker/docker-deploy:${DOCKER_DEPLOY_IMAGE_TAG}
   variables:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${PRO_SSH_REMOTE}
@@ -332,7 +333,7 @@ deploy-commands-pro:
 
 deploy-view-pro:
   stage: deploy
-  image: registry.gitlab.com/redmic-project/docker/docker-deploy
+  image: registry.gitlab.com/redmic-project/docker/docker-deploy:${DOCKER_DEPLOY_IMAGE_TAG}
   variables:
     DOCKER_DRIVER: overlay2
     SSH_REMOTE: ${PRO_SSH_REMOTE}
