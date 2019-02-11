@@ -13,7 +13,7 @@
 	<groupId>es.redmic.vessels</groupId>
 	<artifactId>vessels</artifactId>
 	<packaging>pom</packaging>
-	<version>0.7.0</version>
+	<version>0.8.0</version>
 	<name>vessels</name>
 
 	<properties>
@@ -25,10 +25,10 @@
 		<tomcat.version>8.5.28</tomcat.version>
 
 		<!-- REDMIC -->
-		<redmic.broker-lib.version>0.7.0</redmic.broker-lib.version>
-		<redmic.vessels-lib.version>0.7.0</redmic.vessels-lib.version>
-		<redmic.test-utils.version>0.7.0</redmic.test-utils.version>
-		<redmic.exceptions.version>0.6.0</redmic.exceptions.version>
+		<redmic.broker-lib.version>0.8.0</redmic.broker-lib.version>
+		<redmic.vessels-lib.version>0.8.0</redmic.vessels-lib.version>
+		<redmic.test-utils.version>0.8.0</redmic.test-utils.version>
+		<redmic.exceptions.version>0.7.0</redmic.exceptions.version>
 
 		<!-- OTHERS -->
 		<ma.glasnost.orika.core.version>1.5.2</ma.glasnost.orika.core.version>
