@@ -19,7 +19,7 @@ maven-build-lib:
     paths:
       - .m2/repository/
   script:
-    - mvn -pl :${CI_PROJECT_NAME}-lib deploy -B
+    - mvn -pl :${CI_PROJECT_NAME}-lib -U clean deploy -B
     - "COVERAGE=$(xmllint --html --xpath '//table[@id=\"coveragetable\"]/tfoot//td[@class=\"ctr2\"][1]/text()' ${CI_PROJECT_NAME}-lib/target/site/jacoco/index.html)"
     - 'echo "Coverage: ${COVERAGE}"'
   after_script:
@@ -48,7 +48,7 @@ maven-build-commands:
     paths:
       - .m2/repository/
   script:
-    - mvn -pl :${CI_PROJECT_NAME}-commands verify spring-boot:repackage -B
+    - mvn -pl :${CI_PROJECT_NAME}-commands -U clean verify spring-boot:repackage -B
     - "COVERAGE=$(xmllint --html --xpath '//table[@id=\"coveragetable\"]/tfoot//td[@class=\"ctr2\"][1]/text()' ${CI_PROJECT_NAME}-commands/target/site/jacoco/index.html)"
     - 'echo "Coverage: ${COVERAGE}"'
   after_script:
@@ -81,7 +81,7 @@ maven-build-view:
   script:
     - mvn -f elasticsearch-cluster-runner compile
     - mvn -f elasticsearch-cluster-runner exec:java -Dexec.args="-numOfNode 1 -clusterName ${ELASTIC_CLUSTERNAME}" > elasticsearch-cluster-runner-out.txt &
-    - mvn -pl :${CI_PROJECT_NAME}-view verify spring-boot:repackage -B
+    - mvn -pl :${CI_PROJECT_NAME}-view -U clean verify spring-boot:repackage -B
     - "COVERAGE=$(xmllint --html --xpath '//table[@id=\"coveragetable\"]/tfoot//td[@class=\"ctr2\"][1]/text()' ${CI_PROJECT_NAME}-view/target/site/jacoco/index.html)"
     - 'echo "Coverage: ${COVERAGE}"'
   after_script:
