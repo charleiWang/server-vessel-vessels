@@ -10,7 +10,6 @@ import es.redmic.brokerlib.avro.common.EventError;
 import es.redmic.exception.common.ExceptionType;
 import es.redmic.exception.common.InternalException;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
-import es.redmic.vesselslib.events.vessel.common.VesselEvent;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.common.VesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingCancelledEvent;
@@ -26,7 +25,6 @@ import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingCon
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.DeleteVesselTrackingFailedEvent;
 import es.redmic.vesselslib.events.vesseltracking.delete.VesselTrackingDeletedEvent;
-import es.redmic.vesselslib.events.vesseltracking.partialupdate.vessel.UpdateVesselInVesselTrackingEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingCancelledEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltracking.update.UpdateVesselTrackingEnrichedEvent;
@@ -42,42 +40,42 @@ public class VesselTrackingEventFactory {
 
 		if (type.equals(VesselTrackingEventTypes.DELETE)) {
 
-			logger.info("Creando evento DeleteVesselTrackingEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselTrackingEvent para: " + source.getAggregateId());
 
 			return new DeleteVesselTrackingEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.DELETE_CHECKED)) {
 
-			logger.info("Creando evento DeleteVesselTrackingCheckedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselTrackingCheckedEvent para: " + source.getAggregateId());
 
 			return new DeleteVesselTrackingCheckedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.CREATE_CONFIRMED)) {
 
-			logger.info("Creando evento CreateVesselTrackingConfirmedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento CreateVesselTrackingConfirmedEvent para: " + source.getAggregateId());
 
 			return new CreateVesselTrackingConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.UPDATE_CONFIRMED)) {
 
-			logger.info("Creando evento UpdateVesselTrackingConfirmedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselTrackingConfirmedEvent para: " + source.getAggregateId());
 
 			return new UpdateVesselTrackingConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.DELETE_CONFIRMED)) {
 
-			logger.info("Creando evento DeleteVesselTrackingConfirmedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselTrackingConfirmedEvent para: " + source.getAggregateId());
 
 			return new DeleteVesselTrackingConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.DELETED)) {
 
-			logger.info("Creando evento VesselTrackingDeletedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento VesselTrackingDeletedEvent para: " + source.getAggregateId());
 
 			return new VesselTrackingDeletedEvent().buildFrom(source);
 		}
@@ -94,39 +92,39 @@ public class VesselTrackingEventFactory {
 
 		if (type.equals(VesselTrackingEventTypes.CREATE_ENRICHED)) {
 
-			logger.info("Creando evento CreateVesselTrackingEnrichedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento CreateVesselTrackingEnrichedEvent para: " + source.getAggregateId());
 
 			successfulEvent = new CreateVesselTrackingEnrichedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.UPDATE_ENRICHED)) {
 
-			logger.info("Creando evento UpdateVesselTrackingEnrichedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselTrackingEnrichedEvent para: " + source.getAggregateId());
 
 			successfulEvent = new UpdateVesselTrackingEnrichedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.CREATE)) {
 
-			logger.info("Creando evento CreateVesselTrackingEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento CreateVesselTrackingEvent para: " + source.getAggregateId());
 			successfulEvent = new CreateVesselTrackingEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.UPDATE)) {
 
-			logger.info("Creando evento UpdateVesselTrackingEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselTrackingEvent para: " + source.getAggregateId());
 			successfulEvent = new UpdateVesselTrackingEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.CREATED)) {
 
-			logger.info("Creando evento VesselTrackingCreatedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento VesselTrackingCreatedEvent para: " + source.getAggregateId());
 			successfulEvent = new VesselTrackingCreatedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.UPDATED)) {
 
-			logger.info("Creando evento VesselTrackingUpdatedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento VesselTrackingUpdatedEvent para: " + source.getAggregateId());
 			successfulEvent = new VesselTrackingUpdatedEvent().buildFrom(source);
 		}
 
@@ -139,26 +137,6 @@ public class VesselTrackingEventFactory {
 		}
 	}
 
-	//////////////
-
-	public static Event getEvent(Event source, Event trigger, String type) {
-
-		if (type.equals(VesselTrackingEventTypes.UPDATE_VESSEL)) {
-
-			logger.info("Creando evento UpdateVesselInVesselTrackingEvent para: " + source.getAggregateId());
-
-			UpdateVesselInVesselTrackingEvent requestEvent = new UpdateVesselInVesselTrackingEvent();
-			requestEvent.setAggregateId(source.getAggregateId());
-			requestEvent.setUserId(trigger.getUserId());
-			requestEvent.setVersion(source.getVersion() + 1);
-			requestEvent.setVessel(((VesselEvent) trigger).getVessel());
-			return requestEvent;
-		}
-
-		logger.error("Tipo de evento no soportado");
-		throw new InternalException(ExceptionType.INTERNAL_EXCEPTION);
-	}
-
 	/////////////////
 
 	public static Event getEvent(Event source, String type, String exceptionType,
@@ -168,31 +146,31 @@ public class VesselTrackingEventFactory {
 
 		if (type.equals(VesselTrackingEventTypes.CREATE_FAILED)) {
 
-			logger.info("No se pudo crear VesselTracking en la vista");
+			logger.debug("No se pudo crear VesselTracking en la vista");
 			failedEvent = new CreateVesselTrackingFailedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.UPDATE_FAILED)) {
 
-			logger.info("No se pudo modificar VesselTracking en la vista");
+			logger.debug("No se pudo modificar VesselTracking en la vista");
 			failedEvent = new UpdateVesselTrackingFailedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.DELETE_FAILED)) {
 
-			logger.info("No se pudo eliminar VesselTracking de la vista");
+			logger.debug("No se pudo eliminar VesselTracking de la vista");
 			failedEvent = new DeleteVesselTrackingFailedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.DELETE_CHECK_FAILED)) {
 
-			logger.info("Checkeo de eliminación fallido, el item está referenciado");
+			logger.debug("Checkeo de eliminación fallido, el item está referenciado");
 			failedEvent = new DeleteVesselTrackingCheckFailedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.CREATE_CANCELLED)) {
 
-			logger.info("Enviando evento CreateVesselTrackingCancelledEvent para: " + source.getAggregateId());
+			logger.debug("Enviando evento CreateVesselTrackingCancelledEvent para: " + source.getAggregateId());
 			failedEvent = new CreateVesselTrackingCancelledEvent().buildFrom(source);
 		}
 
@@ -217,13 +195,13 @@ public class VesselTrackingEventFactory {
 
 		if (type.equals(VesselTrackingEventTypes.UPDATE_CANCELLED)) {
 
-			logger.info("Creando evento UpdateVesselTrackingCancelledEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselTrackingCancelledEvent para: " + source.getAggregateId());
 			cancelledEvent = new UpdateVesselTrackingCancelledEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTrackingEventTypes.DELETE_CANCELLED)) {
 
-			logger.info("Creando evento DeleteVesselTrackingCancelledEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselTrackingCancelledEvent para: " + source.getAggregateId());
 			cancelledEvent = new DeleteVesselTrackingCancelledEvent().buildFrom(source);
 		}
 

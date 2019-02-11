@@ -1,29 +1,5 @@
 version: '3.5'
 
-services:
-  vessels-commands:
-    ports:
-      - target: ${COMMANDS_PORT}
-        published: ${COMMANDS_PORT}
-        mode: host
-    deploy:
-      mode: replicated
-      replicas: 1
-      labels:
-        traefik.port: "${COMMANDS_PORT}"
-        traefik.docker.network: traefik-net
-        traefik.frontend.rule: PathPrefix:/api/${UNIT_NAME}/commands
-        traefik.backend: ${UNIT_NAME}-commands
-      restart_policy:
-        delay: 1m
-        window: 3m
-      resources:
-        limits:
-          cpus: '1'
-          memory: 1G
-        reservations:
-          memory: 820M
-
 volumes:
   commands-vol:
-    name: ${UNIT_NAME}-commands-vol
+    name: "${UNIT_NAME}-commands-{{.Task.Slot}}-vol"

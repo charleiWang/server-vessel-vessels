@@ -24,7 +24,7 @@ import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -43,6 +43,7 @@ import es.redmic.vesselscommands.VesselsCommandsApplication;
 import es.redmic.vesselscommands.handler.VesselTrackingCommandHandler;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
+import es.redmic.vesselslib.events.vessel.create.CreateVesselConfirmedEvent;
 import es.redmic.vesselslib.events.vessel.create.VesselCreatedEvent;
 import es.redmic.vesselslib.events.vesseltracking.VesselTrackingEventTypes;
 import es.redmic.vesselslib.events.vesseltracking.create.CreateVesselTrackingCancelledEvent;
@@ -72,7 +73,7 @@ import es.redmic.vesselslib.events.vesseltracking.update.VesselTrackingUpdatedEv
 public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(KafkaEmbeddedConfig.NUM_BROKERS, true,
+	public static EmbeddedKafkaRule embeddedKafka = new EmbeddedKafkaRule(KafkaEmbeddedConfig.NUM_BROKERS, true,
 			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
 
 	private static final Integer mmsi = 6666;
@@ -94,7 +95,8 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 	@PostConstruct
 	public void VesselTrackingCommandHandlerTestPostConstruct() throws Exception {
 
-		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+		createSchemaRegistryRestApp(embeddedKafka.getEmbeddedKafka().getZookeeperConnectionString(),
+				embeddedKafka.getEmbeddedKafka().getBrokersAsString());
 	}
 
 	@Before
@@ -115,11 +117,16 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 		String tstamp = String.valueOf(new DateTime().getMillis());
 
+		// Envía Create vessel para simular otros eventos anteriores
+		CreateVesselConfirmedEvent createVesselConfirmedEvent = VesselDataUtil.getCreateVesselConfirmedEvent(mmsi);
+		kafkaTemplate.send(vessel_topic, createVesselConfirmedEvent.getAggregateId(), createVesselConfirmedEvent);
+
 		// Envía vesselCreated
-		VesselCreatedEvent vesselCreatedEvent = VesselDataUtil.getVesselCreatedEvent(mmsi);
+		VesselCreatedEvent vesselCreatedEvent = new VesselCreatedEvent().buildFrom(createVesselConfirmedEvent);
+		vesselCreatedEvent.setVessel(VesselDataUtil.getVessel(mmsi));
 		kafkaTemplate.send(vessel_topic, vesselCreatedEvent.getAggregateId(), vesselCreatedEvent);
 
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		// Envía enrichCreateVesselTracking con id del vessel igual al enviado
 
@@ -142,8 +149,10 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 		assertNotNull(confirm);
 		assertEquals(VesselTrackingEventTypes.CREATE, confirm.getType());
 
-		assertEquals(vesselCreatedEvent.getVessel(),
-				((CreateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel());
+		assertEquals(vesselCreatedEvent.getVessel().getName(),
+				((CreateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel().getName());
+		assertEquals(vesselCreatedEvent.getVessel().getType(),
+				((CreateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel().getType());
 	}
 
 	// Envía un evento de confirmación de creación y debe provocar un evento Created
@@ -187,11 +196,16 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 		String tstamp = String.valueOf(new DateTime().getMillis());
 
+		// Envía Create vessel para simular otros eventos anteriores
+		CreateVesselConfirmedEvent createVesselConfirmedEvent = VesselDataUtil.getCreateVesselConfirmedEvent(mmsi);
+		kafkaTemplate.send(vessel_topic, createVesselConfirmedEvent.getAggregateId(), createVesselConfirmedEvent);
+
 		// Envía vesselCreated
-		VesselCreatedEvent vesselCreatedEvent = VesselDataUtil.getVesselCreatedEvent(mmsi);
+		VesselCreatedEvent vesselCreatedEvent = new VesselCreatedEvent().buildFrom(createVesselConfirmedEvent);
+		vesselCreatedEvent.setVessel(VesselDataUtil.getVessel(mmsi));
 		kafkaTemplate.send(vessel_topic, vesselCreatedEvent.getAggregateId(), vesselCreatedEvent);
 
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		// Envía enrichUpdateVesselTracking con id del vessel igual al enviado
 
@@ -214,8 +228,10 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 		assertNotNull(confirm);
 		assertEquals(VesselTrackingEventTypes.UPDATE, confirm.getType());
 
-		assertEquals(vesselCreatedEvent.getVessel(),
-				((UpdateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel());
+		assertEquals(vesselCreatedEvent.getVessel().getName(),
+				((UpdateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel().getName());
+		assertEquals(vesselCreatedEvent.getVessel().getType(),
+				((UpdateVesselTrackingEvent) confirm).getVesselTracking().getProperties().getVessel().getType());
 	}
 
 	// Envía un evento de confirmación de modificación y debe provocar un evento
@@ -334,6 +350,8 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 		Event updated = (Event) blockingQueue.poll(20, TimeUnit.SECONDS);
 		assertNotNull(updated);
 
+		Thread.sleep(8000);
+
 		// Envía failed y espera un evento de cancelled con el vesselTracking original
 		// dentro
 		UpdateVesselTrackingFailedEvent event = VesselTrackingDataUtil.getUpdateVesselTrackingFailedEvent(mmsi + 5,
@@ -380,6 +398,8 @@ public class VesselTrackingCommandHandlerTest extends KafkaBaseIntegrationTest {
 		kafkaTemplate.send(vessel_tracking_topic, vesselTrackingUpdateEvent.getAggregateId(),
 				vesselTrackingUpdateEvent);
 		blockingQueue.poll(10, TimeUnit.SECONDS);
+
+		Thread.sleep(8000);
 
 		// Envía failed y espera un evento de cancelled con el vesselTracking original
 		// dentro

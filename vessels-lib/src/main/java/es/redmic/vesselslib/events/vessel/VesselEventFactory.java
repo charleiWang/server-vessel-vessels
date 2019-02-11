@@ -43,42 +43,42 @@ public class VesselEventFactory {
 
 		if (type.equals(VesselEventTypes.DELETE)) {
 
-			logger.info("Creando evento DeleteVesselEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselEvent para: " + source.getAggregateId());
 
 			return new DeleteVesselEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.DELETE_CHECKED)) {
 
-			logger.info("Creando evento DeleteVesselCheckedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselCheckedEvent para: " + source.getAggregateId());
 
 			return new DeleteVesselCheckedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.CREATE_CONFIRMED)) {
 
-			logger.info("Creando evento CreateVesselConfirmedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento CreateVesselConfirmedEvent para: " + source.getAggregateId());
 
 			return new CreateVesselConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.UPDATE_CONFIRMED)) {
 
-			logger.info("Creando evento UpdateVesselConfirmedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselConfirmedEvent para: " + source.getAggregateId());
 
 			return new UpdateVesselConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.DELETE_CONFIRMED)) {
 
-			logger.info("Creando evento DeleteVesselConfirmedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselConfirmedEvent para: " + source.getAggregateId());
 
 			return new DeleteVesselConfirmedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.DELETED)) {
 
-			logger.info("Creando evento VesselDeletedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento VesselDeletedEvent para: " + source.getAggregateId());
 
 			return new VesselDeletedEvent().buildFrom(source);
 		}
@@ -95,39 +95,39 @@ public class VesselEventFactory {
 
 		if (type.equals(VesselEventTypes.CREATE_ENRICHED)) {
 
-			logger.info("Creando evento CreateVesselEnrichedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento CreateVesselEnrichedEvent para: " + source.getAggregateId());
 
 			successfulEvent = new CreateVesselEnrichedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.UPDATE_ENRICHED)) {
 
-			logger.info("Creando evento UpdateVesselEnrichedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselEnrichedEvent para: " + source.getAggregateId());
 
 			successfulEvent = new UpdateVesselEnrichedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.CREATE)) {
 
-			logger.info("Creando evento CreateVesselEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento CreateVesselEvent para: " + source.getAggregateId());
 			successfulEvent = new CreateVesselEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.UPDATE)) {
 
-			logger.info("Creando evento UpdateVesselEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselEvent para: " + source.getAggregateId());
 			successfulEvent = new UpdateVesselEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.CREATED)) {
 
-			logger.info("Creando evento VesselCreatedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento VesselCreatedEvent para: " + source.getAggregateId());
 			successfulEvent = new VesselCreatedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.UPDATED)) {
 
-			logger.info("Creando evento VesselUpdatedEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento VesselUpdatedEvent para: " + source.getAggregateId());
 			successfulEvent = new VesselUpdatedEvent().buildFrom(source);
 		}
 
@@ -146,7 +146,7 @@ public class VesselEventFactory {
 
 		if (type.equals(VesselEventTypes.UPDATE_VESSELTYPE)) {
 
-			logger.info("Creando evento UpdateVesselTypeInVesselEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselTypeInVesselEvent para: " + source.getAggregateId());
 
 			UpdateVesselTypeInVesselEvent requestEvent = new UpdateVesselTypeInVesselEvent();
 			requestEvent.setAggregateId(source.getAggregateId());
@@ -169,31 +169,31 @@ public class VesselEventFactory {
 
 		if (type.equals(VesselTypeEventTypes.CREATE_FAILED)) {
 
-			logger.info("No se pudo crear Vessel en la vista");
+			logger.debug("No se pudo crear Vessel en la vista");
 			failedEvent = new CreateVesselFailedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.UPDATE_FAILED)) {
 
-			logger.info("No se pudo modificar Vessel en la vista");
+			logger.debug("No se pudo modificar Vessel en la vista");
 			failedEvent = new UpdateVesselFailedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselTypeEventTypes.DELETE_FAILED)) {
 
-			logger.info("No se pudo eliminar Vessel de la vista");
+			logger.debug("No se pudo eliminar Vessel de la vista");
 			failedEvent = new DeleteVesselFailedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.DELETE_CHECK_FAILED)) {
 
-			logger.info("Checkeo de eliminación fallido, el item está referenciado");
+			logger.debug("Checkeo de eliminación fallido, el item está referenciado");
 			failedEvent = new DeleteVesselCheckFailedEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.CREATE_CANCELLED)) {
 
-			logger.info("Enviando evento CreateVesselCancelledEvent para: " + source.getAggregateId());
+			logger.debug("Enviando evento CreateVesselCancelledEvent para: " + source.getAggregateId());
 			failedEvent = new CreateVesselCancelledEvent().buildFrom(source);
 		}
 
@@ -218,13 +218,13 @@ public class VesselEventFactory {
 
 		if (type.equals(VesselEventTypes.UPDATE_CANCELLED)) {
 
-			logger.info("Creando evento UpdateVesselCancelledEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento UpdateVesselCancelledEvent para: " + source.getAggregateId());
 			cancelledEvent = new UpdateVesselCancelledEvent().buildFrom(source);
 		}
 
 		if (type.equals(VesselEventTypes.DELETE_CANCELLED)) {
 
-			logger.info("Creando evento DeleteVesselCancelledEvent para: " + source.getAggregateId());
+			logger.debug("Creando evento DeleteVesselCancelledEvent para: " + source.getAggregateId());
 			cancelledEvent = new DeleteVesselCancelledEvent().buildFrom(source);
 		}
 

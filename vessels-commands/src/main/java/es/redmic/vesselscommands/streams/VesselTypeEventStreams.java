@@ -3,7 +3,7 @@ package es.redmic.vesselscommands.streams;
 import java.util.HashMap;
 
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.Consumed;
+import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 
@@ -33,15 +33,15 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		super(config, alertService);
 		this.vesselsAggByVesselTypeTopic = vesselsAggByVesselTypeTopic;
 		this.hashMapSerde = new HashMapSerde<>(schemaRegistry);
-		logger.info("Arrancado servicio de streaming para event sourcing de VesselType con Id: " + this.serviceId);
+
 		init();
 	}
 
-	/*
+	/**
 	 * Crea KTable de vessels agregados por vesseltype
 	 * 
 	 * @see es.redmic.commandslib.streaming.streams.EventSourcingStreams#
-	 * createExtraStreams()
+	 *      createExtraStreams()
 	 */
 
 	@Override
@@ -49,7 +49,16 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		aggByVesselType = builder.table(vesselsAggByVesselTypeTopic, Consumed.with(Serdes.String(), hashMapSerde));
 	}
 
-	/*
+	/**
+	 * Reenvía eventos finales a topic de snapshot
+	 */
+	@Override
+	protected void forwardSnapshotEvents(KStream<String, Event> events) {
+
+		events.filter((id, event) -> (VesselTypeEventTypes.isSnapshot(event.getType()))).to(snapshotTopic);
+	}
+
+	/**
 	 * Función que apartir del evento de confirmación de la vista y del evento
 	 * create (petición de creación), si todo es correcto, genera evento created
 	 */
@@ -70,7 +79,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		return VesselTypeEventFactory.getEvent(confirmedEvent, VesselTypeEventTypes.CREATED, vesselType);
 	}
 
-	/*
+	/**
 	 * Función que apartir del evento de confirmación de la vista y del evento
 	 * update (petición de modificación), si todo es correcto, genera evento updated
 	 */
@@ -91,7 +100,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		return VesselTypeEventFactory.getEvent(requestEvent, VesselTypeEventTypes.UPDATED, vesselType);
 	}
 
-	/*
+	/**
 	 * Comprueba si vesselType está referenciado en vessel para cancelar el borrado
 	 */
 
@@ -125,7 +134,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		}
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento fallido y el último evento correcto, genera
 	 * evento UpdateCancelled
 	 */
@@ -135,7 +144,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 		assert failedEvent.getType().equals(VesselTypeEventTypes.UPDATE_FAILED);
 
-		assert isSnapshot(lastSuccessEvent.getType());
+		assert VesselTypeEventTypes.isSnapshot(lastSuccessEvent.getType());
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
 
@@ -145,7 +154,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 				eventError.getExceptionType(), eventError.getArguments());
 	}
 
-	/*
+	/**
 	 * Función que a partir del evento fallido y el último evento correcto, genera
 	 * evento DeleteFailed
 	 */
@@ -155,7 +164,7 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 		assert failedEvent.getType().equals(VesselTypeEventTypes.DELETE_FAILED);
 
-		assert isSnapshot(lastSuccessEvent.getType());
+		assert VesselTypeEventTypes.isSnapshot(lastSuccessEvent.getType());
 
 		VesselTypeDTO vesselType = ((VesselTypeEvent) lastSuccessEvent).getVesselType();
 
@@ -163,12 +172,6 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 
 		return VesselTypeEventFactory.getEvent(failedEvent, VesselTypeEventTypes.DELETE_CANCELLED, vesselType,
 				eventError.getExceptionType(), eventError.getArguments());
-	}
-
-	@Override
-	protected boolean isSnapshot(String eventType) {
-
-		return VesselTypeEventTypes.isSnapshot(eventType);
 	}
 
 	@Override
@@ -187,12 +190,16 @@ public class VesselTypeEventStreams extends EventSourcingStreams {
 		// En este caso no hay modificaciones parciales
 	}
 
-	/*
+	/**
 	 * Función para procesar modificaciones de referencias
 	 */
 
 	@Override
 	protected void processPostUpdateStream(KStream<String, Event> events) {
 		// En este caso no hay modificación de relaciones
+	}
+
+	@Override
+	protected void processExtraStreams(KStream<String, Event> events, KStream<String, Event> snapshotEvents) {
 	}
 }

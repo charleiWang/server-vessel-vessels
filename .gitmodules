@@ -1,0 +1,5 @@
+[submodule "elasticsearch-cluster-runner"]
+	path = elasticsearch-cluster-runner
+	url = https://github.com/codelibs/elasticsearch-cluster-runner.git
+	branch = master
+	ignore = dirty

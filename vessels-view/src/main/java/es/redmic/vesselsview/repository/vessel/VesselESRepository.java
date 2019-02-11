@@ -6,18 +6,21 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elasticsearch.action.search.MultiSearchRequestBuilder;
+import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.MultiSearchResponse.Item;
-import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Repository;
 
 import es.redmic.elasticsearchlib.data.repository.RWDataESRepository;
 import es.redmic.exception.common.ExceptionType;
+import es.redmic.exception.elasticsearch.ESQueryException;
 import es.redmic.models.es.common.dto.EventApplicationResult;
 import es.redmic.models.es.common.query.dto.MetadataQueryDTO;
 import es.redmic.vesselsview.model.vessel.Vessel;
@@ -29,7 +32,7 @@ public class VesselESRepository extends RWDataESRepository<Vessel, MetadataQuery
 		implements IDataRepository<Vessel, MetadataQueryDTO> {
 
 	private static String[] INDEX = { "platform" };
-	private static String[] TYPE = { "vessel" };
+	private static String TYPE = "vessel";
 
 	// @formatter:off
  
@@ -51,7 +54,7 @@ public class VesselESRepository extends RWDataESRepository<Vessel, MetadataQuery
 			doc = jsonBuilder().startObject().field("type", objectMapper.convertValue(vesselType, Map.class))
 					.endObject();
 		} catch (IllegalArgumentException | IOException e1) {
-			LOGGER.debug("Error modificando el item con id " + vesselId + " en " + getIndex()[0] + " " + getType()[0]);
+			LOGGER.debug("Error modificando el item con id " + vesselId + " en " + getIndex()[0] + " " + getType());
 			return new EventApplicationResult(ExceptionType.ES_UPDATE_DOCUMENT.toString());
 		}
 
@@ -71,21 +74,26 @@ public class VesselESRepository extends RWDataESRepository<Vessel, MetadataQuery
 			imoTerm = QueryBuilders.termQuery(IMO_PROPERTY, modelToIndex.getImo());
 		}
 		
-		SearchRequestBuilder requestBuilderId = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(idTerm).setSize(1),
-			requestBuilderMmsi = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(mmsiTerm).setSize(1),
-			requestBuilderImo = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(imoTerm).setSize(1);
+		MultiSearchRequest request = new MultiSearchRequest();
+		
+		SearchSourceBuilder requestBuilderId = new SearchSourceBuilder().query(idTerm).size(1),
+			requestBuilderMmsi = new SearchSourceBuilder().query(mmsiTerm).size(1),
+			requestBuilderImo = new SearchSourceBuilder().query(imoTerm).size(1);
 
-		MultiSearchRequestBuilder multiSearchRequestBuilder = ESProvider.getClient().prepareMultiSearch()
-			.add(requestBuilderId)
-			.add(requestBuilderMmsi);
+		request
+			.add(new SearchRequest().indices(getIndex()).source(requestBuilderId))
+			.add(new SearchRequest().indices(getIndex()).source(requestBuilderMmsi));
 
 		if (imoTerm != null)
-			multiSearchRequestBuilder.add(requestBuilderImo);
+			request.add(new SearchRequest().indices(getIndex()).source(requestBuilderImo));
 		
-		MultiSearchResponse sr = multiSearchRequestBuilder.get();
+		MultiSearchResponse sr;
+		try {
+			sr = ESProvider.getClient().msearch(request, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new ESQueryException();
+		}
 
 		// @formatter:on
 
@@ -128,23 +136,28 @@ public class VesselESRepository extends RWDataESRepository<Vessel, MetadataQuery
 				.mustNot(QueryBuilders.termQuery(ID_PROPERTY, modelToIndex.getId()));
 		}
 		
-		SearchRequestBuilder requestBuilderMmsi = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(mmsiTerm).setSize(1),
+		MultiSearchRequest request = new MultiSearchRequest();
+		
+		SearchSourceBuilder requestBuilderMmsi = new SearchSourceBuilder().query(mmsiTerm).size(1),
 				requestBuilderImo = null;
 		
 		if (imoTerm != null) {
-			requestBuilderImo = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(imoTerm).setSize(1);
+			requestBuilderImo = new SearchSourceBuilder().query(imoTerm).size(1);
 		}
 
-		MultiSearchRequestBuilder multiSearchRequestBuilder = ESProvider.getClient().prepareMultiSearch()
-			.add(requestBuilderMmsi);
+		request.add(new SearchRequest().indices(getIndex()).source(requestBuilderMmsi));
 		
 		if (requestBuilderImo != null) {
-			multiSearchRequestBuilder.add(requestBuilderImo);
+			request.add(new SearchRequest().indices(getIndex()).source(requestBuilderImo));
 		}
 		
-		MultiSearchResponse sr = multiSearchRequestBuilder.get();
+		MultiSearchResponse sr;
+		try {
+			sr = ESProvider.getClient().msearch(request, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new ESQueryException();
+		}
 
 		// @formatter:on
 

@@ -1,18 +1,23 @@
 package es.redmic.vesselsview.repository.vesseltype;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.MultiSearchResponse.Item;
-import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Repository;
 
 import es.redmic.elasticsearchlib.data.repository.RWDataESRepository;
 import es.redmic.exception.common.ExceptionType;
+import es.redmic.exception.elasticsearch.ESQueryException;
 import es.redmic.models.es.common.dto.EventApplicationResult;
 import es.redmic.models.es.common.query.dto.SimpleQueryDTO;
 import es.redmic.vesselsview.model.vesseltype.VesselType;
@@ -23,7 +28,7 @@ public class VesselTypeESRepository extends RWDataESRepository<VesselType, Simpl
 		implements IDataRepository<VesselType, SimpleQueryDTO> {
 
 	private static String[] INDEX = { "platform-domains" };
-	private static String[] TYPE = { "vesseltype" };
+	private static String TYPE = "vesseltype";
 
 	// @formatter:off
 	 
@@ -42,17 +47,24 @@ public class VesselTypeESRepository extends RWDataESRepository<VesselType, Simpl
 		QueryBuilder idTerm = QueryBuilders.termQuery(ID_PROPERTY, modelToIndex.getId()),
 				codeTerm = QueryBuilders.termQuery(CODE_PROPERTY, modelToIndex.getCode());
 		
-		SearchRequestBuilder requestBuilderId = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(idTerm).setSize(1),
-			requestBuilderCode = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(codeTerm).setSize(1);
+		MultiSearchRequest request = new MultiSearchRequest();
+		
+		SearchSourceBuilder requestBuilderId = new SearchSourceBuilder().query(idTerm).size(1),
+			requestBuilderCode = new SearchSourceBuilder().query(codeTerm).size(1);
 
-		MultiSearchResponse sr = ESProvider.getClient().prepareMultiSearch()
-			.add(requestBuilderId)
-			.add(requestBuilderCode)
-				.get();
+		request
+			.add(new SearchRequest().indices(getIndex()).source(requestBuilderId))
+			.add(new SearchRequest().indices(getIndex()).source(requestBuilderCode));
 
 		// @formatter:on
+
+		MultiSearchResponse sr;
+		try {
+			sr = ESProvider.getClient().msearch(request, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new ESQueryException();
+		}
 
 		Map<String, String> arguments = new HashMap<>();
 
@@ -81,14 +93,21 @@ public class VesselTypeESRepository extends RWDataESRepository<VesselType, Simpl
 				.must(QueryBuilders.termQuery(CODE_PROPERTY, modelToIndex.getCode()))
 				.mustNot(QueryBuilders.termQuery(ID_PROPERTY, modelToIndex.getId()));
 		
-		SearchRequestBuilder requestBuilderCode = ESProvider.getClient().prepareSearch(getIndex()).setTypes(getType())
-				.setQuery(codeTerm).setSize(1);
+		MultiSearchRequest request = new MultiSearchRequest();
+		
+		SearchSourceBuilder requestBuilderCode = new SearchSourceBuilder().query(codeTerm).size(1);
 
-		MultiSearchResponse sr = ESProvider.getClient().prepareMultiSearch()
-			.add(requestBuilderCode)
-				.get();
+		request.add(new SearchRequest().indices(getIndex()).source(requestBuilderCode));
 
 		// @formatter:on
+
+		MultiSearchResponse sr;
+		try {
+			sr = ESProvider.getClient().msearch(request, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new ESQueryException();
+		}
 
 		Map<String, String> arguments = new HashMap<>();
 

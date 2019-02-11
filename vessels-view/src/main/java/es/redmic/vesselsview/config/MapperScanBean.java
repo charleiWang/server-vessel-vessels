@@ -1,9 +1,8 @@
 package es.redmic.vesselsview.config;
 
 import org.joda.time.DateTime;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Component;
-
-import com.vividsolutions.jts.geom.Point;
 
 import es.redmic.viewlib.config.MapperScanBeanBase;
 import es.redmic.viewlib.config.MapperScanBeanItfc;

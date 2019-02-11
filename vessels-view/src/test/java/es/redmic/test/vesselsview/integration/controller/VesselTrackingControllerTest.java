@@ -17,25 +17,24 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
 
 import es.redmic.models.es.common.query.dto.DataQueryDTO;
 import es.redmic.models.es.common.query.dto.MgetDTO;
@@ -73,12 +72,13 @@ public class VesselTrackingControllerTest extends DocumentationViewBaseTest {
 	VesselTracking vesselTracking = new VesselTracking();
 
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1);
+	public static EmbeddedKafkaRule embeddedKafka = new EmbeddedKafkaRule(1);
 
 	@PostConstruct
 	public void CreateVesselTrackingFromRestTestPostConstruct() throws Exception {
 
-		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+		createSchemaRegistryRestApp(embeddedKafka.getEmbeddedKafka().getZookeeperConnectionString(),
+				embeddedKafka.getEmbeddedKafka().getBrokersAsString());
 	}
 
 	@Override
@@ -108,7 +108,9 @@ public class VesselTrackingControllerTest extends DocumentationViewBaseTest {
 		vesselTracking.setId(PREFIX + MMSI + "-" + new DateTime().getMillis());
 		vesselTracking.setUuid(UUID.randomUUID().toString());
 
-		Point geometry = JTSFactoryFinder.getGeometryFactory().createPoint(new Coordinate(44.56433, 37.94388));
+		GeometryFactory geometryFactory = new GeometryFactory();
+
+		Point geometry = geometryFactory.createPoint(new Coordinate(44.56433, 37.94388));
 		vesselTracking.setGeometry(geometry);
 
 		VesselTrackingProperties properties = new VesselTrackingProperties();

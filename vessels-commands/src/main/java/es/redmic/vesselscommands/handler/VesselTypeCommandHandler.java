@@ -196,7 +196,7 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselTypeCreatedEvent event) {
 
-		logger.info("VesselType creado " + event.getAggregateId());
+		logger.debug("VesselType creado " + event.getAggregateId());
 
 		// El evento Creado se envía desde el stream
 
@@ -206,7 +206,7 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselTypeUpdatedEvent event) {
 
-		logger.info("VesselType modificado " + event.getAggregateId());
+		logger.debug("VesselType modificado " + event.getAggregateId());
 
 		// Envía los editados satisfactoriamente para tenerlos en cuenta en el
 		// postupdate
@@ -232,7 +232,7 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselTypeDeletedEvent event) {
 
-		logger.info("VesselType eliminado " + event.getAggregateId());
+		logger.debug("VesselType eliminado " + event.getAggregateId());
 
 		resolveCommand(event.getSessionId());
 	}
@@ -247,7 +247,7 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(CreateVesselTypeCancelledEvent event) {
 
-		logger.info("Error creando VesselType " + event.getAggregateId());
+		logger.debug("Error creando VesselType " + event.getAggregateId());
 
 		resolveCommand(event.getSessionId(),
 				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
@@ -256,7 +256,7 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(UpdateVesselTypeCancelledEvent event) {
 
-		logger.info("Error modificando VesselType " + event.getAggregateId());
+		logger.debug("Error modificando VesselType " + event.getAggregateId());
 
 		// El evento Cancelled se envía desde el stream
 
@@ -274,7 +274,7 @@ public class VesselTypeCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(DeleteVesselTypeCancelledEvent event) {
 
-		logger.info("Error eliminando VesselType " + event.getAggregateId());
+		logger.debug("Error eliminando VesselType " + event.getAggregateId());
 
 		// El evento Cancelled se envía desde el stream
 

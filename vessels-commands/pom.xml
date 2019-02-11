@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>es.redmic.vessels</groupId>
 		<artifactId>vessels</artifactId>
-		<version>0.6.0</version>
+		<version>0.8.0</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
@@ -14,7 +14,10 @@
 	<packaging>jar</packaging>
 	<name>Vessels-management</name>
 	<description>Vessels management microservice (add/edit/delete vessels)</description>
-
+	<properties>
+		<redmic.commands-lib.version>0.8.0</redmic.commands-lib.version>
+	</properties>
+	
 	<dependencies>
 
 		<dependency>
@@ -64,24 +67,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-						<configuration>
-							<executable>true</executable>
-							<finalName>vessels-commands</finalName>
-							<outputDirectory>dist</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
+				<configuration>
+					<executable>true</executable>
+					<finalName>vessels-commands</finalName>
+					<outputDirectory>dist</outputDirectory>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-				    <reuseForks>true</reuseForks>
+					<reuseForks>true</reuseForks>
 					<includes>
 						<include>**/Test*.java</include>
 						<include>**/*Test.java</include>

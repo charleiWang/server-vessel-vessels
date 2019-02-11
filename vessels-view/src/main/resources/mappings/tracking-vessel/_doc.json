@@ -1,0 +1,197 @@
+{
+	"index_patterns": ["tracking-vessel*"],
+	"settings": {
+		"analysis": {
+			"analyzer": {
+				"lower_analyzer": {
+					"type": "custom",
+					"tokenizer": "standard",
+					"filter": ["lowercase", "asciifolding"]
+				},
+				"path-analyzer": {
+					"type": "custom",
+					"tokenizer": "path-tokenizer"
+				},
+				"autocomplete": {
+					"type": "custom",
+					"tokenizer": "whitespace",
+					"filter": ["lowercase", "asciifolding", "nGram_filter"]
+				},
+				"split-path-analyzer": {
+					"type": "custom",
+					"tokenizer": "split-path-tokenizer"
+				}
+			},
+			"tokenizer": {
+				"path-tokenizer": {
+					"type": "path_hierarchy",
+					"delimiter": "."
+				},
+				"split-path-tokenizer": {
+					"type": "pattern",
+					"delimiter": "\\."
+				}
+			},
+			"filter": {
+				"nGram_filter": {
+					"type": "nGram",
+					"min_gram": 2,
+					"max_gram": 20
+				}
+			}
+		}
+	},
+	"mappings": {
+		"_doc": {
+			"dynamic": "false",
+			"properties": {
+				"geometry": {
+					"dynamic": "false",
+					"properties": {
+						"coordinates": {
+							"type": "geo_point"
+						}
+					}
+				},
+				"id": {
+					"type": "keyword"
+				},
+				"uuid": {
+					"type": "keyword"
+				},
+				"properties": {
+					"dynamic": "false",
+					"properties": {
+						"date": {
+							"type": "date"
+						},
+						"eta": {
+							"type": "text",
+							"fields": {
+								"keyword": {
+									"ignore_above": 256,
+									"type": "keyword"
+								}
+							}
+						},
+						"activity": {
+							"type": "keyword",
+							"fields": {
+								"path": {
+									"type": "text",
+									"analyzer": "path-analyzer",
+									"store": true
+								},
+								"split": {
+									"type": "text",
+									"analyzer": "split-path-analyzer"
+								}
+							}
+						},
+						"heading": {
+							"type": "long"
+						},
+						"vessel": {
+							"dynamic": "false",
+							"properties": {
+								"id": {
+									"type": "keyword"
+								},
+								"mmsi": {
+									"type": "keyword",
+									"fields": {
+										"suggest": {
+											"type": "text",
+											"analyzer": "autocomplete",
+											"search_analyzer": "lower_analyzer"
+										}
+									}
+								},
+								"imo": {
+									"type": "keyword",
+									"fields": {
+										"suggest": {
+											"type": "text",
+											"analyzer": "autocomplete",
+											"search_analyzer": "lower_analyzer"
+										}
+									}
+								},
+								"name": {
+									"type": "keyword",
+									"fields": {
+										"suggest": {
+											"type": "text",
+											"analyzer": "autocomplete",
+											"search_analyzer": "lower_analyzer"
+										}
+									}
+								},
+								"callSign": {
+									"type": "keyword"
+								},
+								"beam": {
+									"type": "float"
+								},
+								"length": {
+									"type": "float"
+								},
+								"type": {
+									"dynamic": "false",
+									"properties": {
+										"id": {
+											"type": "keyword"
+										},
+										"code": {
+											"type": "keyword"
+										},
+										"name": {
+											"type": "keyword"
+										},
+										"name_en": {
+											"type": "keyword"
+										}
+									}
+								},
+								"inserted": {
+									"type": "date"
+								},
+								"updated": {
+									"type": "date"
+								}
+							}
+						},
+						"cog": {
+							"type": "float"
+						},
+						"sog": {
+							"type": "float"
+						},
+						"navStat": {
+							"type": "long"
+						},
+						"dest": {
+							"type": "keyword",
+							"fields": {
+								"suggest": {
+									"type": "text",
+									"analyzer": "autocomplete",
+									"search_analyzer": "lower_analyzer"
+								}
+							}
+						},
+						"inserted": {
+							"type": "date"
+						},
+						"updated": {
+							"type": "date"
+						}
+					}
+				}
+			}
+		}
+	},
+	"aliases" : {
+        "tracking-vessel" : {}
+    }
+}

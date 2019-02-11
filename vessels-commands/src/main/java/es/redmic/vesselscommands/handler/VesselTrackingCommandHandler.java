@@ -51,12 +51,6 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@Value("${broker.topic.vessel-tracking}")
 	private String vesselTrackingTopic;
 
-	@Value("${broker.topic.vessel.updated}")
-	private String vesselUpdatedTopic;
-
-	@Value("${broker.topic.tracking.agg.by.vessel}")
-	private String vesselTrackingAggByVesselTopic;
-
 	@Value("${broker.state.store.vesseltracking.dir}")
 	private String stateStoreVesselTrackingDir;
 
@@ -69,11 +63,11 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@Value("${broker.topic.vessel}")
 	private String vesselTopic;
 
+	@Value("${broker.topic.realtime.tracking.vessels}")
+	private String realtimeTrackingVesselsTopic;
+
 	@Value("${stream.windows.time.ms}")
 	private Long streamWindowsTime;
-
-	@Value("${process.eventsource.timeout.ms}")
-	private long processTimeoutMS;
 
 	private final String REDMIC_PROCESS = "REDMIC_PROCESS";
 
@@ -108,7 +102,7 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 				config
 					.serviceId(vesselTrackingEventsStreamId)
 					.windowsTime(streamWindowsTime)
-					.build(), vesselTopic, vesselTrackingAggByVesselTopic, vesselUpdatedTopic, alertService);
+					.build(), vesselTopic, realtimeTrackingVesselsTopic, alertService);
 		// @formatter:on
 	}
 
@@ -137,10 +131,6 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 
 		// Emite evento para enviar a kafka
 		publishToKafka(event, vesselTrackingTopic);
-
-		// Se resuelve con un timeout mayor, establecido para procesos automáticos
-		if (event.getUserId().equals(REDMIC_PROCESS))
-			return getResult(processTimeoutMS, event.getSessionId(), completableFuture);
 
 		// Obtiene el resultado cuando se resuelva la espera
 		return getResult(event.getSessionId(), completableFuture);
@@ -212,11 +202,13 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselTrackingCreatedEvent event) {
 
-		logger.info("VesselTracking creado " + event.getAggregateId());
+		logger.debug("VesselTracking creado " + event.getAggregateId());
 
 		// El evento Creado se envió desde el stream
 
-		resolveCommand(event.getSessionId());
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId());
+		}
 	}
 
 	@KafkaHandler
@@ -230,11 +222,13 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselTrackingUpdatedEvent event) {
 
-		logger.info("VesselTracking modificado " + event.getAggregateId());
+		logger.debug("VesselTracking modificado " + event.getAggregateId());
 
 		// El evento Modificado se envió desde el stream
 
-		resolveCommand(event.getSessionId());
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId());
+		}
 	}
 
 	@KafkaHandler
@@ -247,9 +241,11 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(VesselTrackingDeletedEvent event) {
 
-		logger.info("VesselTracking eliminado " + event.getAggregateId());
+		logger.debug("VesselTracking eliminado " + event.getAggregateId());
 
-		resolveCommand(event.getSessionId());
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId());
+		}
 	}
 
 	@KafkaHandler
@@ -262,31 +258,37 @@ public class VesselTrackingCommandHandler extends CommandHandler {
 	@KafkaHandler
 	private void listen(CreateVesselTrackingCancelledEvent event) {
 
-		logger.info("Error creando VesselTracking " + event.getAggregateId());
+		logger.debug("Error creando VesselTracking " + event.getAggregateId());
 
-		resolveCommand(event.getSessionId(),
-				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId(),
+					ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		}
 	}
 
 	@KafkaHandler
 	private void listen(UpdateVesselTrackingCancelledEvent event) {
 
-		logger.info("Error modificando VesselTracking " + event.getAggregateId());
+		logger.debug("Error modificando VesselTracking " + event.getAggregateId());
 
 		// El evento Cancelled se envía desde el stream
 
-		resolveCommand(event.getSessionId(),
-				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId(),
+					ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		}
 	}
 
 	@KafkaHandler
 	private void listen(DeleteVesselTrackingCancelledEvent event) {
 
-		logger.info("Error eliminando VesselTracking " + event.getAggregateId());
+		logger.debug("Error eliminando VesselTracking " + event.getAggregateId());
 
 		// El evento Cancelled se envía desde el stream
 
-		resolveCommand(event.getSessionId(),
-				ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		if (!event.getUserId().equals(REDMIC_PROCESS)) {
+			resolveCommand(event.getSessionId(),
+					ExceptionFactory.getException(event.getExceptionType(), event.getArguments()));
+		}
 	}
 }

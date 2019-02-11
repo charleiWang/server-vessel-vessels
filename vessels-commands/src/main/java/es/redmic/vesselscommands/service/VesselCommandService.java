@@ -5,14 +5,12 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import es.redmic.brokerlib.avro.geodata.tracking.vessels.AISTrackingDTO;
 import es.redmic.commandslib.service.CommandServiceItfc;
 import es.redmic.vesselscommands.commands.vessel.CreateVesselCommand;
 import es.redmic.vesselscommands.commands.vessel.DeleteVesselCommand;
 import es.redmic.vesselscommands.commands.vessel.UpdateVesselCommand;
 import es.redmic.vesselscommands.handler.VesselCommandHandler;
 import es.redmic.vesselslib.dto.vessel.VesselDTO;
-import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
 
 @Service
 public class VesselCommandService implements CommandServiceItfc<VesselDTO> {
@@ -24,15 +22,6 @@ public class VesselCommandService implements CommandServiceItfc<VesselDTO> {
 	@Autowired
 	public VesselCommandService(VesselCommandHandler commandHandler) {
 		this.commandHandler = commandHandler;
-	}
-
-	public void create(AISTrackingDTO aisTracking) {
-
-		if (aisTracking.getMmsi() != null || aisTracking.getImo() != null) {
-			create(convertTrackToVessel(aisTracking));
-		} else {
-			logger.info("Descartado Vessel sin identificador váliado");
-		}
 	}
 
 	@Override
@@ -57,23 +46,5 @@ public class VesselCommandService implements CommandServiceItfc<VesselDTO> {
 		logger.debug("DeleteVessel");
 
 		return commandHandler.update(id, new DeleteVesselCommand(id));
-	}
-
-	public static VesselDTO convertTrackToVessel(AISTrackingDTO aisTracking) {
-
-		VesselDTO vessel = new VesselDTO();
-
-		vessel.setMmsi(aisTracking.getMmsi());
-		vessel.setName(aisTracking.getName());
-		vessel.setCallSign(aisTracking.getCallSign());
-		vessel.setImo(aisTracking.getImo());
-		vessel.setLength(aisTracking.getA() + aisTracking.getB());
-		vessel.setBeam(aisTracking.getC() + aisTracking.getD());
-
-		VesselTypeDTO vesselType = new VesselTypeDTO();
-		vesselType.setCode(aisTracking.getType().toString());
-		vessel.setType(vesselType);
-
-		return vessel;
 	}
 }

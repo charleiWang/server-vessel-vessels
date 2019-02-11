@@ -9,7 +9,6 @@ public class VesselTrackingStateStore extends StateStore {
 
 	public VesselTrackingStateStore(StreamConfig config, AlertService alertService) {
 		super(config, alertService);
-		logger.info("Arrancado servicio VesselTrackingStateStore con Id: " + this.serviceId);
 		init();
 	}
 

@@ -3,10 +3,9 @@ package es.redmic.vesselscommands.commands.vesseltype;
 import es.redmic.commandslib.commands.Command;
 import es.redmic.exception.databinding.FieldNotValidException;
 import es.redmic.vesselslib.dto.vesseltype.VesselTypeDTO;
+import es.redmic.vesselslib.utils.VesselTypeUtil;
 
 public class CreateVesselTypeCommand extends Command {
-
-	private final String PREFIX = "vesseltype-code-";
 
 	private VesselTypeDTO vesselType;
 
@@ -20,7 +19,7 @@ public class CreateVesselTypeCommand extends Command {
 
 		if (vesselType.getId() == null && vesselType.getCode() != null) {
 			// Se crea un id único para el vessel
-			vesselType.setId(PREFIX + vesselType.getCode());
+			vesselType.setId(VesselTypeUtil.generateId(vesselType.getCode()));
 		}
 		this.setVessel(vesselType);
 	}

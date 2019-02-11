@@ -6,17 +6,17 @@ import org.json.JSONException;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import com.bedatadriven.jackson.datatype.jts.JtsModule;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import es.redmic.jts4jackson.module.JTSModule;
 import es.redmic.vesselslib.dto.tracking.VesselTrackingDTO;
 import es.redmic.vesselslib.unit.utils.VesselAvroBaseTest;
 import es.redmic.vesselslib.unit.utils.VesselTrackingDataUtil;
 
 public class VesselTrackingCheckAvroSchemaTest extends VesselAvroBaseTest {
 
-	ObjectMapper mapper = new ObjectMapper().registerModule(new JtsModule());
+	ObjectMapper mapper = new ObjectMapper().registerModule(new JTSModule());
 
 	@Test
 	public void serializeAndDeserialize_IsSuccessful_IfSchemaAndDataAreCorrect()

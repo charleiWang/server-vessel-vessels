@@ -15,8 +15,9 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.MessageSource;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import es.redmic.commandslib.exceptions.HistoryNotFoundException;
@@ -28,10 +29,11 @@ import es.redmic.vesselscommands.commands.vessel.UpdateVesselCommand;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = { VesselsCommandsApplication.class })
 @ActiveProfiles("test")
+@TestPropertySource(properties = { "schema.registry.port=0" })
 public class ExceptionsTranslationTest {
 
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1);
+	public static EmbeddedKafkaRule embeddedKafka = new EmbeddedKafkaRule(1);
 
 	@Autowired
 	MessageSource messageSource;

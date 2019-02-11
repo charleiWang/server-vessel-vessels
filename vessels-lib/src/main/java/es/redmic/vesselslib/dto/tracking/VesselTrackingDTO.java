@@ -1,13 +1,12 @@
 package es.redmic.vesselslib.dto.tracking;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.apache.avro.Schema;
+import org.locationtech.jts.geom.Point;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.vividsolutions.jts.geom.Point;
 
 import es.redmic.brokerlib.avro.geodata.common.FeatureDTO;
 import es.redmic.brokerlib.avro.geodata.utils.GeoJSONFeatureType;
@@ -24,7 +23,7 @@ public class VesselTrackingDTO extends FeatureDTO<VesselTrackingPropertiesDTO, P
 					+ "\"type\":\"enum\",\"name\":\"GeoJSONFeatureType\"," + 
 						"\"symbols\":[\"FEATURE\"]}},"
 				+ "{\"name\":\"properties\",\"type\":" + VesselTrackingPropertiesDTO.SCHEMA$.toString() + "},"
-				+ "{\"name\":\"geometry\",\"type\":[\"bytes\", \"null\"]},"
+				+ "{\"name\":\"geometry\",\"type\":[\"string\", \"null\"]},"
 				+ "{\"name\":\"id\",\"type\":\"string\"}"
 			+ "]}");
 	
@@ -53,7 +52,7 @@ public class VesselTrackingDTO extends FeatureDTO<VesselTrackingPropertiesDTO, P
 			return getProperties();
 		case 3:
 			try {
-				return ByteBuffer.wrap(mapper.writeValueAsBytes(getGeometry()));
+				return mapper.writeValueAsString(getGeometry());
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
 				return null;
@@ -82,7 +81,9 @@ public class VesselTrackingDTO extends FeatureDTO<VesselTrackingPropertiesDTO, P
 			break;
 		case 3:
 			try {
-				setGeometry(mapper.readValue(((ByteBuffer) value).array(), Point.class));
+				if (value != null) {
+					setGeometry(mapper.readValue((value.toString()), Point.class));
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -26,7 +26,7 @@ import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
+import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -66,6 +66,7 @@ import es.redmic.vesselslib.events.vessel.update.UpdateVesselEvent;
 import es.redmic.vesselslib.events.vessel.update.UpdateVesselFailedEvent;
 import es.redmic.vesselslib.events.vessel.update.VesselUpdatedEvent;
 import es.redmic.vesselslib.events.vesseltracking.create.VesselTrackingCreatedEvent;
+import es.redmic.vesselslib.events.vesseltype.create.CreateVesselTypeConfirmedEvent;
 import es.redmic.vesselslib.events.vesseltype.create.VesselTypeCreatedEvent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -80,7 +81,7 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 	protected static Logger logger = LogManager.getLogger();
 
 	@ClassRule
-	public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(KafkaEmbeddedConfig.NUM_BROKERS, true,
+	public static EmbeddedKafkaRule embeddedKafka = new EmbeddedKafkaRule(KafkaEmbeddedConfig.NUM_BROKERS, true,
 			KafkaEmbeddedConfig.PARTITIONS_PER_TOPIC, KafkaEmbeddedConfig.TOPICS_NAME);
 
 	private static final Integer mmsi = 1234;
@@ -105,7 +106,8 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 	@PostConstruct
 	public void VesselCommandHandlerTestPostConstruct() throws Exception {
 
-		createSchemaRegistryRestApp(embeddedKafka.getZookeeperConnectionString(), embeddedKafka.getBrokersAsString());
+		createSchemaRegistryRestApp(embeddedKafka.getEmbeddedKafka().getZookeeperConnectionString(),
+				embeddedKafka.getEmbeddedKafka().getBrokersAsString());
 	}
 
 	@Before
@@ -125,11 +127,19 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 
 		String code = "1234";
 
+		// Envía Create vesseltype para simular otros eventos anteriores
+		CreateVesselTypeConfirmedEvent createVesselTypeConfirmedEvent = VesselTypeDataUtil
+				.getCreateVesselTypeConfirmedEvent(code);
+		kafkaTemplate.send(vessel_type_topic, createVesselTypeConfirmedEvent.getAggregateId(),
+				createVesselTypeConfirmedEvent);
+
 		// Envía vesseltypeCreated
-		VesselTypeCreatedEvent vesselTypeCreatedEvent = VesselTypeDataUtil.getVesselTypeCreatedEvent(code);
+		VesselTypeCreatedEvent vesselTypeCreatedEvent = new VesselTypeCreatedEvent()
+				.buildFrom(createVesselTypeConfirmedEvent);
+		vesselTypeCreatedEvent.setVesselType(VesselTypeDataUtil.getVesselType(code));
 		kafkaTemplate.send(vessel_type_topic, vesselTypeCreatedEvent.getAggregateId(), vesselTypeCreatedEvent);
 
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		// Envía enrichCreateVessel con id del vesseltype igual al enviado
 
@@ -182,11 +192,19 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 		// Envía vesseltypeCreated
 		String code = "1235";
 
+		// Envía Create vesseltype para simular otros eventos anteriores
+		CreateVesselTypeConfirmedEvent createVesselTypeConfirmedEvent = VesselTypeDataUtil
+				.getCreateVesselTypeConfirmedEvent(code);
+		kafkaTemplate.send(vessel_type_topic, createVesselTypeConfirmedEvent.getAggregateId(),
+				createVesselTypeConfirmedEvent);
+
 		// Envía vesseltypeCreated
-		VesselTypeCreatedEvent vesselTypeCreatedEvent = VesselTypeDataUtil.getVesselTypeCreatedEvent(code);
+		VesselTypeCreatedEvent vesselTypeCreatedEvent = new VesselTypeCreatedEvent()
+				.buildFrom(createVesselTypeConfirmedEvent);
+		vesselTypeCreatedEvent.setVesselType(VesselTypeDataUtil.getVesselType(code));
 		kafkaTemplate.send(vessel_type_topic, vesselTypeCreatedEvent.getAggregateId(), vesselTypeCreatedEvent);
 
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		// Envía enrichUpdateVessel con id del vesseltype igual al enviado
 
@@ -226,27 +244,6 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 		assertNotNull(confirm);
 		assertEquals(VesselEventTypes.UPDATED, confirm.getType());
 		assertEquals(updateVesselEvent.getVessel(), ((VesselUpdatedEvent) confirm).getVessel());
-	}
-
-	// Envía un evento de comprobación de que el elemento puede ser borrado y debe
-	// provocar un evento DeleteVesselCheckedEvent ya que no está referenciado
-	@Test
-	public void checkDeleteVesselEvent_SendDeleteVesselCheckedEvent_IfReceivesSuccess() throws InterruptedException {
-
-		logger.debug("----> CheckDeleteVesselEvent");
-
-		CheckDeleteVesselEvent event = VesselDataUtil.getCheckDeleteVesselEvent(mmsi + 33);
-
-		kafkaTemplate.send(vessel_topic, event.getAggregateId(), event);
-
-		Event confirm = (Event) blockingQueue.poll(60, TimeUnit.SECONDS);
-
-		assertNotNull(confirm);
-		assertEquals(VesselEventTypes.DELETE_CHECKED, confirm.getType());
-		assertEquals(event.getAggregateId(), confirm.getAggregateId());
-		assertEquals(event.getUserId(), confirm.getUserId());
-		assertEquals(event.getSessionId(), confirm.getSessionId());
-		assertEquals(event.getVersion(), confirm.getVersion());
 	}
 
 	// Envía un evento de confirmación de borrado y debe provocar un evento Deleted
@@ -318,6 +315,8 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 		Event updated = (Event) blockingQueue.poll(20, TimeUnit.SECONDS);
 		assertNotNull(updated);
 
+		Thread.sleep(8000);
+
 		// Envía failed y espera un evento de cancelled con el vessel original dentro
 		UpdateVesselFailedEvent event = VesselDataUtil.getUpdateVesselFailedEvent(mmsi + 5);
 
@@ -388,6 +387,8 @@ public class VesselCommandHandlerTest extends KafkaBaseIntegrationTest {
 		vesselUpdateEvent.setSessionId(UUID.randomUUID().toString());
 		kafkaTemplate.send(vessel_topic, vesselUpdateEvent.getAggregateId(), vesselUpdateEvent);
 		blockingQueue.poll(10, TimeUnit.SECONDS);
+
+		Thread.sleep(8000);
 
 		// Envía failed y espera un evento de cancelled con el vessel original dentro
 		DeleteVesselFailedEvent event = VesselDataUtil.getDeleteVesselFailedEvent(mmsi + 6);

@@ -43,7 +43,6 @@ public class VesselTrackingCheckDTOValidationTest extends DTOBaseTest<VesselTrac
 	public void validationDTO_ReturnNotNullError_IfVesselIsNull() {
 
 		dto.getProperties().setVessel(null);
-		;
 
 		checkDTOHasError(dto, NOT_NULL_MESSAGE_TEMPLATE);
 	}
@@ -52,7 +51,22 @@ public class VesselTrackingCheckDTOValidationTest extends DTOBaseTest<VesselTrac
 	public void validationDTO_ReturnNotNullError_IfDateIsNull() {
 
 		dto.getProperties().setDate(null);
-		;
+
+		checkDTOHasError(dto, NOT_NULL_MESSAGE_TEMPLATE);
+	}
+
+	@Test
+	public void validationDTO_ReturnNotNullError_IfQFlagIsNull() {
+
+		dto.getProperties().setQFlag(null);
+
+		checkDTOHasError(dto, NOT_NULL_MESSAGE_TEMPLATE);
+	}
+
+	@Test
+	public void validationDTO_ReturnNotNullError_IfVFlagIsNull() {
+
+		dto.getProperties().setVFlag(null);
 
 		checkDTOHasError(dto, NOT_NULL_MESSAGE_TEMPLATE);
 	}
