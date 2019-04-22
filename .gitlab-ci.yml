@@ -31,10 +31,7 @@ maven-build-view:
   variables:
     GIT_SUBMODULE_STRATEGY: normal
   before_script:
-    - mvn -f elasticsearch-cluster-runner compile
-    - >
-      mvn -f elasticsearch-cluster-runner compile exec:java
-        -Dexec.args="-numOfNode 1 -clusterName ${ELASTIC_CLUSTERNAME}" &
+    - mvn -f elasticsearch-cluster-runner compile exec:java -Dexec.args="-numOfNode 1 -clusterName ${ELASTIC_CLUSTERNAME}" &
 
 .deploy-commands:
   script:
