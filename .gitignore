@@ -6,3 +6,4 @@
 !.env
 **/target
 */dist
+pom.xml.*
