@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>es.redmic.vessels</groupId>
 		<artifactId>vessels</artifactId>
-		<version>0.8.0-feature-applyLicense</version>
+		<version>0.8.0-feature-updateCI</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>

@@ -13,7 +13,7 @@
 	<groupId>es.redmic.vessels</groupId>
 	<artifactId>vessels</artifactId>
 	<packaging>pom</packaging>
-	<version>0.8.0-feature-applyLicense</version>
+	<version>0.8.0-feature-updateCI</version>
 	<name>vessels</name>
 
 	<properties>
