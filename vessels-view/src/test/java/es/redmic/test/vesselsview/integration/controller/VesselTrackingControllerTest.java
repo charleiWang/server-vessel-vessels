@@ -197,6 +197,7 @@ public class VesselTrackingControllerTest extends DocumentationViewBaseTest {
 		// no registrados
 		HashMap<String, Object> query = mapper.convertValue(dataQuery, HashMap.class);
 		query.remove("accessibilityIds");
+		query.remove("activityId");
 
 		// @formatter:off
 		
@@ -249,6 +250,7 @@ public class VesselTrackingControllerTest extends DocumentationViewBaseTest {
 		// no registrados
 		HashMap<String, Object> query = mapper.convertValue(dataQuery, HashMap.class);
 		query.remove("accessibilityIds");
+		query.remove("activityId");
 
 		// @formatter:off
 		
